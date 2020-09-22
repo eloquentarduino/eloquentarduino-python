@@ -1,0 +1,1 @@
+from eloquentarduino.jupyter.magics.SketchMagicMixin import SketchMagicMixin
