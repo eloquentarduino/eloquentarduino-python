@@ -1,0 +1,38 @@
+#pragma once
+
+{% for include in includes %}#include <{{ include }}>{% endfor %}
+
+
+namespace Eloquent {
+    namespace ML {
+        namespace Data {
+            /**
+             * Class responsible for data acquisition
+             */
+            class DataAcquisitionSystem {
+                public:
+
+                    /**
+                     * Get features array
+                     */
+                    float* toArray() {
+                        {% for step in steps %}
+                            {% include "Pipeline/%s.jinja" % step["template"] %}
+                        {% endfor %}
+
+                        return features;
+                    }
+
+                    /**
+                     * Capture sample
+                     */
+                    void capture() {
+                        // your own capturing logic...
+                    }
+
+                protected:
+                    static float features[{{ features_transformed_dimension }}];
+            };
+        }
+    }
+}

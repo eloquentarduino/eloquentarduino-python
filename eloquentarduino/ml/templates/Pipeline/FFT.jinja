@@ -1,0 +1,14 @@
+// apply complete FFT
+float imag[{{ features_original_dimension }}] = { 0 };
+arduinoFFT fft(features, imag, {{ features_original_dimension }}, {{ step["frequency"] }});
+
+fft.Windowing({{ step["window"] }}, {{ step["dir"] }});
+fft.Compute({{ step["dir"] }});
+
+{% if step["use"] == "magnitude" %}
+fft.ComplexToMagnitude();
+{% elif step["use"] == "both" %}
+for (int i = {{ features_original_dimension }}; i < {{ 2 * features_original_dimension }}; i++) {
+    features[i] = imag[i];
+}
+{% endif %}

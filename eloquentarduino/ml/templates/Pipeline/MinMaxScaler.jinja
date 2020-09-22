@@ -1,0 +1,7 @@
+// normalization
+float mins[] = { {{ to_array(step["min"]) }} };
+float inverseRanges[] = { {{ to_array(1 / step["range"]) }} };
+
+for (int i = 0; i < {{ features_original_dimension }}; i++) {
+    features[i] = (features[i] - mins[i]) * inverseRanges[i];
+}

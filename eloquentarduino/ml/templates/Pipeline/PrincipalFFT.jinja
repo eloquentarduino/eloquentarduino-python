@@ -1,0 +1,19 @@
+// apply principal FFT (naive implementation for the top N frequencies only)
+const int topFrequencies[] = { {{ to_array(step["fft"].idx) }} };
+float principalFFT[{{ step["fft"].idx | length }}] = { 0 };
+
+for (int i = 0; i < {{ step["fft"].idx | length }}; i++) {
+    const int k = topFrequencies[i];
+    const float harmonic = {{ 2 * PI / features_original_dimension }} * k;
+    float re = 0;
+    float im = 0;
+
+    for (int n = 0; n < {{ features_original_dimension }}; n++) {
+        const float harmonicN = harmonic * n;
+
+        re += features[n] * cos(harmonicN);
+        im -= features[n] * sin(harmonicN);
+    }
+
+    principalFFT[i] = (re * re + im * im);
+}
