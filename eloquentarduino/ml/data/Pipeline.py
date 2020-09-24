@@ -1,48 +1,69 @@
 import numpy as np
 from sklearn.preprocessing import PolynomialFeatures
 from eloquentarduino.ml.data.preprocessing import PrincipalFFT
+from eloquentarduino.ml.data.preprocessing import NormalizeStep
+from eloquentarduino.ml.data.preprocessing import StandardizeStep
+from eloquentarduino.ml.data.preprocessing import PolynomialFeaturesStep
+from eloquentarduino.ml.data.preprocessing import SelectKBestStep
+from eloquentarduino.ml.data.preprocessing import RfeStep
 from eloquentarduino.ml.utils import jinja
 
 
 class Pipeline:
     """Define a pre-processing pipeline that can be ported to plain C"""
-
     def __init__(self, X, y):
         self.X = X
         self.y = y
-        self.includes = []
         self.steps = []
-        self.variables = []
-        self.env = {
-            "features_original_dimension": len(X[0]),
-            "features_transformed_dimension": len(X[0])
+        self.steps_run = []
+
+    @property
+    def Xt(self):
+        return self.transform(self.X.copy())
+
+    def transform(self, X):
+        """Apply pipeline to data"""
+        self.steps_run = []
+        for Step, kwargs in self.steps:
+            step = Step(X, self.y, **kwargs)
+            X = step.transform()
+            self.steps_run.append(step)
+        return X
+
+    def port(self):
+        """Port to plain C"""
+        if len(self.steps_run) == 0:
+            self.Xt
+        env = {
+            'steps': self.steps_run,
+            'input_dim': self.X.shape[1],
+            'working_dim': max([step.input_shape[1] for step in self.steps_run] + [step.output_shape[1] for step in self.steps_run])
         }
+        return jinja("Pipeline/Pipeline.jinja", env)
+
+    def queue(self, Step, **kwargs):
+        self.steps.append((Step, kwargs))
 
     def normalize(self, featurewise=False):
         """Apply normalization"""
-        axis = 0 if featurewise else None
-        self.steps.append({
-            "template": "MinMaxScaler",
-            "min": self.X.min(axis),
-            "range": self.X.max(axis) - self.X.min(axis),
-        })
+        self.queue(NormalizeStep, featurewise=featurewise)
 
     def standardize(self, featurewise=False):
         """Apply standardization"""
-        axis = 0 if featurewise else None
-        self.steps.append({
-            "template": "StandardScaler",
-            "mean": self.X.mean(axis),
-            "std": self.X.std(axis),
-        })
+        self.queue(StandardizeStep, featurewise=featurewise)
 
-    def polynomial(self, interaction_only=False):
-        """Apply polynomial (degree 2) features expansion"""
-        self._apply(lambda X: PolynomialFeatures(degree=2, interaction_only=interaction_only, include_bias=False).fit_transform(self.X))
-        self.steps.append({
-            "template": "PolynomialFeatures",
-            "interaction_only": interaction_only
-        })
+    def polynomial_features(self, interaction_only=False):
+        """Apply 2° order polynomial features expansion"""
+        return self.queue(PolynomialFeaturesStep, interaction_only=interaction_only)
+
+    def select_kbest(self, k, score_function=None):
+        """Feature selection with scikit-learn's SelectKBest"""
+        return self.queue(SelectKBestStep, score_function=score_function, k=k)
+
+    def rfe(self, estimator, k):
+        """Feature selection with scikit-learn's RFE"""
+        return self.queue(RfeStep, estimator=estimator, k=k)
+
 
     def fft(self, frequency, use="magnitude", window="HAMMING"):
         """Apply FFT (Fast Fourier Transform)"""
@@ -85,20 +106,6 @@ class Pipeline:
             "n_components": n_components,
             "fft": fft
         })
-
-    def _apply(self, transform):
-        """Apply a transform to X"""
-        self.X = transform(self.X)
-        self.env["features_transformed_dimension"] = max(self.env["features_transformed_dimension"], len(self.X[0]))
-
-    def port(self):
-        """Convert to plain C"""
-        self.env.update({
-            "includes": self.includes,
-            "steps": self.steps,
-            "variables": self.variables
-        })
-        return jinja("Pipeline/FixedSize.jinja", self.env)
 
     def _offset(self, variable_name, operator, featurewise):
         """Remove offset from data"""

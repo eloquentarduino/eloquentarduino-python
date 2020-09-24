@@ -1,7 +1,0 @@
-// standardization
-float means[] = { {{ to_array(step["mean"]) }} };
-float inverseStd[] = { {{ to_array(1 / step["std"]) }} };
-
-for (int i = 0; i < {{ features_original_dimension }}; i++) {
-    features[i] = (features[i] - means[i or 0]) * inverseStd[i or 0];
-}

@@ -1,8 +1,0 @@
-// polynomial (degree 2) features expansion
-int polynomialFeaturesIndex = {{ features_original_dimension}};
-
-for (int i = 0; i < {{ features_original_dimension }}; i++) {
-    for (int j = i{% if step["interaction_only"] %} + 1{% endif %}; j < {{ features_original_dimension }}; j++) {
-        features[polynomialFeaturesIndex++] = features[i] * features[j];
-    }
-}

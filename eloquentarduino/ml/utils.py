@@ -6,7 +6,7 @@ from jinja2 import Environment, FileSystemLoader
 
 
 def prettify(code):
-    """A super simple code prettifier"""
+    '''A super simple code prettifier'''
     pretty = []
     indent = 0
     for line in code.split('\n'):
@@ -29,18 +29,19 @@ def prettify(code):
     # strip empty lines between closing braces (2 times)
     pretty = re.sub(r'\}\n\n(\s*?)\}', lambda m: '}\n%s}' % m.groups(), pretty)
     pretty = re.sub(r'\}\n\n(\s*?)\}', lambda m: '}\n%s}' % m.groups(), pretty)
-    # remove "," before "}"
+    # remove ',' before '}'
     pretty = re.sub(r',\s*\}', '}', pretty)
     return pretty
 
 
 def jinja(template_name, template_data):
-    """Render Jinja template"""
+    '''Render Jinja template'''
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    loader = Environment(loader=FileSystemLoader(os.path.join(dir_path, "templates")))
+    loader = Environment(loader=FileSystemLoader(os.path.join(dir_path, 'templates')))
     # custom directives
-    template_data["PI"] = pi
-    template_data["to_array"] = lambda arr: ", ".join([str(round(x, 9)) for x in (arr if isinstance(arr, Iterable) else [arr])])
+    template_data['len'] = len
+    template_data['enumerate'] = enumerate
+    template_data['to_array'] = lambda arr: ', '.join([str(round(x, 9)) for x in (arr if isinstance(arr, Iterable) else [arr])])
 
     return prettify(loader.get_template(template_name).render(template_data))
 
