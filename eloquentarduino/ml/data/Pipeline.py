@@ -1,12 +1,11 @@
-import numpy as np
-from sklearn.preprocessing import PolynomialFeatures
-from eloquentarduino.ml.data.preprocessing import PrincipalFFT
 from eloquentarduino.ml.data.preprocessing import NormalizeStep
-from eloquentarduino.ml.data.preprocessing import StandardizeStep
 from eloquentarduino.ml.data.preprocessing import PolynomialFeaturesStep
-from eloquentarduino.ml.data.preprocessing import SelectKBestStep
+from eloquentarduino.ml.data.preprocessing import PrincipalFFT
 from eloquentarduino.ml.data.preprocessing import RfeStep
-from eloquentarduino.ml.utils import jinja
+from eloquentarduino.ml.data.preprocessing import SelectKBestStep
+from eloquentarduino.ml.data.preprocessing import StandardizeStep
+from eloquentarduino.utils import jinja
+from sklearn.model_selection import train_test_split
 
 
 class Pipeline:
@@ -39,7 +38,16 @@ class Pipeline:
             'input_dim': self.X.shape[1],
             'working_dim': max([step.input_shape[1] for step in self.steps_run] + [step.output_shape[1] for step in self.steps_run])
         }
-        return jinja("Pipeline/Pipeline.jinja", env)
+        return jinja("Pipeline/Pipeline.jinja", env, pretty=True)
+
+    def score(self, clf, **kwargs):
+        """Score classifier on the transformed input"""
+        X_train, X_test, y_train, y_test = train_test_split(self.Xt, self.y, **kwargs)
+        return clf.fit(X_train, y_train).score(X_test, y_test)
+
+    def explain(self):
+        """Return a human understandable representation of the pipeline"""
+        return 'Pipeline description:\n' + ''.join(['\n - ' + str(step) for step in self.steps_run])[1:]
 
     def queue(self, Step, **kwargs):
         self.steps.append((Step, kwargs))
