@@ -15,8 +15,7 @@ class MagicMixin:
         """Log"""
         self.project.log(*args, **kwargs)
 
-    def path_to(self, folder=""):
+    def path_to(self, *args):
         """Get path to given folder in current project"""
-        assert self.project, "You MUST create a project first"
-        assert self.project.name, "You MUST set a project name"
-        return os.path.join("sketches", self.project.name, folder)
+        self.project.assert_name()
+        return self.project.files.path_to(*args)

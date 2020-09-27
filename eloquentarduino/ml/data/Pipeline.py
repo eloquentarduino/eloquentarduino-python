@@ -1,3 +1,6 @@
+from sklearn.model_selection import train_test_split
+
+from eloquentarduino.ml.data.preprocessing import FFTStep
 from eloquentarduino.ml.data.preprocessing import NormalizeStep
 from eloquentarduino.ml.data.preprocessing import PolynomialFeaturesStep
 from eloquentarduino.ml.data.preprocessing import PrincipalFFT
@@ -5,7 +8,6 @@ from eloquentarduino.ml.data.preprocessing import RfeStep
 from eloquentarduino.ml.data.preprocessing import SelectKBestStep
 from eloquentarduino.ml.data.preprocessing import StandardizeStep
 from eloquentarduino.utils import jinja
-from sklearn.model_selection import train_test_split
 
 
 class Pipeline:
@@ -15,6 +17,7 @@ class Pipeline:
         self.y = y
         self.steps = []
         self.steps_run = []
+        self.includes = []
 
     @property
     def Xt(self):
@@ -72,37 +75,10 @@ class Pipeline:
         """Feature selection with scikit-learn's RFE"""
         return self.queue(RfeStep, estimator=estimator, k=k)
 
-
-    def fft(self, frequency, use="magnitude", window="HAMMING"):
+    def fft(self):
         """Apply FFT (Fast Fourier Transform)"""
-        # @todo Python FFT
-        windows = [
-            "RECTANGLE",
-            "HAMMING",
-            "HANN",
-            "TRIANGLE",
-            "NUTTALL",
-            "BLACKMAN",
-            "BLACKMAN_NUTTALL",
-            "BLACKMAN_HARRIS",
-            "FLT_TOP",
-            "WELCH"
-        ]
-        uses = [
-            "real",
-            "magnitude",
-            "both"
-        ]
-        assert frequency > 0, "frequency MUST be positive"
-        assert window in windows, "window must be one of %s" % windows
-        assert use in uses, "use must be one of %s" % uses
-        self.includes.append("arduinoFFT.h")
-        self.steps.append({
-            "template": "FFT",
-            "frequency": frequency,
-            "window": "FFT_WIN_TYP_%s" % window,
-            "use": use
-        })
+        self.includes.append('arduinoFFT.h')
+        return self.queue(FFTStep)
 
     def principal_fft(self, n_components):
         """Apply "principal components" FFT"""
