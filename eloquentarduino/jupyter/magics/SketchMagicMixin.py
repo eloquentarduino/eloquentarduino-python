@@ -17,6 +17,9 @@ class SketchMagicMixin(MagicMixin):
         """Save code block to sketch file"""
         self.parse_arguments(self.sketch, line, local_ns)
         self.local_ns = local_ns
+        self.local_ns.update({
+            'to_array': lambda arr: ', '.join([str(x) for x in arr])
+        })
 
         # if filename == main, it is the main .ino file
         if self.arguments.filename == 'main':
@@ -39,7 +42,7 @@ class SketchMagicMixin(MagicMixin):
 
     def eval_python(self, code):
         """Interpolate Python code into sketch file"""
-        locals().update(self.local_ns or {})
+        # locals().update(self.local_ns or {})
         for match in re.finditer(r'\{\{\{([^{].+?)\}\}\}', code):
             source = match.group(0)
             python = match.group(1).strip()

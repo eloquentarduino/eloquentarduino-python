@@ -7,7 +7,9 @@ from eloquentarduino.ml.data.preprocessing import PrincipalFFT
 from eloquentarduino.ml.data.preprocessing import RfeStep
 from eloquentarduino.ml.data.preprocessing import SelectKBestStep
 from eloquentarduino.ml.data.preprocessing import StandardizeStep
+from eloquentarduino.ml.data.preprocessing import UnitStep
 from eloquentarduino.utils import jinja
+from sklearn.base import clone
 
 
 class Pipeline:
@@ -21,7 +23,28 @@ class Pipeline:
 
     @property
     def Xt(self):
+        """Get transformed input"""
         return self.transform(self.X.copy())
+
+    @property
+    def input_dim(self):
+        """Get input number of features"""
+        return self.X.shape[1]
+
+    @property
+    def output_dim(self):
+        """Get output number of features"""
+        return self.Xt.shape[1]
+
+    @property
+    def working_dim(self):
+        """Get auxiliary arrays size for C porting"""
+        return max([step.input_shape[1] for step in self.steps_run] + [step.output_shape[1] for step in self.steps_run])
+
+    @property
+    def inplace(self):
+        """Get wether some step will alter the input while working"""
+        return sum([step.inplace for step in self.steps_run])
 
     def transform(self, X):
         """Apply pipeline to data"""
@@ -38,21 +61,24 @@ class Pipeline:
             self.Xt
         env = {
             'steps': self.steps_run,
-            'input_dim': self.X.shape[1],
-            'working_dim': max([step.input_shape[1] for step in self.steps_run] + [step.output_shape[1] for step in self.steps_run])
+            'includes': self.includes,
+            'input_dim': self.input_dim,
+            'working_dim': self.working_dim,
+            'needs_auxiliary_arrays': self.working_dim != self.input_dim or self.inplace
         }
         return jinja("Pipeline/Pipeline.jinja", env, pretty=True)
 
     def score(self, clf, **kwargs):
         """Score classifier on the transformed input"""
         X_train, X_test, y_train, y_test = train_test_split(self.Xt, self.y, **kwargs)
-        return clf.fit(X_train, y_train).score(X_test, y_test)
+        return clone(clf).fit(X_train, y_train).score(X_test, y_test)
 
     def explain(self):
         """Return a human understandable representation of the pipeline"""
         return 'Pipeline description:\n' + ''.join(['\n - ' + str(step) for step in self.steps_run])[1:]
 
     def queue(self, Step, **kwargs):
+        """Add step to queue"""
         self.steps.append((Step, kwargs))
 
     def normalize(self, featurewise=False):
@@ -62,6 +88,10 @@ class Pipeline:
     def standardize(self, featurewise=False):
         """Apply standardization"""
         self.queue(StandardizeStep, featurewise=featurewise)
+
+    def unit(self):
+        """Apply vector unitary length"""
+        self.queue(UnitStep)
 
     def polynomial_features(self, interaction_only=False):
         """Apply 2° order polynomial features expansion"""
@@ -75,10 +105,10 @@ class Pipeline:
         """Feature selection with scikit-learn's RFE"""
         return self.queue(RfeStep, estimator=estimator, k=k)
 
-    def fft(self):
+    def fft(self, featurewise=False):
         """Apply FFT (Fast Fourier Transform)"""
         self.includes.append('arduinoFFT.h')
-        return self.queue(FFTStep)
+        return self.queue(FFTStep, featurewise=featurewise)
 
     def principal_fft(self, n_components):
         """Apply "principal components" FFT"""
@@ -90,33 +120,3 @@ class Pipeline:
             "n_components": n_components,
             "fft": fft
         })
-
-    def _offset(self, variable_name, operator, featurewise):
-        """Remove offset from data"""
-        axis = 0 if featurewise else None
-        offset = operator(self.X, axis=axis)
-        self.X -= offset
-        self.steps.append({
-            "op": "-",
-            "variable": variable_name,
-            "is_array": featurewise
-        })
-        self._add_variable("float", variable_name, offset, is_array=featurewise)
-
-    def _inverse_gain(self, variable_name, operator, featurewise):
-        """Divide by gain"""
-        axis = 0 if featurewise else None
-        gain = operator(self.X, axis=axis)
-        self.X /= gain
-        self.steps.append({
-            "op": "*",
-            "variable": variable_name,
-            "is_array": featurewise
-        })
-        self._add_variable("float", variable_name, 1 / gain, is_array=featurewise)
-
-    def _add_variable(self, type, name, value, is_array=False):
-        """Add helper variable to C code"""
-        if is_array:
-            type += "[]"
-        self.variables.append((type, name, value))

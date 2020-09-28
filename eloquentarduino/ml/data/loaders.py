@@ -48,11 +48,14 @@ def load_folder_streaming(folder, window, overlap, features=1, ext="csv", delimi
     X, y, classmap = load_folder(folder=folder, ext=ext, delimiter=delimiter)
     y_unique = np.unique(y)
     X_windowed = None
+    y_windowed = None
     if overlap < 1:
         overlap = floor(window * overlap)
     for class_idx in y_unique:
         class_mask = (y == class_idx)
         X_class = X[class_mask].flatten()
         X_class = rolling_window(X_class, window=window * features, overlap=overlap * features)
+        y_class = np.ones(len(X_class)) * class_idx
         X_windowed = X_class if X_windowed is None else np.vstack((X_windowed, X_class))
-    return X_windowed, y, classmap
+        y_windowed = y_class if y_windowed is None else np.concatenate((y_windowed, y_class))
+    return X_windowed, y_windowed, classmap

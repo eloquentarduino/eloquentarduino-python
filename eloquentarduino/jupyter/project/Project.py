@@ -66,6 +66,7 @@ class Project:
 
     def upload(self):
         """Upload sketch using arduino-cli"""
+        self.compile()
         command = self.board.upload()
         self.log(command.safe_output)
         sleep(1)
