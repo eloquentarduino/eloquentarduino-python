@@ -27,6 +27,7 @@ eloquentarduino/ml/data/preprocessing/PrincipalFFT.py
 eloquentarduino/ml/data/preprocessing/RfeStep.py
 eloquentarduino/ml/data/preprocessing/SelectKBestStep.py
 eloquentarduino/ml/data/preprocessing/StandardizeStep.py
+eloquentarduino/ml/data/preprocessing/UnitStep.py
 eloquentarduino/ml/data/preprocessing/__init__.py
 eloquentarduino/ml/plot/__init__.py
 eloquentarduino/utils/__init__.py

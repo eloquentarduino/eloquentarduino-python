@@ -45,7 +45,7 @@ class Board:
                 else:
                     self.project.log('Please refine your search')
             except UnboundLocalError:
-                self.project.log('No match found')
+                raise RuntimeError('No match found for board %s' % model_pattern)
 
     def set_port(self, port):
         """Set port"""
@@ -94,12 +94,12 @@ class Board:
     def _match_model(self, known_boards, pattern):
         """Match a model pattern against the known boards"""
         normalizer = re.compile(r'[^a-z0-9 ]')
-        pattern = normalizer.sub('', pattern.lower())
+        pattern = normalizer.sub(' ', pattern.lower())
+        pattern_segments = [s for s in pattern.split(' ') if s.strip()]
         for model in known_boards:
-            target = normalizer.sub('', model.name.lower())
+            target = normalizer.sub(' ', model.name.lower())
             # it matches if all pattern segments are present in the target
-            pattern_segments = pattern.split(' ')
-            target_segments = target.split(' ')
+            target_segments = [s for s in target.split(' ') if s.strip()]
             intersection = list(set(pattern_segments) & set(target_segments))
             if len(intersection) == len(pattern_segments):
                 yield model

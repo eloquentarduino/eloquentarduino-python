@@ -51,8 +51,13 @@ class SerialMonitor:
         # list of allowed characters
         alphabet = '0123456789.\n%s' % delimiter
         with Serial(self.project.board.port, self.project.board.baud_rate, timeout=serial_timeout, **kwargs) as serial:
-            with self.project.open('data', dest, mode=('a' if append else 'w')) as file:
+            with self.project.files.open('data', dest, mode=('a' if append else 'w')) as file:
                 self.project.log('Starting streaming acquisition... ', end='')
+                # send signal to board
+                serial.write(b'capture\n')
+                serial.write(str(samples).encode())
+                serial.write(b'\n')
+
                 start_time = time()
                 buffer = ''
                 while True:
@@ -64,13 +69,14 @@ class SerialMonitor:
                         try:
                             float(buffer)
                             file.write(buffer)
+                            self.project.log('.', end='')
                             samples -= 1
                             if samples == 0:
                                 break
                             else:
                                 file.write(delimiter)
                         except ValueError:
-                            print('value error', buffer)
+                            self.project.log('ValueError', buffer)
                         buffer = ''
                     # append character to buffer
                     else:
