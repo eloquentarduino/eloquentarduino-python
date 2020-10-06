@@ -1,0 +1,8 @@
+// 2° order polynomial features expansion
+int polynomialFeaturesStartIndex = {{ input_dim }};
+
+for (int i = 0; i < {{ input_dim }}; i++) {
+    for (int j = i{% if interaction_only %} + 1{% endif %}; j < {{ input_dim }}; j++) {
+        xt[polynomialFeaturesStartIndex++] = x[i] * x[j];
+    }
+}

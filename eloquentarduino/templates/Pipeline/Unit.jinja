@@ -1,0 +1,12 @@
+float norm = 0.0f;
+float inverseNorm = 0.0f;
+
+for (int i = 0; i < {{ input_dim }}; i++) {
+    norm += x[i] * x[i];
+}
+
+inverseNorm = 1 / sqrt(norm);
+
+for (int i = 0; i < {{ output_dim }}; i++) {
+    xt[i] = x[i] * inverseNorm;
+}

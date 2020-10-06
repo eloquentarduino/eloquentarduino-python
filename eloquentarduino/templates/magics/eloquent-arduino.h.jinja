@@ -1,0 +1,47 @@
+#pragma once
+
+namespace eloquent {
+    namespace ml {
+
+        /**
+         * Declaration of `capture` function (needed for `autoCapture`)
+         */
+        void capture();
+
+        /**
+         * Print array to Serial
+         */
+        template<class T>
+        void printArray(T *array, uint16_t length) {
+            if (length == 0) {
+                return;
+            }
+
+            for (uint16_t i = 0; i < length - 1; i++) {
+                Serial.print(array[i]);
+                Serial.print(',');
+            }
+
+            Serial.print(array[length - 1]);
+            Serial.println();
+        }
+
+        /**
+         * Capture and send data over Serial
+         */
+        template<class T>
+        void autoCapture(T *features, uint16_t length) {
+            if (!Serial.available()) {
+                delay(1);
+                return;
+            }
+
+            if (Serial.readStringUntil('\n') != "capture") {
+                return;
+            }
+
+            capture();
+            printArray(features, length);
+        }
+    }
+}

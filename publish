@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# user eloquentarduino
+# token pypi-AgEIcHlwaS5vcmcCJGUwNGQ3MmQ0LTk1NWQtNDg5YS04YzA0LTI0ZmU0M2ZmYTAzMQACO3sicGVybWlzc2lvbnMiOiB7InByb2plY3RzIjogWyJtaWNyb21sZ2VuIl19LCAidmVyc2lvbiI6IDF9AAAGIPjcxQ3sH7qPDg7D-30Ss6dU-41NesEqXNtyxJvqIzZr
+
+# git push origin master -f
+rm -rf dist/*
+python setup.py sdist
+twine upload dist/*

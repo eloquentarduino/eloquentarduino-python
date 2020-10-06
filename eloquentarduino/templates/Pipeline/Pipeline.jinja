@@ -1,0 +1,47 @@
+#pragma once
+
+{% for include in includes %}
+    #include "{{ include }}";
+{% endfor %}
+
+namespace eloquent {
+    namespace ml {
+        class Pipeline {
+            public:
+                float* transform(float *x) {
+                    {% if needs_auxiliary_arrays %}
+                        static float xt1[{{ working_dim }}];
+                        static float xt2[{{ working_dim }}];
+
+                        for (int i = 0; i < {{ input_dim }}; i++) {
+                            xt1[i] = xt2[i] = x[i];
+                        }
+
+                        {% for i, step in enumerate(steps) %}
+                            step__{{ i }}__{{ step.name }}(xt{{ '1' if i % 2 == 0 else '2' }}, xt{{ '2' if i % 2 == 0 else '1' }});
+                        {% endfor %}
+
+                        return xt{{ '1' if len(steps) % 2 == 0 else '2' }};
+                    {% else %}
+                        {% for i, step in enumerate(steps) %}
+                            step__{{ i }}__{{ step.name }}(x, x);
+                        {% endfor %}
+
+                        return x;
+                    {% endif %}
+                }
+
+            protected:
+
+                {% for i, step in enumerate(steps) %}
+                    /**
+                     * Input  dim is {{ step.input_dim }}
+                     * Output dim is {{ step.output_dim }}
+                     */
+                    void step__{{ i }}__{{ step.name }}(float *x, float *xt) {
+                        {{ step.port() }}
+                    }
+                {% endfor %}
+        };
+    }
+}

@@ -1,0 +1,23 @@
+{% if not featurewise %}
+    for (int i = 0; i < {{ input_dim }}; i++) {
+        xt[i] = (x[i] - {{ xmean }}) * {{ inverse_std }};
+    }
+
+{% elif featurewise == 1 %}
+    float xmean[] = { {{ to_array(xmean) }} };
+    float inverseStd[] = { {{ to_array(inverse_std) }} };
+
+    for (int i = 0; i < {{ input_dim }}; i++) {
+        xt[i] = (x[i] - xmean[i]) * inverseStd[i];
+    }
+
+{% else %}
+    float xmean[{{ featurewise }}] = { {{ to_array(xmean[:featurewise]) }} };
+    float inverseStd[{{ featurewise }}] = { {{ to_array(inverse_std[:featurewise]) }} };
+
+    for (int i = 0; i < {{ input_dim }}; i += {{ featurewise }}) {
+        for (int feature = 0; feature < {{ featurewise }}; feature++) {
+            xt[i + feature] = (x[i + feature] - xmean[feature]) * inverseStd[feature];
+        }
+    }
+{% endif %}

@@ -1,0 +1,23 @@
+{% if not featurewise %}
+    for (int i = 0; i < {{ input_dim }}; i++) {
+        xt[i] = (x[i] - {{ xmin }}) * {{ inverse_range }};
+    }
+
+{% elif featurewise == 1 %}
+    float xmin[] = { {{ to_array(xmin) }} };
+    float inverseRange[] = { {{ to_array(inverse_range) }} };
+
+    for (int i = 0; i < {{ input_dim }}; i++) {
+        xt[i] = (x[i] - xmin[i]) * inverseRange[i];
+    }
+
+{% else %}
+    float xmin[{{ featurewise }}] = { {{ to_array(xmin[:featurewise]) }} };
+    float inverseRange[{{ featurewise }}] = { {{ to_array(inverse_range[:featurewise]) }} };
+
+    for (int i = 0; i < {{ input_dim }}; i += {{ featurewise }}) {
+        for (int feature = 0; feature < {{ featurewise }}; feature++) {
+            xt[i + feature] = (x[i + feature] - xmin[feature]) * inverseRange[feature];
+        }
+    }
+{% endif %}
