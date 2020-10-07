@@ -39,7 +39,7 @@ class Project:
         assert self.name, 'You MUST set a project name'
 
     def log(self, *args, **kwargs):
-        """Log info"""
+        """Log info to console"""
         print(*args, **kwargs)
 
     def set_default_name(self, suffix):

@@ -1,3 +1,4 @@
+from platform import system
 from subprocess import STDOUT, CalledProcessError, check_output
 
 
@@ -24,10 +25,16 @@ class ArduinoCli:
             return self.output
         raise RuntimeError(self.error)
 
+    @property
+    def executable(self):
+        """Return command line executable"""
+        executable = 'arduino-cli.exe' if 'win' in system().lower() else 'arduino-cli'
+        return executable
+
     def run(self):
         """Run cli command and save output"""
         try:
-            self.output = check_output(['arduino-cli'] + self.arguments, stderr=STDOUT).decode('utf-8')
+            self.output = check_output([self.executable] + self.arguments, stderr=STDOUT).decode('utf-8')
             self.error = None
         except CalledProcessError as err:
             self.error = err.output.decode('utf-8')

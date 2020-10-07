@@ -74,13 +74,17 @@ class Board:
         self.baud_rate = baud_rate
         self.project.log('Set baud rate to', self.baud_rate)
 
+    def cli(self, arguments):
+        """Execute arduino-cli command"""
+        self.project.log('[arduino-cli]', *arguments)
+        return ArduinoCli(arguments)
+
     def compile(self):
         """Compile sketch"""
         self.project.assert_name()
         self.assert_model()
         arguments = ['compile', '--verify', '-b', self.model.fqbn, os.path.abspath(os.path.dirname(self.project.ino_path))]
-        self.project.log('arduino-cli', *arguments)
-        return ArduinoCli(arguments)
+        return self.cli(arguments)
 
     def upload(self):
         """Upload sketch"""
@@ -88,8 +92,7 @@ class Board:
         self.assert_model()
         assert self.port is not None, 'You MUST set a board port'
         arguments = ['upload', '-b', self.model.fqbn, '-p', self.port, os.path.abspath(self.project.ino_path)]
-        self.project.log('arduino-cli', *arguments)
-        return ArduinoCli(arguments)
+        return self.cli(arguments)
 
     def _match_model(self, known_boards, pattern):
         """Match a model pattern against the known boards"""
