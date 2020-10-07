@@ -53,11 +53,6 @@ class SerialMonitor:
         with Serial(self.project.board.port, self.project.board.baud_rate, timeout=serial_timeout, **kwargs) as serial:
             with self.project.files.open('data', dest, mode=('a' if append else 'w')) as file:
                 self.project.log('Starting streaming acquisition... ', end='')
-                # send signal to board
-                serial.write(b'capture\n')
-                serial.write(str(samples).encode())
-                serial.write(b'\n')
-
                 start_time = time()
                 buffer = ''
                 while True:
