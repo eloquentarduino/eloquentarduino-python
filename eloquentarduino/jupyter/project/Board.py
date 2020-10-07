@@ -10,6 +10,7 @@ class Board:
         self.project = project
         self.BoardModel = namedtuple('BoardModel', 'name fqbn')
         self.baud_rate = 9600
+        self.cli_path = None
         self.model = None
         self.port = None
 
@@ -17,11 +18,15 @@ class Board:
         """Assert the user set a board model"""
         assert self.model is not None, 'You MUST set a board first'
 
+    def set_cli_path(self, folder):
+        """Set arduino-cli path"""
+        self.cli_path = folder
+
     def set_model(self, model_pattern):
         """Set board model
             Get the best match from the arduino-cli list of supported boards"""
         # parse known boards from arduino-cli
-        known_boards = ArduinoCli(['board', 'listall']).lines
+        known_boards = self.cli(['board', 'listall']).lines
         known_boards = [re.split(r'    +', line) for line in known_boards]
         known_boards = [board for board in known_boards if len(board) == 2]
         known_boards = [self.BoardModel(name=board[0], fqbn=board[1]) for board in known_boards]
@@ -51,7 +56,7 @@ class Board:
         """Set port"""
         # if 'auto', search for connected ports
         if port == 'auto':
-            available_ports = ArduinoCli(['board', 'list']).lines[1:]
+            available_ports = self.cli(['board', 'list']).lines[1:]
             # if a board has been selected, keep only the lines that match the board
             if self.model is not None:
                 available_ports = [line for line in available_ports if self.model.name in line]
@@ -77,7 +82,7 @@ class Board:
     def cli(self, arguments):
         """Execute arduino-cli command"""
         self.project.log('[arduino-cli]', *arguments)
-        return ArduinoCli(arguments)
+        return ArduinoCli(arguments, path=self.cli_path)
 
     def compile(self):
         """Compile sketch"""

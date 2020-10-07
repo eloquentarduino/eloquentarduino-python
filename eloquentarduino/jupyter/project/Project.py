@@ -57,6 +57,11 @@ class Project:
         self.files.mkdir('')
         self.files.mkdir('data')
 
+    def set_arduino_cli_path(self, folder):
+        """Set arduino-cli path"""
+        self.log('set arduino-cli path to', folder)
+        self.board.set_cli_path(folder)
+
     def compile(self):
         """Compile sketch using arduino-cli"""
         command = self.board.compile()

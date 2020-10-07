@@ -20,13 +20,13 @@ data = [filename.replace('eloquentarduino/', '')
 setup(
   name = 'eloquentarduino',
   packages = packages,
-  version = '0.0.6',
+  version = '0.0.7',
   license='MIT',
   description = 'A set of utilities to work with Arduino from Python and Jupyter Notebooks',
   author = 'Simone Salerno',
   author_email = 'eloquentarduino@gmail.com',
   url = 'https://github.com/eloquentarduino/eloquentarduino-python',
-  download_url = 'https://github.com/eloquentarduino/eloquentarduino-python/archive/v_006.tar.gz',
+  download_url = 'https://github.com/eloquentarduino/eloquentarduino-python/archive/v_007.tar.gz',
   keywords = [
     'ML',
     'Jupyter',
