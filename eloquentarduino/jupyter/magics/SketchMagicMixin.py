@@ -16,10 +16,6 @@ class SketchMagicMixin(MagicMixin):
     def sketch(self, line, code, local_ns):
         """Save code block to sketch file"""
         self.parse_arguments(self.sketch, line, local_ns)
-        self.local_ns = local_ns
-        self.local_ns.update({
-            'to_array': lambda arr: ', '.join([str(x) for x in arr])
-        })
 
         # if filename == main, it is the main .ino file
         if self.arguments.filename == 'main':

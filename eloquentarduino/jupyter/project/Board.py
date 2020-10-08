@@ -84,6 +84,11 @@ class Board:
         self.project.log('[arduino-cli]', *arguments)
         return ArduinoCli(arguments, path=self.cli_path)
 
+    def self_check(self):
+        """Assert that the arduino-cli is working fine"""
+        self.cli(['version'])
+        return True
+
     def compile(self):
         """Compile sketch"""
         self.project.assert_name()

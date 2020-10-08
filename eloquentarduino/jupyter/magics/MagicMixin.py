@@ -1,15 +1,21 @@
-import os.path
-
 from IPython.core import magic_arguments
 
 
 class MagicMixin:
     """Utilities common to all magics"""
+
+    @property
+    def project(self):
+        """Get project instance from local namespace"""
+        return self.local_ns.get('project', None)
+
     def parse_arguments(self, method, line, local_ns=None):
         """Parse command line arguments"""
+        self.local_ns = local_ns or {}
+        self.local_ns.update({
+            'to_array': lambda arr: ', '.join([str(x) for x in arr])
+        })
         self.arguments = magic_arguments.parse_argstring(method, line)
-        if local_ns is not None:
-            self.project = local_ns.get('project', None)
 
     def log(self, *args, **kwargs):
         """Log"""
