@@ -30,7 +30,7 @@ class ArduinoCli:
     @property
     def executable(self):
         """Return command line executable"""
-        executable = 'arduino-cli.exe' if 'win' in system().lower() else 'arduino-cli'
+        executable = 'arduino-cli.exe' if 'window' in system().lower() else 'arduino-cli'
         if self.path is None:
             return executable
         return os.path.join(self.path, executable)
