@@ -7,5 +7,6 @@
 rm -rf dist/*
 python setup.py sdist
 twine upload dist/*
-gc 'bump dist'
+git add .
+git commit -m 'bump dist'
 git push origin master
