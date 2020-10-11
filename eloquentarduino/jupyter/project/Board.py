@@ -110,7 +110,7 @@ class Board:
         self.project.assert_name()
         self.assert_model()
         assert self.port is not None, 'You MUST set a board port'
-        arguments = ['upload', '-b', self.model.fqbn, '-p', self.port, '.']
+        arguments = ['upload', '-b', self.model.fqbn, '-p', self.port]
         return self.cli(arguments)
 
     def _match_model(self, known_boards, pattern):
