@@ -30,4 +30,14 @@ eloquentarduino/ml/data/preprocessing/StandardizeStep.py
 eloquentarduino/ml/data/preprocessing/UnitStep.py
 eloquentarduino/ml/data/preprocessing/__init__.py
 eloquentarduino/ml/plot/__init__.py
+eloquentarduino/templates/Pipeline/FFT.jinja
+eloquentarduino/templates/Pipeline/Normalize.jinja
+eloquentarduino/templates/Pipeline/Pipeline.jinja
+eloquentarduino/templates/Pipeline/PolynomialFeatures.jinja
+eloquentarduino/templates/Pipeline/PrincipalFFT.jinja
+eloquentarduino/templates/Pipeline/RFE.jinja
+eloquentarduino/templates/Pipeline/SelectKBest.jinja
+eloquentarduino/templates/Pipeline/Standardize.jinja
+eloquentarduino/templates/Pipeline/Unit.jinja
+eloquentarduino/templates/magics/eloquent-arduino.h.jinja
 eloquentarduino/utils/__init__.py
