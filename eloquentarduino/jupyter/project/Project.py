@@ -66,6 +66,7 @@ class Project:
         """Compile sketch using arduino-cli"""
         command = self.board.compile()
         self.log(command.safe_output)
+        # hack to allow path with spaces
         if command.is_successful():
             self.compile_statistics = CompileStatistics(command.output)
 

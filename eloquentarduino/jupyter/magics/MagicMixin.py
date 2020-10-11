@@ -1,4 +1,5 @@
 from IPython.core import magic_arguments
+from eloquentarduino.jupyter.project import project
 
 
 class MagicMixin:
@@ -7,7 +8,7 @@ class MagicMixin:
     @property
     def project(self):
         """Get project instance from local namespace"""
-        return self.local_ns.get('project', None)
+        return project
 
     def parse_arguments(self, method, line, local_ns=None):
         """Parse command line arguments"""

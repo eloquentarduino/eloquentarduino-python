@@ -1,14 +1,16 @@
+import os
 import os.path
 from platform import system
-from subprocess import STDOUT, CalledProcessError, check_output
+from subprocess import STDOUT, PIPE, CalledProcessError, check_output, run
 
 
 class ArduinoCli:
     """Interact with the Arduino cli"""
-    def __init__(self, arguments, autorun=True, path=None):
+    def __init__(self, arguments, autorun=True, cli_path=None, cwd=None):
         assert len(arguments) > 0, "ArduinoCli arguments CANNOT be empty"
         self.arguments = arguments
-        self.path = path
+        self.cli_path = cli_path
+        self.cwd = cwd
         self.output = None
         self.error = None
         if autorun:
@@ -31,14 +33,14 @@ class ArduinoCli:
     def executable(self):
         """Return command line executable"""
         executable = 'arduino-cli.exe' if 'window' in system().lower() else 'arduino-cli'
-        if self.path is None:
+        if self.cli_path is None:
             return executable
-        return os.path.join(self.path, executable)
+        return os.path.join(self.cli_path, executable)
 
     def run(self):
         """Run cli command and save output"""
         try:
-            self.output = check_output([self.executable] + self.arguments, stderr=STDOUT).decode('utf-8')
+            self.output = check_output([self.executable] + self.arguments, stderr=STDOUT, cwd=self.cwd).decode('utf-8')
             self.error = None
         except CalledProcessError as err:
             self.error = err.output.decode('utf-8')

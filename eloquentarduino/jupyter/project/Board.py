@@ -26,10 +26,9 @@ class Board:
         """Set board model
             Get the best match from the arduino-cli list of supported boards"""
         # parse known boards from arduino-cli
-        known_boards = self.cli(['board', 'listall']).lines
-        known_boards = [re.split(r'    +', line) for line in known_boards]
-        known_boards = [board for board in known_boards if len(board) == 2]
-        known_boards = [self.BoardModel(name=board[0], fqbn=board[1]) for board in known_boards]
+        lines = self.cli(['board', 'listall']).lines
+        board_regex_matches = [re.search(r'^(.+?)\s+([^ :]+?:[^ :]+?:[^ :]+?)$', line) for line in lines]
+        known_boards = [self.BoardModel(name=match.group(1), fqbn=match.group(2)) for match in board_regex_matches if match is not None]
         known_boards_names = [board.name for board in known_boards]
         # try exact match on name
         try:
@@ -39,6 +38,7 @@ class Board:
             self.project.log('Using it')
         except ValueError:
             # try partial match
+            i = -1
             self.project.log('Board [%s] not known, looking for best match...' % model_pattern)
             for i, model in enumerate(self._match_model(known_boards, model_pattern)):
                 self.project.log('Found a match: %s (%s)' % (model.name, model.fqbn))
@@ -82,7 +82,7 @@ class Board:
     def cli(self, arguments):
         """Execute arduino-cli command"""
         self.project.log('[arduino-cli]', *arguments)
-        return ArduinoCli(arguments, path=self.cli_path)
+        return ArduinoCli(arguments, cli_path=self.cli_path, cwd=self.project.path)
 
     def self_check(self):
         """Assert that the arduino-cli is working fine"""
