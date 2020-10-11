@@ -1,6 +1,7 @@
 import re
 import os.path
 from collections import namedtuple
+from shutil import copyfile
 from eloquentarduino.jupyter.project.ArduinoCli import ArduinoCli
 
 
@@ -81,8 +82,7 @@ class Board:
 
     def cli(self, arguments):
         """Execute arduino-cli command"""
-        self.project.log('[arduino-cli]', *arguments)
-        return ArduinoCli(arguments, cli_path=self.cli_path, cwd=self.project.path)
+        return ArduinoCli(arguments, project=self.project, cli_path=self.cli_path, cwd=self.project.path)
 
     def self_check(self):
         """Assert that the arduino-cli is working fine"""
@@ -93,15 +93,24 @@ class Board:
         """Compile sketch"""
         self.project.assert_name()
         self.assert_model()
-        arguments = ['compile', '--verify', '-b', self.model.fqbn, os.path.abspath(os.path.dirname(self.project.ino_path))]
-        return self.cli(arguments)
+        arguments = ['compile', '--verify', '-b', self.model.fqbn]
+        ret = self.cli(arguments)
+        # hugly hack to make it work with paths containing spaces
+        # arduino-cli complains about a "..ino.df" file not found into the build folder
+        # so we rename the "{project_name}.dfu" to "..ino.dfu"
+        fqbn = self.model.fqbn.replace(':', '.')
+        original_file = os.path.abspath(os.path.join(self.project.path, 'build', fqbn, '%s.dfu' % self.project.ino_name))
+        hacky_file = os.path.abspath(os.path.join(self.project.path, 'build', fqbn, '..ino.dfu'))
+        self.project.log('hacky uploading workaround: renaming %s to %s' % (original_file, hacky_file))
+        copyfile(original_file, hacky_file)
+        return ret
 
     def upload(self):
         """Upload sketch"""
         self.project.assert_name()
         self.assert_model()
         assert self.port is not None, 'You MUST set a board port'
-        arguments = ['upload', '-b', self.model.fqbn, '-p', self.port, os.path.abspath(self.project.ino_path)]
+        arguments = ['upload', '-b', self.model.fqbn, '-p', self.port, '.']
         return self.cli(arguments)
 
     def _match_model(self, known_boards, pattern):

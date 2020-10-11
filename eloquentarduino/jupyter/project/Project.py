@@ -30,9 +30,14 @@ class Project:
         return os.path.join('sketches', self.name)
 
     @property
+    def ino_name(self):
+        """Get name of .ino file"""
+        return '%s.ino' % self.name
+
+    @property
     def ino_path(self):
         """Get path to .ino file"""
-        return os.path.join(self.path, '%s.ino' % self.name)
+        return os.path.join(self.path, self.ino_name)
 
     def assert_name(self):
         """Assert the user set a project name"""

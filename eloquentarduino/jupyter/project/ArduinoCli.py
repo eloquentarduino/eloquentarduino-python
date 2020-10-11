@@ -6,9 +6,10 @@ from subprocess import STDOUT, PIPE, CalledProcessError, check_output, run
 
 class ArduinoCli:
     """Interact with the Arduino cli"""
-    def __init__(self, arguments, autorun=True, cli_path=None, cwd=None):
+    def __init__(self, arguments, project, autorun=True, cli_path=None, cwd=None):
         assert len(arguments) > 0, "ArduinoCli arguments CANNOT be empty"
         self.arguments = arguments
+        self.project = project
         self.cli_path = cli_path
         self.cwd = cwd
         self.output = None
@@ -40,6 +41,7 @@ class ArduinoCli:
     def run(self):
         """Run cli command and save output"""
         try:
+            self.project.log('exec', self.executable, self.arguments, 'cwd=%s' % self.cwd)
             self.output = check_output([self.executable] + self.arguments, stderr=STDOUT, cwd=self.cwd).decode('utf-8')
             self.error = None
         except CalledProcessError as err:
