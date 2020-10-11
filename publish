@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=0.0.11
+VERSION=0.0.12
 
 # user eloquentarduino
 # token pypi-AgEIcHlwaS5vcmcCJGUwNGQ3MmQ0LTk1NWQtNDg5YS04YzA0LTI0ZmU0M2ZmYTAzMQACO3sicGVybWlzc2lvbnMiOiB7InByb2plY3RzIjogWyJtaWNyb21sZ2VuIl19LCAidmVyc2lvbiI6IDF9AAAGIPjcxQ3sH7qPDg7D-30Ss6dU-41NesEqXNtyxJvqIzZr
@@ -11,6 +11,8 @@ cp setup_template.py setup.py
 sed -i "s/VERSION/${VERSION}/g" setup.py
 python setup.py sdist
 twine upload dist/*
+rm dist/eloquentarduino-${VERSION}.tar.gz
+tar -czv --exclude='*.pyc' -f dist/${VERSION}.tar.gz eloquentarduino
 git add .
 git commit -m "bump dist to ${VERSION}"
 git push origin master -f
