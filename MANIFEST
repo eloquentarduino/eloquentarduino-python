@@ -29,6 +29,13 @@ eloquentarduino/ml/data/preprocessing/SelectKBestStep.py
 eloquentarduino/ml/data/preprocessing/StandardizeStep.py
 eloquentarduino/ml/data/preprocessing/UnitStep.py
 eloquentarduino/ml/data/preprocessing/__init__.py
+eloquentarduino/ml/metrics/PerformanceAssessment.py
+eloquentarduino/ml/metrics/PerformanceAssessmentResultsPlotter.py
+eloquentarduino/ml/metrics/__init__.py
+eloquentarduino/ml/metrics/plot/Bar.py
+eloquentarduino/ml/metrics/plot/ConfusionMatrix.py
+eloquentarduino/ml/metrics/plot/Series.py
+eloquentarduino/ml/metrics/plot/__init__.py
 eloquentarduino/ml/plot/__init__.py
 eloquentarduino/templates/Pipeline/FFT.jinja
 eloquentarduino/templates/Pipeline/Normalize.jinja
