@@ -1,5 +1,6 @@
 import os
 import re
+from time import sleep
 from collections.abc import Iterable
 
 from jinja2 import Environment, FileSystemLoader
@@ -66,3 +67,12 @@ def jinja(template_name, template_data={}, pretty=False):
         output = prettify(output)
 
     return output
+
+
+def countdown(count):
+    """Print a countdown"""
+    print('Starting in...', end=' ')
+    for i in range(count, 0, -1):
+        print('%d...' % i, end='')
+        sleep(1)
+    print('Go')

@@ -1,13 +1,14 @@
 from collections import namedtuple
 from copy import copy
+import numpy as np
 from sklearn.base import clone
 from sklearn.datasets import *
 from sklearn.metrics import *
 from sklearn.model_selection import train_test_split
+
 from eloquentarduino.ml.metrics.PerformanceAssessmentResultsPlotter import PerformanceAssessmentResultsPlotter
 
-
-Dataset = namedtuple('Dataset', 'name loader')
+Dataset = namedtuple('Dataset', 'name loader pipeline')
 PerformanceAssessmentResult = namedtuple('PerformanceAssessmentResult', 'dataset shape clf accuracy precision recall f1 confusion_matrix')
 
 
@@ -58,7 +59,7 @@ class PerformanceAssessment:
             self._datasets = [dataset for dataset in self._datasets if dataset.name != name]
         return self
 
-    def add_dataset(self, name, loader):
+    def add_dataset(self, name, loader, pipeline=None):
         """
         Add dataset to test
         :param name: name of the dataset
@@ -67,7 +68,19 @@ class PerformanceAssessment:
         """
         assert isinstance(name, str), 'name MUST be a string'
         assert callable(loader), 'loader MUST be callable'
-        self._datasets.append(Dataset(name=name, loader=loader))
+        self._datasets.append(Dataset(name=name, loader=loader, pipeline=pipeline))
+        return self
+
+    def set_pipeline(self, dataset_name, pipeline):
+        """
+        Set pipeline for given dataset
+        :param dataset_name:
+        :param pipeline:
+        :return: self
+        """
+        for i, dataset in enumerate(self._datasets):
+            if dataset_name is None or dataset.name == dataset_name:
+                self._datasets[i] = Dataset(name=dataset.name, loader=dataset.loader, pipeline=lambda: pipeline)
         return self
 
     def set_baseline(self, results):
@@ -79,7 +92,7 @@ class PerformanceAssessment:
         self._baseline = results
         return self
 
-    def run(self, clf, pipeline=None, test_size=0.3, **kwargs):
+    def run(self, clf, test_size=0.3, **kwargs):
         """
         Run performance assessment on given classifier
         :param clf: ML classifier
@@ -88,13 +101,17 @@ class PerformanceAssessment:
         :param kwargs: customize classifier for each dataset. If value is a function, it receives (dataset.name, X, y) arguments
         :return: self
         """
+        np.random.seed(0)
         self._results = []
 
         for dataset in self._datasets:
             X, y = dataset.loader(return_X_y=True)
-            if pipeline is not None:
-                X = pipeline.transform(X)
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
+
+            if dataset.pipeline is not None:
+                pipeline = dataset.pipeline().fit(X_train)
+                X_train = pipeline.transform(X_train)
+                X_test = pipeline.transform(X_test)
 
             # create clf
             dataset_clf = clone(clf)

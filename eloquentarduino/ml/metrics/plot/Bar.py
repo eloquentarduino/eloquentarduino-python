@@ -28,8 +28,6 @@ class Bar(Series):
         :param kwargs:
         :return:
         """
-        print('xs', self.xs)
-        print('ys', self.ys)
         if len(self.filtered) > 0:
             self._kwargs.update(kwargs)
             bar = ax.bar(self.xs, self.ys, **self._kwargs)
