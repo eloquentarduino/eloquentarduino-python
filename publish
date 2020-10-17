@@ -10,7 +10,7 @@ sed -i "s/VERSION/${1}/g" setup.py
 python setup.py sdist
 twine upload dist/*
 rm dist/eloquentarduino-${1}.tar.gz
-tar -czv -f dist/${VERSION}.tar.gz eloquentarduino --exclude='*.pyc'
+tar -czv -f dist/${1}.tar.gz eloquentarduino --exclude='*.pyc'
 git add .
 git commit -m "bump dist to ${1}"
 git push origin master -f

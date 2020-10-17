@@ -25,7 +25,7 @@ setup(
   author = 'Simone Salerno',
   author_email = 'eloquentarduino@gmail.com',
   url = 'https://github.com/eloquentarduino/eloquentarduino-python',
-  download_url = 'https://github.com/eloquentarduino/eloquentarduino-python/dist/eloquentarduino-0.0.14.tar.gz',
+  download_url = 'https://github.com/eloquentarduino/eloquentarduino-python/raw/master/dist/eloquentarduino-0.0.14.tar.gz',
   keywords = [
     'ML',
     'Jupyter',
