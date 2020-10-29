@@ -1,5 +1,5 @@
 from collections import namedtuple
-from copy import copy
+from time import time
 import numpy as np
 from sklearn.base import clone
 from sklearn.datasets import *
@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 from eloquentarduino.ml.metrics.PerformanceAssessmentResultsPlotter import PerformanceAssessmentResultsPlotter
 
 Dataset = namedtuple('Dataset', 'name loader pipeline')
-PerformanceAssessmentResult = namedtuple('PerformanceAssessmentResult', 'dataset shape clf accuracy precision recall f1 confusion_matrix')
+PerformanceAssessmentResult = namedtuple('PerformanceAssessmentResult', 'dataset shape clf training_time accuracy precision recall f1 confusion_matrix')
 
 
 class PerformanceAssessment:
@@ -109,7 +109,7 @@ class PerformanceAssessment:
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
 
             if dataset.pipeline is not None:
-                pipeline = dataset.pipeline().fit(X_train)
+                pipeline = dataset.pipeline().fit(X_train, y_train)
                 X_train = pipeline.transform(X_train)
                 X_test = pipeline.transform(X_test)
 
@@ -118,12 +118,16 @@ class PerformanceAssessment:
             dataset_params = {k: v(dataset.name, X, y) if callable(v) else v for k, v in kwargs.items()}
             dataset_clf.set_params(**dataset_params)
 
-            y_pred = dataset_clf.fit(X_train, y_train).predict(X_test)
+            started_at = time()
+            dataset_clf.fit(X_train, y_train)
+            training_time = time() - started_at
+            y_pred = dataset_clf.predict(X_test)
 
             self._results.append(PerformanceAssessmentResult(
                 dataset=dataset.name,
                 clf=clf,
                 shape=X_test.shape,
+                training_time=training_time,
                 accuracy=accuracy_score(y_test, y_pred),
                 precision=precision_score(y_test, y_pred, average=None),
                 recall=recall_score(y_test, y_pred, average=None),

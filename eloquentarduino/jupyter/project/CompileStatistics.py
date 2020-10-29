@@ -16,9 +16,9 @@ class CompileStatistics:
     @property
     def flash_percent(self):
         """Get flash percent"""
-        return self.flash / self.flash_max if self.flash_max > 0 else 0
+        return int(100 * self.flash / self.flash_max) if self.flash_max > 0 else 0
 
     @property
     def memory_percent(self):
         """Get memory percent"""
-        return self.memory / self.memory_max if self.memory_max > 0 else 0
+        return int(100 * self.memory / self.memory_max) if self.memory_max > 0 else 0

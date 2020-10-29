@@ -2,7 +2,7 @@ from IPython.core import magic_arguments
 from IPython.core.magic import cell_magic, needs_local_scope
 
 from eloquentarduino.jupyter.magics.MagicMixin import MagicMixin
-from eloquentarduino.utils import jinja
+from eloquentarduino.utils import jinja, jinja_string
 import re
 
 
@@ -24,7 +24,7 @@ class SketchMagicMixin(MagicMixin):
 
         filepath = self.path_to(self.arguments.filename)
         self.log('Saving code to %s' % filepath)
-        code = self.eval_python(code)
+        code = jinja_string(code, local_ns, pretty=True)
         with open(filepath, 'w', encoding='utf-8') as file:
             file.write(code)
 
@@ -36,11 +36,11 @@ class SketchMagicMixin(MagicMixin):
         with open(filepath, 'w', encoding='utf-8') as file:
             file.write(jinja('magics/eloquent-arduino.h.jinja'))
 
-    def eval_python(self, code):
-        """Interpolate Python code into sketch file"""
-        # locals().update(self.local_ns or {})
-        for match in re.finditer(r'\{\{\{([^{].+?)\}\}\}', code):
-            source = match.group(0)
-            python = match.group(1).strip()
-            code = code.replace(source, str(eval(python, {}, self.local_ns)))
-        return code
+    # def eval_python(self, code):
+    #     """Interpolate Python code into sketch file"""
+    #     # locals().update(self.local_ns or {})
+    #     for match in re.finditer(r'\{\{\{([^{].+?)\}\}\}', code):
+    #         source = match.group(0)
+    #         python = match.group(1).strip()
+    #         code = code.replace(source, str(eval(python, {}, self.local_ns)))
+    #     return code

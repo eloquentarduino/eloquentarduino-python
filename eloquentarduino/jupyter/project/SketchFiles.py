@@ -21,11 +21,16 @@ class SketchFiles:
         self.project.log('Opening file %s in %s mode' % (self.path_to(*args), mode))
         return open(self.path_to(*args), mode=mode)
 
-    def add(self, *args, contents):
+    def add(self, *args, contents, exists_ok=False):
         """Write contents to project file"""
-        self.project.log('Adding file %s to project folder' % self.path_to(*args))
+        filename = self.path_to(*args)
+        self.project.log('Adding file %s to project folder' % filename)
         self.mkdir(os.path.dirname(os.path.join(*args)))
-        with open(self.path_to(*args), 'w', encoding='utf-8') as file:
+        # prevent overwriting existing file
+        if os.path.exists(filename) and not exists_ok:
+            self.project.log('File already exists... skipping')
+            return
+        with open(filename, 'w', encoding='utf-8') as file:
             file.write(contents)
 
     def cat(self, *args):

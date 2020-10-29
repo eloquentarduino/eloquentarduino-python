@@ -100,9 +100,10 @@ class Board:
         # so we rename the "{project_name}.dfu" to "..ino.dfu"
         fqbn = self.model.fqbn.replace(':', '.')
         original_file = os.path.abspath(os.path.join(self.project.path, 'build', fqbn, '%s.dfu' % self.project.ino_name))
-        hacky_file = os.path.abspath(os.path.join(self.project.path, 'build', fqbn, '..ino.dfu'))
-        self.project.log('hacky uploading workaround: renaming %s to %s' % (original_file, hacky_file))
-        copyfile(original_file, hacky_file)
+        if os.path.isfile(original_file):
+            hacky_file = os.path.abspath(os.path.join(self.project.path, 'build', fqbn, '..ino.dfu'))
+            self.project.log('hacky uploading workaround: renaming %s to %s' % (original_file, hacky_file))
+            copyfile(original_file, hacky_file)
         return ret
 
     def upload(self):
