@@ -30,6 +30,8 @@ eloquentarduino/ml/data/preprocessing/StandardizeStep.py
 eloquentarduino/ml/data/preprocessing/UnitStep.py
 eloquentarduino/ml/data/preprocessing/__init__.py
 eloquentarduino/ml/metrics/__init__.py
+eloquentarduino/ml/metrics/device/BenchmarkEndToEnd.py
+eloquentarduino/ml/metrics/device/BenchmarkPlotter.py
 eloquentarduino/ml/metrics/device/Resources.py
 eloquentarduino/ml/metrics/device/Runtime.py
 eloquentarduino/ml/metrics/device/__init__.py
