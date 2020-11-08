@@ -12,12 +12,36 @@ class SerialMonitor:
         self.project.assert_name()
         start = time()
         buffer = ''
+
         with Serial(self.project.board.port, self.project.board.baud_rate, timeout=1, **kwargs) as serial:
             while time() - start < timeout:
                 char = serial.read().decode('utf-8')
                 buffer += char
                 if dump and char:
                     self.project.log(char, end='')
+        return buffer
+
+    def read_until(self, pattern, timeout=60, **kwargs):
+        """
+        Read serial until a given pattern matches
+        :param pattern:
+        :param timeout:
+        :param kwargs:
+        :return:
+        """
+        self.project.assert_name()
+        start = time()
+        buffer = ''
+
+        with Serial(self.project.board.port, self.project.board.baud_rate, timeout=1, **kwargs) as serial:
+            while time() - start < timeout:
+                try:
+                    char = serial.read().decode('utf-8')
+                    buffer += char
+                    if buffer.endswith(pattern):
+                        break
+                except UnicodeDecodeError:
+                    pass
         return buffer
 
     def capture_samples(self, dest, samples, append=True, dump=True, interval=0, **kwargs):

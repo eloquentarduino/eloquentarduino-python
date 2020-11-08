@@ -93,13 +93,9 @@ def jinja(template_name, template_data={}, pretty=False):
     :rtype str
     """
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    loader = Environment(loader=FileSystemLoader(os.path.join(dir_path, '..', 'templates')))
-    # custom directives
-    template_data['len'] = len
-    template_data['enumerate'] = enumerate
-    template_data['to_array'] = lambda arr: ', '.join([str(round(x, 9)) for x in (arr if isinstance(arr, Iterable) else [arr])])
-
-    output = loader.get_template(template_name).render(template_data)
+    loader = FileSystemLoader(os.path.join(dir_path, '..', 'templates'))
+    template = jinja_env(loader=loader).get_template(template_name)
+    output = template.render(template_data)
 
     if pretty:
         output = prettify(output)
@@ -115,7 +111,9 @@ def jinja_string(template_string, template_data={}, pretty=False):
     :param pretty:
     :return:
     """
-    output = jinja_env(loader=BaseLoader()).from_string(template_string).render(template_data)
+    env = jinja_env(loader=BaseLoader())
+    template = env.from_string(template_string)
+    output = template.render(template_data)
 
     if pretty:
         output = prettify(output)

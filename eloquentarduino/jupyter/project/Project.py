@@ -2,6 +2,7 @@ import os
 import os.path
 from datetime import datetime
 from time import sleep
+from copy import copy
 
 from eloquentarduino.jupyter.project.Board import Board
 from eloquentarduino.jupyter.project.CompileStatistics import CompileStatistics
@@ -16,8 +17,23 @@ class Project:
         self.board = Board(self)
         self.serial = SerialMonitor(self)
         self.files = SketchFiles(self)
-        self.compile_statistics = None
-        self.ml_classifiers = []
+
+    def __enter__(self):
+        """
+        Synctactic sugar
+        :return:
+        """
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """
+        Synctactic sugar
+        :param exc_type:
+        :param exc_val:
+        :param exc_tb:
+        :return:
+        """
+        pass
 
     @property
     def name(self):
@@ -67,20 +83,41 @@ class Project:
         self.log('set arduino-cli path to', folder)
         self.board.set_cli_path(folder)
 
-    def compile(self):
+    def tmp_project(self):
+        """
+        Clone project with a temporary directory
+        :return: Project
+        """
+        tmp = Project()
+        tmp.set_name('tmp')
+        tmp.board = copy(self.board)
+        tmp.board.project = tmp
+        tmp.serial = copy(self.serial)
+        tmp.serial.project = tmp
+        tmp.files = copy(self.files)
+        tmp.files.project = tmp
+
+        return tmp
+
+    def compile(self, verbose=True):
         """Compile sketch using arduino-cli"""
         command = self.board.compile()
-        self.log(command.safe_output)
-        # hack to allow path with spaces
-        if command.is_successful():
-            self.compile_statistics = CompileStatistics(command.output)
+        if verbose:
+            self.log(command.safe_output)
+        return command.safe_output
 
-    def upload(self):
+    def upload(self, compile=True, verbose=False):
         """Upload sketch using arduino-cli"""
-        self.compile()
+        if compile:
+            self.compile(verbose=verbose)
+
         command = self.board.upload()
-        self.log(command.safe_output)
-        sleep(1)
+
+        if verbose:
+            self.log(command.safe_output)
+        else:
+            self.log('upload ended')
+        sleep(2)
 
     # def port(self, clf):
     #     """Add Python ML classifier to current project"""

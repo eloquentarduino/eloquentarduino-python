@@ -39,4 +39,4 @@ class SketchFiles:
             args = ['%s.ino' % self.project.name]
         self.project.log('Cat file %s' % self.path_to(*args))
         with open(self.path_to(*args), encoding="utf-8") as file:
-            self.project.log(file.read())
+            return file.read()

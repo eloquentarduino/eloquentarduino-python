@@ -1,5 +1,6 @@
 import numpy as np
 from math import floor
+import os.path
 from os.path import basename, splitext
 from glob import glob
 
@@ -59,3 +60,27 @@ def load_folder_streaming(folder, window, overlap, features=1, ext="csv", delimi
         X_windowed = X_class if X_windowed is None else np.vstack((X_windowed, X_class))
         y_windowed = y_class if y_windowed is None else np.concatenate((y_windowed, y_class))
     return X_windowed, y_windowed, classmap
+
+
+def load_datasets_from_folder(folder, ext='csv', delimiter=',', **kwargs):
+    """
+    Load datasets from files in a folder
+    :param folder:
+    :param ext:
+    :param delimiter:
+    :param kwargs:
+    :return: list of (dataset_name, (X, y)) tuples
+    """
+    if not os.path.exists(folder) or not os.path.isdir(folder):
+        return []
+
+    datasets = []
+
+    for filename in glob(os.path.join(folder, '*.%s' % ext)):
+        dataset_name = splitext(basename(filename))[0]
+        data = np.loadtxt(filename, delimiter=delimiter, **kwargs)
+        X = data[:, :-1]
+        y = data[:, -1]
+        datasets.append((dataset_name, (X, y)))
+
+    return datasets
