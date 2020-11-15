@@ -35,9 +35,11 @@ class BenchmarkEndToEnd:
             'dataset',
             'clf',
             'flash',
+            'raw_flash',
             'flash_percent',
             'flash_score',
             'memory',
+            'raw_memory',
             'memory_percent',
             'memory_score',
             'offline_accuracy',
@@ -165,7 +167,9 @@ class BenchmarkEndToEnd:
             if runtime:
                 input('Benchmarking board %s: press Enter to continue...' % board_name)
 
+            # set board
             project.board.set_model(board_name)
+            board_name = project.board.model.name
 
             # get the resources needed for the empty sketch
             baseline_resources = Resources(project).baseline()
@@ -248,6 +252,9 @@ class BenchmarkEndToEnd:
         :param checkpoint_file
         :return:
         """
+        raw_flash = resources['flash']
+        raw_memory = resources['memory']
+
         if baseline:
             resources['flash'] -= baseline['flash']
             resources['memory'] -= baseline['memory']
@@ -259,6 +266,8 @@ class BenchmarkEndToEnd:
             'n_features': shape[1],
             'flash': resources['flash'],
             'memory': resources['memory'],
+            'raw_flash': raw_flash,
+            'raw_memory': raw_memory,
             'flash_percent': resources['flash_percent'],
             'memory_percent': resources['memory_percent'],
             'flash_score': offline_accuracy * (1 - resources['flash_percent']),
