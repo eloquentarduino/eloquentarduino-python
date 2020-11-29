@@ -13,12 +13,16 @@ class SerialMonitor:
         start = time()
         buffer = ''
 
-        with Serial(self.project.board.port, self.project.board.baud_rate, timeout=1, **kwargs) as serial:
+        with Serial(self.project.board.port, self.project.board.baud_rate, timeout=1, xonxoff=0, rtscts=0, **kwargs) as serial:
             while time() - start < timeout:
-                char = serial.read().decode('utf-8')
-                buffer += char
-                if dump and char:
-                    self.project.log(char, end='')
+                try:
+                    char = serial.read().decode('utf-8')
+                    if char:
+                        buffer += char
+                    if char and dump:
+                        self.project.log(char, end='')
+                except UnicodeDecodeError:
+                    pass
         return buffer
 
     def read_until(self, pattern, timeout=60, **kwargs):

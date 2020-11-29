@@ -8,6 +8,7 @@ from eloquentarduino.jupyter.project.Board import Board
 from eloquentarduino.jupyter.project.CompileStatistics import CompileStatistics
 from eloquentarduino.jupyter.project.Serial import SerialMonitor
 from eloquentarduino.jupyter.project.SketchFiles import SketchFiles
+from eloquentarduino.jupyter.project.Errors import UploadNotVerifiedError, ArduinoCliCommandError
 
 
 class Project:
@@ -106,27 +107,32 @@ class Project:
             self.log(command.safe_output)
         return command.safe_output
 
-    def upload(self, compile=True, verbose=False):
+    def upload(self, compile=True, verbose=True, retry=True):
         """Upload sketch using arduino-cli"""
         if compile:
             self.compile(verbose=verbose)
 
-        command = self.board.upload()
+        try:
+            # run upload
+            command = self.board.upload()
+            output = command.safe_output
+            self.log(output)
+        except ArduinoCliCommandError as err:
+            # if error, ask the user to reset the board
+            if retry:
+                input('arduino-cli returned an error: try to un-plug and re-plug the board, then press Enter...')
 
-        if verbose:
-            self.log(command.safe_output)
-        else:
-            self.log('upload ended')
+                return self.upload(compile=compile, verbose=verbose, retry=False)
+            else:
+                # if it errored even after resetting, abort
+                raise err
+
+        # assert upload is ok
+        if 'Verified OK' not in output:
+            raise UploadNotVerifiedError()
+
         sleep(2)
-
-    # def port(self, clf):
-    #     """Add Python ML classifier to current project"""
-    #     ported = port(clf)
-    #     classifier_name = ported.split('class ')[1].split(' ')[0]
-    #     filename = '%s.h' % classifier_name
-    #     self.log('Saving ported classifier to %s' % filename)
-    #     with self.open(filename, 'w') as file:
-    #         file.write(ported)
+        return output
 
 
 # singleton instance

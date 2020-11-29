@@ -1,8 +1,8 @@
 import re
-import os.path
 from collections import namedtuple
-from shutil import copyfile
+
 from eloquentarduino.jupyter.project.ArduinoCli import ArduinoCli
+from eloquentarduino.jupyter.project.Errors import BoardNotFoundError
 
 
 class Board:
@@ -14,6 +14,7 @@ class Board:
         self.cli_path = None
         self.model = None
         self.port = None
+        self.programmer = None
 
     def assert_model(self):
         """Assert the user set a board model"""
@@ -22,6 +23,13 @@ class Board:
     def set_cli_path(self, folder):
         """Set arduino-cli path"""
         self.cli_path = folder
+
+    def list_all(self):
+        """
+        Get list of installed boards from arduino-cli
+        :return:
+        """
+        return self.cli(['board', 'listall']).lines
 
     def set_model(self, model_pattern):
         """Set board model
@@ -49,7 +57,7 @@ class Board:
                     self.model = model
                     self.project.log('Using it')
                 else:
-                    self.project.log('Please refine your search')
+                    raise BoardNotFoundError('%s doesn\'t match any of the installed boards' % model_pattern)
             except UnboundLocalError:
                 raise RuntimeError('No match found for board %s' % model_pattern)
 
@@ -80,6 +88,15 @@ class Board:
         self.baud_rate = baud_rate
         self.project.log('Set baud rate to', self.baud_rate)
 
+    def set_programmer(self, programmer):
+        """
+        Set board programmer
+        :param programmer:
+        :return:
+        """
+        self.programmer = programmer
+        return self
+
     def cli(self, arguments):
         """Execute arduino-cli command"""
         return ArduinoCli(arguments, project=self.project, cli_path=self.cli_path, cwd=self.project.path)
@@ -93,17 +110,17 @@ class Board:
         """Compile sketch"""
         self.project.assert_name()
         self.assert_model()
-        arguments = ['compile', '--verify', '-b', self.model.fqbn]
+        arguments = ['compile', '--verify', '--fqbn', self.model.fqbn]
         ret = self.cli(arguments)
         # hugly hack to make it work with paths containing spaces
         # arduino-cli complains about a "..ino.df" file not found into the build folder
         # so we rename the "{project_name}.dfu" to "..ino.dfu"
-        fqbn = self.model.fqbn.replace(':', '.')
-        original_file = os.path.abspath(os.path.join(self.project.path, 'build', fqbn, '%s.dfu' % self.project.ino_name))
-        if os.path.isfile(original_file):
-            hacky_file = os.path.abspath(os.path.join(self.project.path, 'build', fqbn, '..ino.dfu'))
-            self.project.log('hacky uploading workaround: renaming %s to %s' % (original_file, hacky_file))
-            copyfile(original_file, hacky_file)
+        # fqbn = self.model.fqbn.replace(':', '.')
+        # original_file = os.path.abspath(os.path.join(self.project.path, 'build', fqbn, '%s.dfu' % self.project.ino_name))
+        # if os.path.isfile(original_file):
+        #     hacky_file = os.path.abspath(os.path.join(self.project.path, 'build', fqbn, '..ino.dfu'))
+        #     self.project.log('hacky uploading workaround: renaming %s to %s' % (original_file, hacky_file))
+        #     copyfile(original_file, hacky_file)
         return ret
 
     def upload(self):
@@ -111,7 +128,9 @@ class Board:
         self.project.assert_name()
         self.assert_model()
         assert self.port is not None, 'You MUST set a board port'
-        arguments = ['upload', '-b', self.model.fqbn, '-p', self.port]
+        arguments = ['upload', '--verify', '--fqbn', self.model.fqbn, '--port', self.port]
+        if self.programmer:
+            arguments += ['--programmer', self.programmer]
         return self.cli(arguments)
 
     def _match_model(self, known_boards, pattern):

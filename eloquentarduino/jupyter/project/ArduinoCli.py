@@ -1,7 +1,9 @@
 import os
 import os.path
 from platform import system
-from subprocess import STDOUT, PIPE, CalledProcessError, check_output, run
+from subprocess import STDOUT, CalledProcessError, check_output
+
+from eloquentarduino.jupyter.project.Errors import ArduinoCliCommandError
 
 
 class ArduinoCli:
@@ -28,7 +30,7 @@ class ArduinoCli:
         """Get output if ok, else raise error"""
         if self.is_successful():
             return self.output
-        raise RuntimeError(self.error)
+        raise ArduinoCliCommandError(self.error)
 
     @property
     def executable(self):
