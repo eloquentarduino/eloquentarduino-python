@@ -79,7 +79,7 @@ class SerialMonitor:
                     if interval > 0:
                         sleep(interval)
         if dump:
-            self.project.files.cat('data/%s' % dest)
+            return self.project.files.cat('data', dest)
 
     def capture_streaming(self, dest, samples, delimiter=',', append=True, dump=True, timeout=60, serial_timeout=5, **kwargs):
         """Capture the given number of values and save them to a file in the current project"""
