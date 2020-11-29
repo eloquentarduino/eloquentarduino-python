@@ -9,6 +9,8 @@ eloquentarduino/jupyter/magics/__init__.py
 eloquentarduino/jupyter/project/ArduinoCli.py
 eloquentarduino/jupyter/project/Board.py
 eloquentarduino/jupyter/project/CompileStatistics.py
+eloquentarduino/jupyter/project/Errors.py
+eloquentarduino/jupyter/project/Logger.py
 eloquentarduino/jupyter/project/Project.py
 eloquentarduino/jupyter/project/Serial.py
 eloquentarduino/jupyter/project/SketchFiles.py
