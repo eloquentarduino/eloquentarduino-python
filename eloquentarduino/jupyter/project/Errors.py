@@ -38,3 +38,10 @@ class MultipleSerialPortsFoundError(AssertionError):
     Found multiple serial ports, cannot determine which one to use
     """
     pass
+
+
+class BadBoardResponseError(AssertionError):
+    """
+    The board replied with an unexpected format
+    """
+    pass

@@ -6,6 +6,7 @@ from time import sleep
 
 from eloquentarduino.ml.metrics.plot import Barplot
 from eloquentarduino.utils import jinja
+from eloquentarduino.jupyter.project.Errors import BadBoardResponseError
 
 
 class Runtime:
@@ -69,16 +70,16 @@ class Runtime:
                 'y_test': y_test,
                 'repeat': repeat
             })
-            tmp.files.add('%s.ino' % tmp.name, contents=sketch, exists_ok=True)
             ported = port(clf, classname='Classifier')
 
+            tmp.files.add(tmp.ino_name, contents=sketch, exists_ok=True)
             tmp.files.add('Classifier.h', contents=ported, exists_ok=True)
             tmp.upload()
 
             # parse serial output
             # since we can miss the first response, try a few times
-            for i in range(0, 5):
-                response = tmp.serial.read_until('======', timeout=10)
+            for i in range(0, 3):
+                response = tmp.serial.read_until('======', timeout=8)
                 match = re.search(r'inference time = ([0-9.]+) micros[\s\S]+?Score = ([0-9.]+)', response)
 
                 if match is not None:
@@ -87,9 +88,8 @@ class Runtime:
                         'online_accuracy': float(match.group(2))
                     }
 
-        self.project.log('Failed to parse response: %s' % response)
-
-        return Runtime.empty()
+        self.project.logger.error('Failed to parse response: %s' % response)
+        raise BadBoardResponseError('Unexpected response during runtime inference time benchmark')
 
     def plot(self, metric, sort=True, scale='linear', **kwargs):
         """

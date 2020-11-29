@@ -3,6 +3,7 @@ from os.path import exists
 import pandas as pd
 from sklearn.model_selection import train_test_split, cross_validate
 from sklearn.base import clone
+from sklearn.exceptions import NotFittedError
 
 from eloquentarduino.ml.metrics.device import Runtime, Resources
 from eloquentarduino.ml.metrics.device.BenchmarkPlotter import BenchmarkPlotter
@@ -176,14 +177,18 @@ class BenchmarkEndToEnd:
 
             for dataset_name, (X, y) in self.to_list(datasets):
                 for clf_name, clf in self.to_list(classifiers):
-                    project.log('Benchmarking %s x %s x %s' % (board_name, dataset_name, clf_name))
+                    project.logger.info('Benchmarking %s x %s x %s' % (board_name, dataset_name, clf_name))
+
+                    # if clf is a lambda function, call with X, y arguments
+                    if callable(clf):
+                        clf = clf(X, y)
 
                     # make a copy of the original classifier
                     clf = clone(clf)
 
                     # if a checkpoint exists, skip benchmarking
                     if self.checkpoint_exists(checkpoints, board=board_name, dataset=dataset_name, clf=clf_name, runtime=runtime):
-                        project.log('A checkpoint exists, skipping benchmarking')
+                        project.logger.info('A checkpoint exists, skipping benchmarking')
                         continue
 
                     # benchmark classifier accuracy (off-line)
@@ -201,7 +206,11 @@ class BenchmarkEndToEnd:
                         clf.fit(X, y)
 
                     project.board.set_port(port if port is not None else ('auto' if runtime else '/dev/ttyUSB99'))
-                    resources_benchmark = Resources(project).benchmark(clf, x=X[0])
+                    try:
+                        resources_benchmark = Resources(project).benchmark(clf, x=X[0])
+                    except NotFittedError:
+                        project.logger.error('Classifier not fitted, cannot benchmark')
+                        continue
 
                     # benchmark on-line inference time and accuracy
                     if runtime:

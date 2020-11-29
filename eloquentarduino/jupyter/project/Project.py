@@ -1,20 +1,22 @@
 import os
+import re
 import os.path
-import logging
 from copy import copy
 from datetime import datetime
 from time import sleep
-from logging import StreamHandler, Formatter
 
 from eloquentarduino.jupyter.project.Board import Board
 from eloquentarduino.jupyter.project.Errors import UploadNotVerifiedError, ArduinoCliCommandError
+from eloquentarduino.jupyter.project.Logger import ProjectLogger
 from eloquentarduino.jupyter.project.Serial import SerialMonitor
 from eloquentarduino.jupyter.project.SketchFiles import SketchFiles
-from eloquentarduino.jupyter.project.Logger import ProjectLogger
 
 
 class Project:
-    """Interact programmatically with an Arduino project"""
+    """
+    Interact programmatically with an Arduino project
+    """
+
     def __init__(self):
         self._name = ''
         self.board = Board(self)
@@ -131,7 +133,7 @@ class Project:
         self.logger.info('Compile OK')
         return output
 
-    def upload(self, compile=True, retry=True, success_message='OK'):
+    def upload(self, compile=True, retry=True, success_message=r'ok|verified|done'):
         """
         Upload sketch using arduino-cli
         :param compile: wether to compile the sketch before uploading
@@ -158,7 +160,7 @@ class Project:
                 raise err
 
         # assert upload is ok
-        if success_message.lower() not in output.lower():
+        if re.search(success_message, output.lower()) is None:
             if retry:
                 input('Verification failed: try to un-plug and re-plug the board, then press Enter...')
 
@@ -167,7 +169,7 @@ class Project:
                 raise UploadNotVerifiedError()
 
         self.logger.info('Upload OK')
-        sleep(2)
+        sleep(3)
         return output
 
 

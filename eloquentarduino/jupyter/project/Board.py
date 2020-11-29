@@ -51,6 +51,7 @@ class Board:
         if len(matches) == 1:
             self.model = matches[0]
             self.project.logger.info('Found an exact match: %s (%s). Using it', self.model.name, self.model.fqbn)
+            return
 
         # look for partial match
         matches = [board for board in known_boards if self._matches(board, model_pattern)]

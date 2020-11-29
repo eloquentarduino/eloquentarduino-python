@@ -10,7 +10,7 @@ class ProjectLogger(Logger):
         Init and configure
         :param name:
         """
-        super(ProjectLogger, self).__init__(name, DEBUG)
+        super(ProjectLogger, self).__init__(name)
         handler = StreamHandler()
         handler.setFormatter(Formatter('[%(levelname)s] %(message)s'))
         self.addHandler(handler)
