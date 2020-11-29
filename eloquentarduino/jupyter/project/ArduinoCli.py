@@ -13,7 +13,7 @@ class ArduinoCli:
         self.arguments = arguments
         self.project = project
         self.cli_path = cli_path
-        self.cwd = cwd
+        self.cwd = os.path.abspath(cwd) if cwd is not None else None
         self.output = None
         self.error = None
         if autorun:
@@ -43,7 +43,7 @@ class ArduinoCli:
     def run(self):
         """Run cli command and save output"""
         try:
-            self.project.log('exec', self.executable, self.arguments, 'cwd=%s' % self.cwd)
+            self.project.logger.debug('(cwd %s) %s %s', self.cwd, self.executable, ' '.join([str(arg) for arg in self.arguments]))
             self.output = check_output([self.executable] + self.arguments, stderr=STDOUT, cwd=self.cwd).decode('utf-8')
             self.error = None
         except CalledProcessError as err:

@@ -1,14 +1,16 @@
 import os
 import os.path
+import logging
+from copy import copy
 from datetime import datetime
 from time import sleep
-from copy import copy
+from logging import StreamHandler, Formatter
 
 from eloquentarduino.jupyter.project.Board import Board
-from eloquentarduino.jupyter.project.CompileStatistics import CompileStatistics
+from eloquentarduino.jupyter.project.Errors import UploadNotVerifiedError, ArduinoCliCommandError
 from eloquentarduino.jupyter.project.Serial import SerialMonitor
 from eloquentarduino.jupyter.project.SketchFiles import SketchFiles
-from eloquentarduino.jupyter.project.Errors import UploadNotVerifiedError, ArduinoCliCommandError
+from eloquentarduino.jupyter.project.Logger import ProjectLogger
 
 
 class Project:
@@ -18,6 +20,7 @@ class Project:
         self.board = Board(self)
         self.serial = SerialMonitor(self)
         self.files = SketchFiles(self)
+        self.logger = ProjectLogger('eloquentarduino.jupyter.Project')
 
     def __enter__(self):
         """
@@ -38,50 +41,68 @@ class Project:
 
     @property
     def name(self):
-        """Get name"""
+        """
+        Get project name
+        """
         return self._name
 
     @property
     def path(self):
-        """Get path to sketch directory"""
+        """
+        Get path to sketch directory
+        """
         return os.path.join('sketches', self.name)
 
     @property
     def ino_name(self):
-        """Get name of .ino file"""
+        """
+        Get name of .ino file
+        """
         return '%s.ino' % self.name
 
     @property
     def ino_path(self):
-        """Get path to .ino file"""
+        """
+        Get path to .ino file
+        """
         return os.path.join(self.path, self.ino_name)
 
     def assert_name(self):
-        """Assert the user set a project name"""
+        """
+        Assert the user set a project name
+        """
         assert self.name, 'You MUST set a project name'
 
     def log(self, *args, **kwargs):
-        """Log info to console"""
+        """
+        Log info to console
+        @deprecated
+        """
         print(*args, **kwargs)
 
     def set_default_name(self, suffix):
-        """Set name according to the Arduino default policy"""
+        """
+        Set name according to the Arduino default policy
+        """
         now = datetime.now()
         sketch_name = now.strftime('sketch_%a%d').lower() + suffix
         self.set_name(sketch_name)
 
     def set_name(self, name):
-        """Set project name. Create a folder if it does not exist"""
+        """
+        Set project name
+        Create a folder if it does not exist
+        """
         assert isinstance(name, str) and len(name) > 0, 'Sketch name CANNOT be empty'
         self._name = name
-        self.log('Set project name', self._name)
+        self.logger.info('Set project name to %s', self._name)
         # make project folders (sketch, data)
         self.files.mkdir('')
         self.files.mkdir('data')
 
     def set_arduino_cli_path(self, folder):
         """Set arduino-cli path"""
-        self.log('set arduino-cli path to', folder)
+        self.logger.info('set arduino-cli path to %s', folder)
         self.board.set_cli_path(folder)
 
     def tmp_project(self):
@@ -100,37 +121,52 @@ class Project:
 
         return tmp
 
-    def compile(self, verbose=True):
-        """Compile sketch using arduino-cli"""
-        command = self.board.compile()
-        if verbose:
-            self.log(command.safe_output)
-        return command.safe_output
+    def compile(self):
+        """
+        Compile sketch using arduino-cli
+        :return:
+        """
+        output = self.board.compile().safe_output
+        self.logger.debug('Compile log\n%s', output)
+        self.logger.info('Compile OK')
+        return output
 
-    def upload(self, compile=True, verbose=True, retry=True):
-        """Upload sketch using arduino-cli"""
+    def upload(self, compile=True, retry=True, success_message='OK'):
+        """
+        Upload sketch using arduino-cli
+        :param compile: wether to compile the sketch before uploading
+        :param retry: wether to retry the upload on failure
+        :param success_message: string to look for to assert the upload was successful
+        :return:
+        """
         if compile:
-            self.compile(verbose=verbose)
+            self.compile()
 
         try:
             # run upload
             command = self.board.upload()
             output = command.safe_output
-            self.log(output)
+            self.logger.debug('Upload output\n%s', output)
         except ArduinoCliCommandError as err:
             # if error, ask the user to reset the board
             if retry:
                 input('arduino-cli returned an error: try to un-plug and re-plug the board, then press Enter...')
 
-                return self.upload(compile=compile, verbose=verbose, retry=False)
+                return self.upload(compile=False, retry=False)
             else:
                 # if it errored even after resetting, abort
                 raise err
 
         # assert upload is ok
-        if 'Verified OK' not in output:
-            raise UploadNotVerifiedError()
+        if success_message.lower() not in output.lower():
+            if retry:
+                input('Verification failed: try to un-plug and re-plug the board, then press Enter...')
 
+                return self.upload(compile=False, retry=False)
+            else:
+                raise UploadNotVerifiedError()
+
+        self.logger.info('Upload OK')
         sleep(2)
         return output
 
