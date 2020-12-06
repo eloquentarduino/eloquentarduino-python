@@ -17,12 +17,34 @@ class Board:
         self.model = None
         self.port = None
         self.programmer = None
+        self.cli_params = {}
+
+    @property
+    def fqbn(self):
+        """
+        Get FQBN for arduino-cli
+        It returns the board FQBN + optional parameters
+        """
+        fqbn = self.model.fqbn
+
+        if len(self.cli_params):
+            params = ','.join(['%s=%s' % (key, str(val)) for key, val in self.cli_params.items()])
+            fqbn += ':%s' % params
+
+        return fqbn
 
     def set_cli_path(self, folder):
         """
         Set arduino-cli path
         """
         self.cli_path = folder
+
+    def set_cli_params(self, **kwargs):
+        """
+        Set params for arduino-cli command
+        """
+        self.cli_params.update(**kwargs)
+        return self
 
     def self_check(self):
         """
@@ -133,7 +155,7 @@ class Board:
         Compile sketch
         """
         self._assert(port=False)
-        return self.cli(['compile', '--verify', '--fqbn', self.model.fqbn])
+        return self.cli(['compile', '--verify', '--fqbn', self.fqbn])
 
         # @todo still not working in some cases
         # hugly hack to make it work with paths containing spaces
@@ -150,7 +172,7 @@ class Board:
     def upload(self):
         """Upload sketch"""
         self._assert(port=True)
-        arguments = ['upload', '--verify', '--fqbn', self.model.fqbn, '--port', self.port]
+        arguments = ['upload', '--verify', '--fqbn', self.fqbn, '--port', self.port]
 
         if self.programmer:
             arguments += ['--programmer', self.programmer]
