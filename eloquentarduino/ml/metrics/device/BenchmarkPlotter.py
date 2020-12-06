@@ -39,7 +39,7 @@ class BenchmarkPlotter:
         # draw a single plot for each label
         if divideby is not None:
             return [
-                self.bar(x=x, y=y, groupby=groupby, title=[title, divide], yscale=yscale, df=df[df[divideby] == divide])
+                self.bar(x=x, y=y, groupby=groupby, title=[divide, title], yscale=yscale, df=df[df[divideby] == divide])
                 for divide in df[divideby].unique()
             ]
 
@@ -106,8 +106,8 @@ class BenchmarkPlotter:
             scaler = lambda g: g.set(**scale)
 
             # move xs from range [0, 1] to range [1, 2]
-            if scale_value == 'log' and values.min() >= 0 and values.max() <= 1:
-                df[column] += 1
+            if scale_value == 'log' and values.min() < 1:
+                df[column] += 1 - values.min()
 
         return df, scaler
 

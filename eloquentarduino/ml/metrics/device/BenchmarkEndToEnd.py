@@ -7,6 +7,7 @@ from sklearn.exceptions import NotFittedError
 
 from eloquentarduino.ml.metrics.device import Runtime, Resources
 from eloquentarduino.ml.metrics.device.BenchmarkPlotter import BenchmarkPlotter
+from eloquentarduino.jupyter.project.Errors import BadBoardResponseError
 
 
 class BenchmarkEndToEnd:
@@ -35,6 +36,7 @@ class BenchmarkEndToEnd:
             'board',
             'dataset',
             'clf',
+            'n_features',
             'flash',
             'raw_flash',
             'flash_percent',
@@ -149,6 +151,7 @@ class BenchmarkEndToEnd:
         :param accuracy:
         :param runtime:
         :param offline_test_size:
+        :param cross_val:
         :param online_test_size:
         :param repeat:
         :param checkpoint_file:
@@ -181,10 +184,10 @@ class BenchmarkEndToEnd:
 
                     # if clf is a lambda function, call with X, y arguments
                     if callable(clf):
-                        clf = clf(X, y)
-
-                    # make a copy of the original classifier
-                    clf = clone(clf)
+                        clf_clone = clf(X, y)
+                    else:
+                        # make a copy of the original classifier
+                        clf_clone = clone(clf)
 
                     # if a checkpoint exists, skip benchmarking
                     if self.checkpoint_exists(checkpoints, board=board_name, dataset=dataset_name, clf=clf_name, runtime=runtime):
@@ -194,16 +197,16 @@ class BenchmarkEndToEnd:
                     # benchmark classifier accuracy (off-line)
                     if accuracy:
                         if cross_val:
-                            cross_results = cross_validate(clf, X, y, cv=cross_val, return_estimator=True)
+                            cross_results = cross_validate(clf_clone, X, y, cv=cross_val, return_estimator=True)
                             offline_accuracy = cross_results['test_score'].mean()
                             # keep first classifier
-                            clf = cross_results['estimator'][0]
+                            clf_clone = cross_results['estimator'][0]
                         else:
                             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=offline_test_size, random_state=random_state)
-                            offline_accuracy = clf.fit(X_train, y_train).score(X_test, y_test)
+                            offline_accuracy = clf_clone.fit(X_train, y_train).score(X_test, y_test)
                     else:
                         offline_accuracy = 0
-                        clf.fit(X, y)
+                        clf_clone.fit(X, y)
 
                     project.board.set_port(port if port is not None else ('auto' if runtime else '/dev/ttyUSB99'))
                     try:
@@ -214,8 +217,12 @@ class BenchmarkEndToEnd:
 
                     # benchmark on-line inference time and accuracy
                     if runtime:
-                        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=online_test_size, random_state=random_state)
-                        runtime_benchmark = Runtime(project).benchmark(clf, X_test, y_test, repeat=repeat, compile=False)
+                        try:
+                            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=online_test_size, random_state=random_state)
+                            runtime_benchmark = Runtime(project).benchmark(clf, X_test, y_test, repeat=repeat, compile=False)
+                        except BadBoardResponseError as e:
+                            project.logger.error(e)
+                            runtime_benchmark = Runtime.empty()
                     else:
                         runtime_benchmark = Runtime.empty()
 

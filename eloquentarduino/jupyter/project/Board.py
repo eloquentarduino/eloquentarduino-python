@@ -56,10 +56,25 @@ class Board:
     def list_all(self):
         """
         Get list of installed boards from arduino-cli
-        :return:
+        :return: list
         """
         lines = self.cli(['board', 'listall']).lines
         return list(filter(lambda x: x is not None, [self._parse(line) for line in lines]))
+
+    def list(self):
+        """
+        Get list of connected devices from arduino-cli
+        :return:
+        """
+        available_ports = [line for line in self.cli(['board', 'list']).lines[1:] if line.strip()]
+
+        if len(available_ports) == 0:
+            raise NoSerialPortFoundError('Cannot find any serial port connected')
+
+        for available_port in available_ports:
+            self.project.logger.debug('Serial port found "%s"', available_port)
+
+        return available_ports
 
     def set_model(self, model_pattern):
         """
@@ -94,15 +109,9 @@ class Board:
         :param port:
         :return:
         """
-        # if port==auto, auto-detect port
+        # auto-detect port
         if port == 'auto':
-            available_ports = [line for line in self.cli(['board', 'list']).lines[1:] if line.strip()]
-
-            if len(available_ports) == 0:
-                raise NoSerialPortFoundError('Cannot find any serial port connected')
-
-            for available_port in available_ports:
-                self.project.logger.debug('Serial port found "%s"', available_port)
+            available_ports = [line for line in self.list() if ' ' in line]
 
             # if a board has been selected, keep only the lines that match the board
             if self.model is not None:
@@ -113,16 +122,12 @@ class Board:
 
             # port name is the first column
             available_ports = [line.split(' ')[0] for line in available_ports if ' ' in line]
+            port = self._choose_port(available_ports)
 
-            if len(available_ports) == 0:
-                raise NoSerialPortFoundError('Cannot find any candidate serial port connected')
-
-            # if only one port has been found, use it
-            if len(available_ports) == 1:
-                port = available_ports[0]
-                self.project.logger.debug('Single matching port found, using it')
-            else:
-                raise MultipleSerialPortsFoundError('Found multiple serial ports, please don\'t use "auto"')
+        elif port.endswith('*'):
+            # find port that starts with given pattern
+            available_ports = [line.split(' ')[0] for line in self.list() if port[:-1] in line]
+            port = self._choose_port(available_ports)
 
         self.port = port
         self.project.logger.info('Using port %s', self.port)
@@ -218,3 +223,19 @@ class Board:
         intersection = list(set(pattern_segments) & set(target_segments))
 
         return len(intersection) == len(pattern_segments)
+
+    def _choose_port(self, available_ports):
+        """
+        If only one port is found, return it
+        :param available_ports: list of found ports
+        :return: the single port
+        """
+        if len(available_ports) == 0:
+            raise NoSerialPortFoundError('Cannot find any candidate serial port connected')
+
+        # if only one port has been found, use it
+        if len(available_ports) == 1:
+            self.project.logger.debug('Single matching port found, using it')
+            return available_ports[0]
+        else:
+            raise MultipleSerialPortsFoundError('Found multiple serial ports, please refine your query')
