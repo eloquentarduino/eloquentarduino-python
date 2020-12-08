@@ -16,6 +16,7 @@ eloquentarduino/jupyter/project/Serial.py
 eloquentarduino/jupyter/project/SketchFiles.py
 eloquentarduino/jupyter/project/__init__.py
 eloquentarduino/ml/__init__.py
+eloquentarduino/ml/data/CheckpointFile.py
 eloquentarduino/ml/data/Pipeline.py
 eloquentarduino/ml/data/PipelineGridSearch.py
 eloquentarduino/ml/data/__init__.py
@@ -34,6 +35,7 @@ eloquentarduino/ml/data/preprocessing/__init__.py
 eloquentarduino/ml/metrics/__init__.py
 eloquentarduino/ml/metrics/device/BenchmarkEndToEnd.py
 eloquentarduino/ml/metrics/device/BenchmarkPlotter.py
+eloquentarduino/ml/metrics/device/GridSearch.py
 eloquentarduino/ml/metrics/device/Resources.py
 eloquentarduino/ml/metrics/device/Runtime.py
 eloquentarduino/ml/metrics/device/__init__.py
