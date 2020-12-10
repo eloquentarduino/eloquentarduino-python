@@ -8,31 +8,17 @@ from sklearn.exceptions import NotFittedError
 from eloquentarduino.ml.metrics.device import Runtime, Resources
 from eloquentarduino.ml.metrics.device.BenchmarkPlotter import BenchmarkPlotter
 from eloquentarduino.jupyter.project.Errors import BadBoardResponseError
+from eloquentarduino.ml.data import CheckpointFile
 
 
 class BenchmarkEndToEnd:
     """Run a moltitude of runtime benchmarks"""
     def __init__(self):
         """Init"""
-        self.results = []
         self.classifiers = []
         self.hidden_columns = []
-
-    @property
-    def result(self):
-        """
-        Return first result
-        :return:
-        """
-        return self.results[0] if len(self.results) else None
-
-    @property
-    def columns(self):
-        """
-        Get columns for DataFrame
-        :return:
-        """
-        columns = [
+        self.output_file = CheckpointFile(None, keys=['board', 'dataset', 'clf'])
+        self.all_columns = [
             'board',
             'dataset',
             'clf',
@@ -49,13 +35,22 @@ class BenchmarkEndToEnd:
             'online_accuracy',
             'inference_time'
         ]
-        # hide columns
-        columns = [column for column in columns if column not in self.hidden_columns]
-        # return all columns if not run yet
-        if len(self.results) == 0:
-            return columns
-        # return only columns that got computed
-        return [column for column in columns if column in self.results[0]]
+
+    @property
+    def result(self):
+        """
+        Return first result
+        :return:
+        """
+        return None if self.df.empty else self.df.loc[0]
+
+    @property
+    def columns(self):
+        """
+        Get columns for DataFrame
+        :return:
+        """
+        return [column for column in self.all_columns if column not in self.hidden_columns]
 
     @property
     def summary_columns(self):
@@ -63,7 +58,7 @@ class BenchmarkEndToEnd:
         Get important columns for DataFrame
         :return:
         """
-        columns = [
+        return [
             'board',
             'dataset',
             'clf',
@@ -73,7 +68,6 @@ class BenchmarkEndToEnd:
             'online_accuracy',
             'inference_time'
         ]
-        return [column for column in columns if column in self.columns]
 
     @property
     def df(self):
@@ -81,7 +75,7 @@ class BenchmarkEndToEnd:
         Get results as pandas.DataFrame
         :return:
         """
-        return pd.DataFrame(self.results, columns=self.columns)
+        return pd.DataFrame(self.output_file.df, columns=self.columns)
 
     @property
     def sorted_df(self):
@@ -99,16 +93,15 @@ class BenchmarkEndToEnd:
         """
         return BenchmarkPlotter(self.df)
 
-    def load(self, checkpoint_file):
+    def save_to(self, filename, overwrite=False):
         """
-        Load results from files
-        :param checkpoint_file:
-        :return: pd.DataFrame
+        Set file to save results
+        :param filename:
+        :param overwrite:
         """
-        assert exists(checkpoint_file), 'file %s NOT FOUND' % checkpoint_file
-        df = pd.read_csv(checkpoint_file)
-        self.results = df.to_dict('records')
-        return df
+        self.output_file = CheckpointFile(filename, keys=['board', 'dataset', 'clf'])
+        if overwrite:
+            self.output_file.clear()
 
     def set_precision(self, digits):
         """
@@ -129,17 +122,15 @@ class BenchmarkEndToEnd:
     def benchmark(
             self,
             project,
-            boards,
             datasets,
             classifiers,
+            boards=None,
             accuracy=True,
             runtime=False,
             offline_test_size=0.3,
             cross_val=3,
             online_test_size=20,
             repeat=5,
-            checkpoint_file=None,
-            save_checkpoints=True,
             port=None,
             random_state=0):
         """
@@ -154,16 +145,21 @@ class BenchmarkEndToEnd:
         :param cross_val:
         :param online_test_size:
         :param repeat:
-        :param checkpoint_file:
-        :param save_checkpoints:
         :param port:
         :param random_state:
         :return:
         """
-        checkpoints = None
 
-        if checkpoint_file is not None and exists(checkpoint_file):
-            checkpoints = self.load(checkpoint_file)
+        if boards is None:
+            assert project.board.model is not None and len(project.board.model.fqbn) > 0, 'You MUST specify at least a board'
+            boards = [project.board.model.fqbn]
+
+        if port is None:
+            # set 'auto' port if runtime is active
+            if runtime and project.board.port is None:
+                project.board.set_port('auto')
+        else:
+            project.board.set_port(port)
 
         for board_name in self.to_list(boards):
             # if benchmarking runtime, we need the board to be connected
@@ -182,17 +178,19 @@ class BenchmarkEndToEnd:
                 for clf_name, clf in self.to_list(classifiers):
                     project.logger.info('Benchmarking %s x %s x %s' % (board_name, dataset_name, clf_name))
 
+                    if self.output_file.key_exists((board_name, dataset_name, clf_name)):
+                        existing = self.output_file.get((board_name, dataset_name, clf_name))
+                        # skip if we have all the data for the combination
+                        if not runtime or existing.inference_time > 0:
+                            project.logger.debug('A checkpoint exists, skipping')
+                            continue
+
                     # if clf is a lambda function, call with X, y arguments
                     if callable(clf):
                         clf_clone = clf(X, y)
                     else:
                         # make a copy of the original classifier
                         clf_clone = clone(clf)
-
-                    # if a checkpoint exists, skip benchmarking
-                    if self.checkpoint_exists(checkpoints, board=board_name, dataset=dataset_name, clf=clf_name, runtime=runtime):
-                        project.logger.info('A checkpoint exists, skipping benchmarking')
-                        continue
 
                     # benchmark classifier accuracy (off-line)
                     if accuracy:
@@ -208,9 +206,8 @@ class BenchmarkEndToEnd:
                         offline_accuracy = 0
                         clf_clone.fit(X, y)
 
-                    project.board.set_port(port if port is not None else ('auto' if runtime else '/dev/ttyUSB99'))
                     try:
-                        resources_benchmark = Resources(project).benchmark(clf, x=X[0])
+                        resources_benchmark = Resources(project).benchmark(clf_clone, x=X[0])
                     except NotFittedError:
                         project.logger.error('Classifier not fitted, cannot benchmark')
                         continue
@@ -219,14 +216,14 @@ class BenchmarkEndToEnd:
                     if runtime:
                         try:
                             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=online_test_size, random_state=random_state)
-                            runtime_benchmark = Runtime(project).benchmark(clf, X_test, y_test, repeat=repeat, compile=False)
+                            runtime_benchmark = Runtime(project).benchmark(clf_clone, X_test, y_test, repeat=repeat, compile=False)
                         except BadBoardResponseError as e:
                             project.logger.error(e)
                             runtime_benchmark = Runtime.empty()
                     else:
                         runtime_benchmark = Runtime.empty()
 
-                    self.classifiers.append(clf)
+                    self.classifiers.append(clf_clone)
                     self.add_result(
                         board=board_name,
                         dataset=dataset_name,
@@ -235,9 +232,7 @@ class BenchmarkEndToEnd:
                         offline_accuracy=offline_accuracy,
                         resources=resources_benchmark,
                         runtime=runtime_benchmark,
-                        baseline=baseline_resources,
-                        checkpoints=checkpoints,
-                        checkpoint_file=(checkpoint_file if save_checkpoints else None))
+                        baseline=baseline_resources)
 
         return self
 
@@ -250,9 +245,7 @@ class BenchmarkEndToEnd:
             offline_accuracy,
             resources,
             runtime,
-            baseline,
-            checkpoints,
-            checkpoint_file
+            baseline
     ):
         """
         Add result to list
@@ -264,8 +257,6 @@ class BenchmarkEndToEnd:
         :param resources:
         :param runtime:
         :param baseline:
-        :param checkpoints
-        :param checkpoint_file
         :return:
         """
         raw_flash = resources['flash']
@@ -292,12 +283,7 @@ class BenchmarkEndToEnd:
             'online_accuracy': runtime['online_accuracy'],
             'inference_time': runtime['inference_time']
         }
-
-        self.results.append(result)
-
-        # save checkpoint
-        if checkpoint_file is not None:
-            self.df.to_csv(checkpoint_file, index=False)
+        self.output_file.set((board, dataset, clf), result)
 
     def to_list(self, x):
         """
@@ -306,28 +292,3 @@ class BenchmarkEndToEnd:
         :return:
         """
         return x if isinstance(x, list) else [x]
-
-    def checkpoint_exists(self, checkpoints, board, dataset, clf, runtime):
-        """
-        Check if a checkpoint for the given combo exists
-        :param checkpoints:
-        :param board:
-        :param dataset:
-        :param clf:
-        :param runtime:
-        :return:
-        """
-        if checkpoints is None:
-            return False
-        match = (checkpoints['board'] == board) & (checkpoints['dataset'] == dataset) & (checkpoints['clf'] == clf)
-        checkpoint = checkpoints.loc[match]
-
-        if checkpoint.empty:
-            return False
-
-        # if benchmarking runtime but no runtime is available, drop the row and recalculate
-        if runtime and checkpoint.iloc[0]['inference_time'] == 0:
-            self.results.pop(checkpoint.index[0])
-            return False
-
-        return True

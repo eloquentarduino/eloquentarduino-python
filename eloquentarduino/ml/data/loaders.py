@@ -1,4 +1,5 @@
 import numpy as np
+import re
 from math import floor
 import os.path
 from os.path import basename, splitext
@@ -62,7 +63,7 @@ def load_folder_streaming(folder, window, overlap, features=1, ext="csv", delimi
     return X_windowed, y_windowed, classmap
 
 
-def load_datasets_from_folder(folder, ext='csv', delimiter=',', **kwargs):
+def load_datasets_from_folder(folder, ext='csv', delimiter=',', pattern=None, **kwargs):
     """
     Load datasets from files in a folder
     :param folder:
@@ -78,6 +79,10 @@ def load_datasets_from_folder(folder, ext='csv', delimiter=',', **kwargs):
 
     for filename in glob(os.path.join(folder, '*.%s' % ext)):
         dataset_name = splitext(basename(filename))[0]
+
+        if pattern is not None and re.search(pattern, dataset_name) is None:
+            continue
+
         data = np.loadtxt(filename, delimiter=delimiter, **kwargs)
         X = data[:, :-1]
         y = data[:, -1]

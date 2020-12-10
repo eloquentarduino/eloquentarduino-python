@@ -33,6 +33,13 @@ class CheckpointFile:
         """
         return self.iloc(key) is not None
 
+    def get(self, key):
+        """
+        Get row by key
+        :param key:
+        """
+        return self.df.loc[self.iloc(key)]
+
     def set(self, key, value):
         """
         Set value for given key (overwrite or append)

@@ -74,7 +74,7 @@ class GridSearch:
         self.output_file = CheckpointFile(None, keys=['board', 'dataset', 'clf_description'])
         self.candidates = []
         self.runs = 0
-        self.Result = namedtuple('GridSearchResult', 'clf clf_description accuracy min_accuracy flash flash_percent memory memory_percent inference_time passes')
+        self.Result = namedtuple('GridSearchResult', 'clf clf_description accuracy min_accuracy max_accuracy flash flash_percent memory memory_percent inference_time passes')
 
     @property
     def df(self):
@@ -226,8 +226,9 @@ class GridSearch:
                     result = self.Result(
                         clf=crossval['estimator'][best_idx],
                         clf_description=clf_description,
-                        accuracy=crossval['test_score'][best_idx],
+                        accuracy=crossval['test_score'].mean(),
                         min_accuracy=crossval['test_score'].min(),
+                        max_accuracy=crossval['test_score'].max(),
                         flash=0,
                         flash_percent=0,
                         memory=0,
