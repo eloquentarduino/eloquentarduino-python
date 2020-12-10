@@ -162,14 +162,14 @@ class BenchmarkEndToEnd:
             project.board.set_port(port)
 
         for board_name in self.to_list(boards):
+            # set board
+            project.board.set_model(board_name)
+            board_name = project.board.name
+
             # if benchmarking runtime, we need the board to be connected
             # so be sure the sure has done the physical setup
             if runtime:
                 input('Benchmarking board %s: press Enter to continue...' % board_name)
-
-            # set board
-            project.board.set_model(board_name)
-            board_name = project.board.model.name
 
             # get the resources needed for the empty sketch
             baseline_resources = Resources(project).baseline()

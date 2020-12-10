@@ -2,6 +2,7 @@ import re
 from collections import namedtuple
 
 from eloquentarduino.jupyter.project.ArduinoCli import ArduinoCli
+from eloquentarduino.jupyter.project.BoardConfiguration import BoardConfiguration
 from eloquentarduino.jupyter.project.Errors import BoardNotFoundError, MultipleBoardsFoundError, NoSerialPortFoundError, MultipleSerialPortsFoundError
 
 
@@ -32,6 +33,14 @@ class Board:
             fqbn += ':%s' % params
 
         return fqbn
+
+    @property
+    def name(self):
+        """
+        Get board name with custom params
+        """
+        return self._with_params(self.model.name, ', ', '{}')
+
 
     def set_cli_path(self, folder):
         """
@@ -82,6 +91,12 @@ class Board:
         :param model_pattern: board name or FQBN, either exact or partial
         """
         known_boards = self.list_all()
+
+        # allow for custom board configuration
+        if isinstance(model_pattern, BoardConfiguration):
+            self.set_cli_params(**model_pattern.cli_params)
+            model_pattern = model_pattern.model_pattern
+
         # look for exact match on name or fqbn
         matches = [board for board in known_boards if board.name == model_pattern or board.fqbn == model_pattern]
 
@@ -239,3 +254,16 @@ class Board:
             return available_ports[0]
         else:
             raise MultipleSerialPortsFoundError('Found multiple serial ports, please refine your query')
+
+    def _with_params(self, label, delimiter=',', wrapper=': '):
+        """
+        Append cli params to label
+        :param label:
+        :param delimiter:
+        :param wrapper:
+        """
+        if len(self.cli_params):
+            params = delimiter.join(['%s=%s' % (key, str(val)) for key, val in self.cli_params.items()])
+            label += '%s%s%s' % (wrapper[0], params, wrapper[1])
+
+        return label
