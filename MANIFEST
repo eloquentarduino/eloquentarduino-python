@@ -8,6 +8,7 @@ eloquentarduino/jupyter/magics/SketchMagicMixin.py
 eloquentarduino/jupyter/magics/__init__.py
 eloquentarduino/jupyter/project/ArduinoCli.py
 eloquentarduino/jupyter/project/Board.py
+eloquentarduino/jupyter/project/BoardConfiguration.py
 eloquentarduino/jupyter/project/CompileStatistics.py
 eloquentarduino/jupyter/project/Errors.py
 eloquentarduino/jupyter/project/Logger.py
