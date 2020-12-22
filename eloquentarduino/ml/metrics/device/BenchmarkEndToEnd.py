@@ -7,7 +7,7 @@ from sklearn.exceptions import NotFittedError
 
 from eloquentarduino.ml.metrics.device import Runtime, Resources
 from eloquentarduino.ml.metrics.device.BenchmarkPlotter import BenchmarkPlotter
-from eloquentarduino.jupyter.project.Errors import BadBoardResponseError
+from eloquentarduino.jupyter.project.Errors import BadBoardResponseError, ArduinoCliCommandError
 from eloquentarduino.ml.data import CheckpointFile
 
 
@@ -161,6 +161,9 @@ class BenchmarkEndToEnd:
         else:
             project.board.set_port(port)
 
+        n_run = 0
+        n_combos = len(self.to_list(boards)) * len(self.to_list(datasets)) * len(self.to_list(classifiers))
+
         for board_name in self.to_list(boards):
             # set board
             project.board.set_model(board_name)
@@ -176,12 +179,13 @@ class BenchmarkEndToEnd:
 
             for dataset_name, (X, y) in self.to_list(datasets):
                 for clf_name, clf in self.to_list(classifiers):
-                    project.logger.info('Benchmarking %s x %s x %s' % (board_name, dataset_name, clf_name))
+                    n_run += 1
+                    project.logger.info('[%d/%d] Benchmarking %s x %s x %s', n_run, n_combos, board_name, dataset_name, clf_name)
 
                     if self.output_file.key_exists((board_name, dataset_name, clf_name)):
                         existing = self.output_file.get((board_name, dataset_name, clf_name))
                         # skip if we have all the data for the combination
-                        if not runtime or existing.inference_time > 0:
+                        if not runtime or float(existing.inference_time) > 0:
                             project.logger.debug('A checkpoint exists, skipping')
                             continue
 
@@ -211,12 +215,19 @@ class BenchmarkEndToEnd:
                     except NotFittedError:
                         project.logger.error('Classifier not fitted, cannot benchmark')
                         continue
+                    except ArduinoCliCommandError:
+                        project.logger.error('Arduino CLI reported an error')
+                        continue
+                    except Exception as err:
+                        project.logger.error('Generic error', err)
+                        continue
 
                     # benchmark on-line inference time and accuracy
                     if runtime:
                         try:
                             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=online_test_size, random_state=random_state)
                             runtime_benchmark = Runtime(project).benchmark(clf_clone, X_test, y_test, repeat=repeat, compile=False)
+                            project.logger.info('Benchmarked runtime inference')
                         except BadBoardResponseError as e:
                             project.logger.error(e)
                             runtime_benchmark = Runtime.empty()

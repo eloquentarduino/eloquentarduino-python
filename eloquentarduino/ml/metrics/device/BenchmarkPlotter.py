@@ -45,7 +45,6 @@ class BenchmarkPlotter:
 
         g = sns.catplot(data=df.sort_values(by=y), x=groupby, y=y, hue=x, kind='bar')
         g.set_xticklabels(rotation=80)
-
         self.add_title(g, title)
 
         if yscale:
@@ -58,6 +57,7 @@ class BenchmarkPlotter:
         df, xscaler = self.prepare_scale(df, x, {'xscale': xscale})
         df, yscaler = self.prepare_scale(df, y, {'yscale': yscale})
         g = sns.scatterplot(data=df, x=x, y=y, hue=hue, style=marker)
+        plt.setp(g.get_legend().get_texts(), fontsize='8')
 
         # self.add_title(g, title)
         xscaler(g)

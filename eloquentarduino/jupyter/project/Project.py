@@ -133,7 +133,7 @@ class Project:
         self.logger.info('Compile OK')
         return output
 
-    def upload(self, compile=True, retry=True, success_message=r'ok|verified|done'):
+    def upload(self, compile=True, retry=True, success_message=r'ok|verified|done|found'):
         """
         Upload sketch using arduino-cli
         :param compile: wether to compile the sketch before uploading
@@ -151,6 +151,7 @@ class Project:
             self.logger.debug('Upload output\n%s', output)
         except ArduinoCliCommandError as err:
             # if error, ask the user to reset the board
+            print('err', err)
             if retry:
                 input('arduino-cli returned an error: try to un-plug and re-plug the board, then press Enter...')
 

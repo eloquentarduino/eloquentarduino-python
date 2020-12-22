@@ -2,3 +2,4 @@
 board_manager:
   additional_urls:
     - https://grumpyoldpizza.github.io/arduino-STM32L4/package_STM32L4_boards_index.json
+    - https://github.com/stm32duino/BoardManagerFiles/raw/master/STM32/package_stm_index.json

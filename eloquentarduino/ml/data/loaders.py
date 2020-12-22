@@ -63,7 +63,7 @@ def load_folder_streaming(folder, window, overlap, features=1, ext="csv", delimi
     return X_windowed, y_windowed, classmap
 
 
-def load_datasets_from_folder(folder, ext='csv', delimiter=',', pattern=None, **kwargs):
+def load_datasets_from_folder(folder, ext='csv', delimiter=None, pattern=None, **kwargs):
     """
     Load datasets from files in a folder
     :param folder:
@@ -83,7 +83,20 @@ def load_datasets_from_folder(folder, ext='csv', delimiter=',', pattern=None, **
         if pattern is not None and re.search(pattern, dataset_name) is None:
             continue
 
-        data = np.loadtxt(filename, delimiter=delimiter, **kwargs)
+        # guess delimiter if not supplied
+        if delimiter is None:
+            delimiters = ['\t', ',', ';', ' ']
+
+            with open(filename) as file:
+                line = file.readline()
+
+                for delimiter_ in delimiters:
+                    if delimiter_ in line:
+                        break
+        else:
+            delimiter_ = delimiter
+
+        data = np.loadtxt(filename, delimiter=delimiter_, **kwargs)
         X = data[:, :-1]
         y = data[:, -1]
         datasets.append((dataset_name, (X, y)))
