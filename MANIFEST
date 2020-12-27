@@ -20,6 +20,7 @@ eloquentarduino/ml/__init__.py
 eloquentarduino/ml/data/CheckpointFile.py
 eloquentarduino/ml/data/Pipeline.py
 eloquentarduino/ml/data/PipelineGridSearch.py
+eloquentarduino/ml/data/RollingWindow.py
 eloquentarduino/ml/data/__init__.py
 eloquentarduino/ml/data/loaders.py
 eloquentarduino/ml/data/processing.py
@@ -48,6 +49,7 @@ eloquentarduino/ml/metrics/plot/__init__.py
 eloquentarduino/ml/metrics/training/ClassifierBenchmark.py
 eloquentarduino/ml/metrics/training/__init__.py
 eloquentarduino/ml/plot/__init__.py
+eloquentarduino/templates/RollingWindow.jinja
 eloquentarduino/templates/Pipeline/FFT.jinja
 eloquentarduino/templates/Pipeline/Normalize.jinja
 eloquentarduino/templates/Pipeline/Pipeline.jinja
