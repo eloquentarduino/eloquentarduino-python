@@ -1,0 +1,192 @@
+namespace Eloquent {
+    namespace ML {
+        // Callback definition
+        typedef void(*OnRollingWindowCallback)(float*);
+
+        class RollingWindow {
+            public:
+
+                /*
+                 * Push values to the queue
+                 */
+                void push({% for ax in range(axis) %}{% if ax > 0 %}, {% endif %}float x{{ ax }}{% endfor %}) {
+                    {% for ax in range(axis) %}
+                        window[{{ ax }}][windowPos] = x{{ ax }};
+                    {% endfor %}
+
+                    windowPos += 1;
+
+                    if (windowPos == {{ window_size }}) {
+                        slideWindow();
+                        computeFeatures();
+
+                        if (callback != NULL)
+                            callback(features);
+                    }
+                    else {
+                        filled = false;
+                    }
+                }
+
+                /**
+                 * Test if window is ready to be converted to features
+                 */
+                bool isReady() {
+                    return filled && windows >= {{ num_windows }};
+                }
+
+                /**
+                 * Get feature vector
+                 */
+                float* toArray() {
+                    return features;
+                }
+
+                /**
+                 * Set callback
+                 */
+                void whenReady(OnRollingWindowCallback callback) {
+                    this->callback = callback;
+                }
+
+            protected:
+                bool filled = false;
+                uint8_t windows = 0;
+                uint16_t windowPos = 0;
+                float window[{{ axis }}][{{ window_size }}];
+                float features[{{ num_windows * len(features) * axis }}];
+                OnRollingWindowCallback callback = NULL;
+
+
+                /**
+                 * Slide to the next window
+                 */
+                void slideWindow() {
+                    filled = true;
+                    windowPos = 0;
+                    windows = min(windows + 1, {{ num_windows }});
+
+                    // shift features by 1 window to the left
+                    for (uint16_t i = {{ len(features) * axis }}; i < {{ num_windows * len(features) * axis }}; i++) {
+                        features[i - {{ len(features) * axis }}] = features[i];
+                    }
+                }
+
+                /**
+                 * Compute features of single window
+                 */
+                void computeFeatures() {
+                    uint8_t featureIdx = 0;
+
+                    {% if 'min' in features %}
+                        float min_[{{ axis }}] = { {% for ax in range(axis) %}{% if ax > 0 %}, {% endif %} window[{{ ax }}][0]{% endfor %} };
+                    {% endif %}
+
+                    {% if 'max' in features %}
+                        float max_[{{ axis }}] = { {% for ax in range(axis) %}{% if ax > 0 %}, {% endif %} window[{{ ax }}][0]{% endfor %} };
+                    {% endif %}
+
+                    {% if 'mean' in features %}
+                        float mean[{{ axis }}] = { {% for ax in range(axis) %}{% if ax > 0 %}, {% endif %} window[{{ ax }}][0]{% endfor %} };
+                    {% endif %}
+
+                    for (uint8_t ax = 0; ax < {{ axis }}; ax++) {
+                        for (uint16_t i = 1; i < {{ window_size }}; i++) {
+                            {% if 'min' in features %}
+                                min_[ax] = min(min_[ax], window[ax][i]);
+                            {% endif %}
+
+                            {% if 'max' in features %}
+                                max_[ax] = max(max_[ax], window[ax][i]);
+                            {% endif %}
+
+                            {% if 'mean' in features %}
+                                mean[ax] += window[ax][i];
+                            {% endif %}
+                        }
+                    }
+
+                    {% if 'mean' in features %}
+                        for (uint8_t ax = 0; ax < {{ axis }}; ax++) {
+                            mean[ax] /= {{ window_size }};
+                        }
+                    {% endif %}
+
+                    {% if 'std' in features or 'skew' in features or 'kurtosis' in features %}
+                        {% if 'std' in features %}
+                            float std[{{ axis }}] = {0};
+                        {% endif %}
+
+                        {% if 'skew' in features %}
+                            float skew[{{ axis }}] = {0};
+                        {% endif %}
+
+                        {% if 'kurtosis' in features %}
+                            float kurtosis[{{ axis }}] = {0};
+                        {% endif %}
+
+                        for (uint8_t ax = 0; ax < {{ axis }}; ax++) {
+                            for (uint16_t i = 0; i < {{ window_size }}; i++) {
+                                float delta = window[ax][i] - mean[ax];
+                                float delta2 = pow(delta, 2);
+
+                                {% if 'std' in features %}
+                                    std[ax] += delta2;
+                                {% endif %}
+
+                                {% if 'skew' in features %}
+                                    skew[ax] += delta * delta2;
+                                {% endif %}
+
+                                {% if 'kurtosis' in features %}
+                                    kurtosis[ax] += delta2 * delta2;
+                                {% endif %}
+                            }
+                        }
+
+                        {% if 'std' in features %}
+                            for (uint8_t ax = 0; ax < {{ axis }}; ax++) {
+                                std[ax] = sqrt(std[ax]) / {{ window_size }};
+                            }
+                        {% endif %}
+
+                        {% if 'skew' in features %}
+                            for (uint8_t ax = 0; ax < {{ axis }}; ax++) {
+                                skew[ax] /= pow(std[ax], 3) * {{ window_size }};
+                            }
+                        {% endif %}
+
+                        {% if 'kurtosis' in features %}
+                            for (uint8_t ax = 0; ax < {{ axis }}; ax++) {
+                                kurtosis[ax] /= pow(std[ax], 4) * {{ window_size }};
+                            }
+                        {% endif %}
+                    {% endif %}
+
+                    // save features
+                    uint16_t j = 0;
+
+                    for (uint8_t ax = 0; ax < {{ axis }}; ax++) {
+                        {% if 'min' in features %}
+                            features[{{ offset }} + (j++)] = min_[ax];
+                        {% endif %}
+                        {% if 'max' in features %}
+                            features[{{ offset }} + (j++)] = max_[ax];
+                        {% endif %}
+                        {% if 'mean' in features %}
+                            features[{{ offset }} + (j++)] = mean[ax];
+                        {% endif %}
+                        {% if 'std' in features %}
+                            features[{{ offset }} + (j++)] = std[ax];
+                        {% endif %}
+                        {% if 'skew' in features %}
+                            features[{{ offset }} + (j++)] = skew[ax];
+                        {% endif %}
+                        {% if 'kurtosis' in features %}
+                            features[{{ offset }} + (j++)] = kurtosis[ax];
+                        {% endif %}
+                    }
+                }
+        };
+    }
+}

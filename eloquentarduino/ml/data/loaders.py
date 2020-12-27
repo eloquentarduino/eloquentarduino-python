@@ -11,7 +11,7 @@ def rolling_window(array, window, overlap):
     # @see https://towardsdatascience.com/fast-and-robust-sliding-window-vectorization-with-numpy-3ad950ed62f5
     if overlap < 1:
         overlap = floor(window * (1 - overlap))
-    offset = window - overlap
+    offset = window - overlap if overlap != window else window
     w = np.arange(window)
     # t is a dense indices vector: we only need once every offset
     t = np.arange(len(array) - window + 1)[::offset]

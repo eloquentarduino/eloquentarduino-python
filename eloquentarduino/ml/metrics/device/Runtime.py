@@ -45,7 +45,7 @@ class Runtime:
             'online_accuracy': 0
         }
 
-    def benchmark(self, clf, X_test=None, y_test=None, n_features=1, n_samples=20, repeat=1, compile=True):
+    def benchmark(self, clf, X_test=None, y_test=None, n_features=1, n_samples=20, repeat=1, upload_options={}):
         """
         Benchmark on-line inference time for a classifier
         :param clf:
@@ -55,6 +55,7 @@ class Runtime:
         :param n_samples:
         :param repeat:
         :param compile:
+        :param upload_options:
         :return:
         """
         if X_test is None or y_test is None:
@@ -74,7 +75,7 @@ class Runtime:
 
             tmp.files.add(tmp.ino_name, contents=sketch, exists_ok=True)
             tmp.files.add('Classifier.h', contents=ported, exists_ok=True)
-            tmp.upload()
+            tmp.upload(**upload_options)
 
             # parse serial output
             # since we can miss the first response, try a few times

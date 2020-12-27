@@ -132,6 +132,7 @@ class BenchmarkEndToEnd:
             online_test_size=20,
             repeat=5,
             port=None,
+            upload_options={},
             random_state=0):
         """
         Run benchmark on the combinations of boards x datasets x classifiers
@@ -226,7 +227,7 @@ class BenchmarkEndToEnd:
                     if runtime:
                         try:
                             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=online_test_size, random_state=random_state)
-                            runtime_benchmark = Runtime(project).benchmark(clf_clone, X_test, y_test, repeat=repeat, compile=False)
+                            runtime_benchmark = Runtime(project).benchmark(clf_clone, X_test, y_test, repeat=repeat, upload_options=upload_options)
                             project.logger.info('Benchmarked runtime inference')
                         except BadBoardResponseError as e:
                             project.logger.error(e)

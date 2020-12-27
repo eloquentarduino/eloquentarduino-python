@@ -92,6 +92,10 @@ def jinja(template_name, template_data={}, pretty=False):
     :return: the rendered template
     :rtype str
     """
+    template_data.update(
+        len=len
+    )
+
     dir_path = os.path.dirname(os.path.realpath(__file__))
     loader = FileSystemLoader(os.path.join(dir_path, '..', 'templates'))
     template = jinja_env(loader=loader).get_template(template_name)

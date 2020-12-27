@@ -133,12 +133,13 @@ class Project:
         self.logger.info('Compile OK')
         return output
 
-    def upload(self, compile=True, retry=True, success_message=r'ok|verified|done|found'):
+    def upload(self, compile=True, retry=True, success_message=r'ok|verified|done|found|success', wait_for=3):
         """
         Upload sketch using arduino-cli
         :param compile: wether to compile the sketch before uploading
         :param retry: wether to retry the upload on failure
         :param success_message: string to look for to assert the upload was successful
+        :param wait_for:
         :return:
         """
         if compile:
@@ -162,6 +163,8 @@ class Project:
 
         # assert upload is ok
         if re.search(success_message, output.lower()) is None:
+            self.logger.warning('Cannot find success message in log')
+            self.logger.debug(output)
             if retry:
                 input('Verification failed: try to un-plug and re-plug the board, then press Enter...')
 
@@ -170,7 +173,7 @@ class Project:
                 raise UploadNotVerifiedError()
 
         self.logger.info('Upload OK')
-        sleep(3)
+        sleep(wait_for)
         return output
 
 

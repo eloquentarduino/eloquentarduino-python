@@ -16,6 +16,7 @@ class Board:
         self.baud_rate = 9600
         self.cli_path = None
         self.model = None
+        self.label = None
         self.port = None
         self.programmer = None
         self.cli_params = {}
@@ -39,8 +40,9 @@ class Board:
         """
         Get board name with custom params
         """
+        if self.label:
+            return self.label
         return self._with_params(self.model.name, ', ', '{}')
-
 
     def set_cli_path(self, folder):
         """
@@ -91,10 +93,12 @@ class Board:
         :param model_pattern: board name or FQBN, either exact or partial
         """
         known_boards = self.list_all()
+        board_label = None
 
         # allow for custom board configuration
         if isinstance(model_pattern, BoardConfiguration):
             self.set_cli_params(**model_pattern.cli_params)
+            board_label = str(model_pattern)
             model_pattern = model_pattern.model_pattern
 
         # look for exact match on name or fqbn
@@ -102,6 +106,7 @@ class Board:
 
         if len(matches) == 1:
             self.model = matches[0]
+            self.label = board_label
             self.project.logger.info('Found an exact match: %s (%s). Using it', self.model.name, self.model.fqbn)
             return
 
@@ -112,6 +117,7 @@ class Board:
             raise BoardNotFoundError('Board %s not found in the list of known boards', model_pattern)
         elif len(matches) == 1:
             self.model = matches[0]
+            self.label = board_label
             self.project.logger.info('Found a single partial match: %s (%s). Using it', self.model.name, self.model.fqbn)
         else:
             for match in matches:
