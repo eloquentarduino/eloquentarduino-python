@@ -8,7 +8,7 @@ from time import sleep
 from eloquentarduino.jupyter.project.Board import Board
 from eloquentarduino.jupyter.project.Errors import UploadNotVerifiedError, ArduinoCliCommandError
 from eloquentarduino.jupyter.project.Logger import ProjectLogger
-from eloquentarduino.jupyter.project.Serial import SerialMonitor
+from eloquentarduino.jupyter.project.SerialMonitor import SerialMonitor
 from eloquentarduino.jupyter.project.SketchFiles import SketchFiles
 
 

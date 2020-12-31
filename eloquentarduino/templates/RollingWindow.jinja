@@ -1,3 +1,7 @@
+#define __min(a,b) ((a)<(b)?(a):(b))
+#define __max(a,b) ((a)>(b)?(a):(b))
+
+
 namespace Eloquent {
     namespace ML {
         // Callback definition
@@ -64,7 +68,7 @@ namespace Eloquent {
                 void slideWindow() {
                     filled = true;
                     windowPos = 0;
-                    windows = min(windows + 1, {{ num_windows }});
+                    windows = windows + 1 > {{ num_windows }} ? {{ num_windows }} : windows + 1;
 
                     // shift features by 1 window to the left
                     for (uint16_t i = {{ len(features) * axis }}; i < {{ num_windows * len(features) * axis }}; i++) {

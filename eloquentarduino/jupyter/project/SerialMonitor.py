@@ -7,6 +7,13 @@ class SerialMonitor:
     def __init__(self, project):
         self.project = project
 
+    def write(self, message, **kwargs):
+        """
+        Write message to serial
+        """
+        with self.open(**kwargs) as serial:
+            serial.write(message)
+
     def read(self, timeout=60, **kwargs):
         """Read from serial monitor"""
         self.project.assert_name()
@@ -120,4 +127,11 @@ class SerialMonitor:
                 self.project.logger.info('DONE')
         if dump:
             self.project.files.cat('data/%s' % dest)
+
+    def open(self, **kwargs):
+        """
+        Open serial port
+        """
+        return Serial(self.project.board.port, self.project.board.baud_rate, **kwargs)
+
 

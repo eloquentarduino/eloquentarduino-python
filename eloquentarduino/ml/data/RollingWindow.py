@@ -90,7 +90,7 @@ class RollingWindow:
                 Xt = np.vstack((Xt, Xi))
                 yt = np.concatenate((yt, yi))
 
-        return Xt, yt
+        return np.nan_to_num(Xt), yt
 
     def port(self):
         """
