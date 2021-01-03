@@ -16,6 +16,7 @@ eloquentarduino/jupyter/project/Project.py
 eloquentarduino/jupyter/project/SerialMonitor.py
 eloquentarduino/jupyter/project/SketchFiles.py
 eloquentarduino/jupyter/project/__init__.py
+eloquentarduino/ml/CascadingClassifier.py
 eloquentarduino/ml/__init__.py
 eloquentarduino/ml/data/CheckpointFile.py
 eloquentarduino/ml/data/Pipeline.py
