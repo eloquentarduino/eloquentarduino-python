@@ -50,7 +50,7 @@ class RollingWindow:
         if self.has(RollingWindow.STD):
             self.features.add(RollingWindow.MEAN)
 
-        self.Xt, self.yt = self.transform(X, y)
+        self.Xt, self.Xw, self.yt = self.transform(X, y)
 
     def has(self, feature):
         """
@@ -65,7 +65,7 @@ class RollingWindow:
         assert len(X) == len(y), "X and y MUST have the same length"
         assert len(y) > 1, "y MUST be of at least 2 elements"
 
-        Xt, yt = None, None
+        Xt, yt, Xw = None, None, None
 
         for xi, yi in zip(X, y):
             # algorithm:
@@ -86,11 +86,13 @@ class RollingWindow:
             if Xt is None:
                 Xt = Xi
                 yt = yi
+                Xw = windows
             else:
                 Xt = np.vstack((Xt, Xi))
+                Xw = np.vstack((Xw, windows))
                 yt = np.concatenate((yt, yi))
 
-        return np.nan_to_num(Xt), yt
+        return np.nan_to_num(Xt), Xw, yt
 
     def port(self):
         """

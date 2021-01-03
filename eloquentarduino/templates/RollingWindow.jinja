@@ -24,8 +24,9 @@ namespace Eloquent {
                         slideWindow();
                         computeFeatures();
 
-                        if (callback != NULL)
+                        if (callback != NULL) {
                             callback(features);
+                        }
                     }
                     else {
                         filled = false;
@@ -97,11 +98,11 @@ namespace Eloquent {
                     for (uint8_t ax = 0; ax < {{ axis }}; ax++) {
                         for (uint16_t i = 1; i < {{ window_size }}; i++) {
                             {% if 'min' in features %}
-                                min_[ax] = min(min_[ax], window[ax][i]);
+                                min_[ax] = __min(min_[ax], window[ax][i]);
                             {% endif %}
 
                             {% if 'max' in features %}
-                                max_[ax] = max(max_[ax], window[ax][i]);
+                                max_[ax] = __max(max_[ax], window[ax][i]);
                             {% endif %}
 
                             {% if 'mean' in features %}
