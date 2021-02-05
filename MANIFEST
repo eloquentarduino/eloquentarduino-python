@@ -15,10 +15,13 @@ eloquentarduino/jupyter/project/Logger.py
 eloquentarduino/jupyter/project/Project.py
 eloquentarduino/jupyter/project/SerialMonitor.py
 eloquentarduino/jupyter/project/SketchFiles.py
+eloquentarduino/jupyter/project/TeensyCli.py
 eloquentarduino/jupyter/project/__init__.py
 eloquentarduino/ml/CascadingClassifier.py
+eloquentarduino/ml/Classifier.py
 eloquentarduino/ml/__init__.py
 eloquentarduino/ml/data/CheckpointFile.py
+eloquentarduino/ml/data/Dataset.py
 eloquentarduino/ml/data/Pipeline.py
 eloquentarduino/ml/data/PipelineGridSearch.py
 eloquentarduino/ml/data/RollingWindow.py
@@ -31,6 +34,7 @@ eloquentarduino/ml/data/preprocessing/NormalizeStep.py
 eloquentarduino/ml/data/preprocessing/PolynomialFeaturesStep.py
 eloquentarduino/ml/data/preprocessing/PrincipalFFT.py
 eloquentarduino/ml/data/preprocessing/RfeStep.py
+eloquentarduino/ml/data/preprocessing/RollingWindow.py
 eloquentarduino/ml/data/preprocessing/SelectKBestStep.py
 eloquentarduino/ml/data/preprocessing/StandardizeStep.py
 eloquentarduino/ml/data/preprocessing/UnitStep.py
@@ -38,6 +42,7 @@ eloquentarduino/ml/data/preprocessing/__init__.py
 eloquentarduino/ml/metrics/__init__.py
 eloquentarduino/ml/metrics/device/BenchmarkEndToEnd.py
 eloquentarduino/ml/metrics/device/BenchmarkPlotter.py
+eloquentarduino/ml/metrics/device/BoardBenchmark.py
 eloquentarduino/ml/metrics/device/GridSearch.py
 eloquentarduino/ml/metrics/device/Resources.py
 eloquentarduino/ml/metrics/device/Runtime.py
@@ -51,6 +56,11 @@ eloquentarduino/ml/metrics/training/ClassifierBenchmark.py
 eloquentarduino/ml/metrics/training/__init__.py
 eloquentarduino/ml/plot/__init__.py
 eloquentarduino/templates/RollingWindow.jinja
+eloquentarduino/templates/CascadingClassifier/CascadingClassifier.jinja
+eloquentarduino/templates/CascadingClassifier/__init__.py
+eloquentarduino/templates/CascadingClassifier/_featurewise.jinja
+eloquentarduino/templates/CascadingClassifier/_global.jinja
+eloquentarduino/templates/CascadingClassifier/_windowwise.jinja
 eloquentarduino/templates/Pipeline/FFT.jinja
 eloquentarduino/templates/Pipeline/Normalize.jinja
 eloquentarduino/templates/Pipeline/Pipeline.jinja
@@ -61,9 +71,12 @@ eloquentarduino/templates/Pipeline/SelectKBest.jinja
 eloquentarduino/templates/Pipeline/Standardize.jinja
 eloquentarduino/templates/Pipeline/Unit.jinja
 eloquentarduino/templates/magics/eloquent-arduino.h.jinja
+eloquentarduino/templates/metrics/Baseline.jinja
 eloquentarduino/templates/metrics/Empty.jinja
 eloquentarduino/templates/metrics/Resources.jinja
+eloquentarduino/templates/metrics/Runtime.bck.jinja
 eloquentarduino/templates/metrics/Runtime.jinja
+eloquentarduino/templates/preprocessing/RollingWindow.jinja
 eloquentarduino/utils/__init__.py
 eloquentarduino/utils/jinja.py
 eloquentarduino/utils/misc.py
