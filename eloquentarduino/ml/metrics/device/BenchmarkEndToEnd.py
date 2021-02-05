@@ -1,5 +1,6 @@
 from os.path import exists
 
+from time import sleep
 import pandas as pd
 from sklearn.model_selection import train_test_split, cross_validate
 from sklearn.base import clone
@@ -245,6 +246,8 @@ class BenchmarkEndToEnd:
                         resources=resources_benchmark,
                         runtime=runtime_benchmark,
                         baseline=baseline_resources)
+
+                    sleep(2)
 
         return self
 

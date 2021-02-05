@@ -1,0 +1,51 @@
+// axis = 2 --> window min/max/mean/std
+float m[{{ composites_length }}];
+float M[{{ composites_length }}];
+float avg[{{ composites_length }}];
+float var[{{ composites_length }}];
+
+// first run
+for (uint8_t k = 0; k < {{ composites_length }}; k++) {
+    float xk0 = _past[k][0];
+
+    m[k] = xk0;
+    M[k] = xk0;
+    avg[k] = xk0;
+}
+
+// compute min/max/avg
+for (uint8_t k = 0; k < {{ composites_length }}; k++) {
+    float mk = m[k];
+    float Mk = M[k];
+    float avgK = avg[k];
+
+    for (uint16_t i = 1; i < {{ num_features_primitives }}; i++) {
+        float xi = _past[k][i];
+
+        if (xi < mk) mk = xi;
+        if (xi > Mk) Mk = xi;
+
+        avgK += xi;
+    }
+
+    m[k] = mk;
+    M[k] = Mk;
+    avg[k] = avgK / {{ num_features_primitives }};
+}
+
+// compute var
+for (uint8_t k = 0; k < {{ composites_length }}; k++) {
+    for (uint16_t i = 0; i < {{ num_features_primitives }}; i++) {
+        var[k] += pow(_past[k][i] - avg[k], 2);
+    }
+
+    var[k] /= {{ num_features_primitives }};
+}
+
+// fill the features vector
+for (uint8_t k = 0; k < {{ composites_length }}; k++) {
+    _features[k] = m[k];
+    _features[{{ composites_length }} + k] = M[k];
+    _features[{{ composites_length * 2 }} + k] = avg[k];
+    _features[{{ composites_length * 3 }} + k] = var[k];
+}

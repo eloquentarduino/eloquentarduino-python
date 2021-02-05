@@ -1,8 +1,18 @@
 import re
 import os
 import os.path
+import numpy as np
 from eloquentarduino.utils.misc import is_list
 from jinja2 import Environment, FileSystemLoader, BaseLoader
+from sklearn.model_selection import train_test_split
+
+
+class CustomEnvironment(Environment):
+    """
+    Override join_path() to enable relative template paths.
+    """
+    def join_path(self, template, parent):
+        return os.path.normpath(os.path.join(os.path.dirname(parent), template))
 
 
 def shape(arr):
@@ -37,9 +47,11 @@ def jinja_env(loader):
     :param loader:
     :return:
     """
-    env = Environment(loader=loader)
+    env = CustomEnvironment(loader=loader)
     env.filters['shape'] = shape
     env.filters['to_array'] = to_array
+    env.globals['np'] = np
+    env.globals['train_test_split'] = train_test_split
 
     return env
 

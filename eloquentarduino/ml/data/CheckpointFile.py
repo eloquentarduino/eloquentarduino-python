@@ -16,8 +16,9 @@ class CheckpointFile:
         self.keys = keys
         self.df = None
 
-        if filename and self.exists():
+        if self.exists():
             self.df = pd.read_csv(filename)
+            self.df.set_index(self.keys)
 
     def exists(self):
         """
@@ -45,10 +46,10 @@ class CheckpointFile:
         Set value for given key (overwrite or append)
         """
         if self.key_exists(key):
-            loc = self.iloc(key)
-            self.df.loc[loc] = value
+            self.df.update(pd.DataFrame([value]))
         elif self.df is None:
             self.df = pd.DataFrame([value])
+            self.df.set_index(self.keys)
         else:
             self.df = self.df.append(value, ignore_index=True)
         self.save()
@@ -80,4 +81,4 @@ class CheckpointFile:
         """
         Save DataFrame to file
         """
-        self.df.to_csv(self.filename, index=False)
+        self.df.to_csv(self.filename, index=False, float_format='%.4f')

@@ -1,0 +1,46 @@
+// axis = 1 --> featurewise min/max/mean/std
+float m[{{ num_features_primitives }}];
+float M[{{ num_features_primitives }}];
+float avg[{{ num_features_primitives }}];
+float var[{{ num_features_primitives }}];
+
+// populate first run
+for (uint16_t i = 0; i < {{ num_features_primitives }}; i++) {
+    float xi = _past[0][i];
+
+    m[i] = xi;
+    M[i] = xi;
+    avg[i] = xi;
+}
+
+// consider the other primitives
+for (uint8_t k = 1; k < {{ composites_length }}; k++) {
+    for (uint16_t i = 0; i < {{ num_features_primitives }}; i++) {
+        float xi = _past[k][i];
+
+        if (xi < m[i]) m[i] = xi;
+        if (xi > M[i]) M[i] = xi;
+
+        avg[i] += xi;
+    }
+}
+
+// compute avg
+for (uint16_t i = 0; i < {{ num_features_primitives }}; i++) {
+    avg[i] /= {{ composites_length }};
+}
+
+// compute var
+for (uint8_t k = 0; k < {{ composites_length }}; k++) {
+    for (uint16_t i = 0; i < {{ num_features_primitives }}; i++) {
+        var[i] += pow(_past[k][i] - avg[i], 2);
+    }
+}
+
+// fill the features vector
+for (uint16_t i = 0; i < {{ num_features_primitives }}; i++) {
+    _features[i] = m[i];
+    _features[{{ num_features_primitives }} + i] = M[i];
+    _features[{{ num_features_primitives * 2 }} + i] = avg[i];
+    _features[{{ num_features_primitives * 3 }} + i] = var[i] / {{ composites_length }};
+}

@@ -14,7 +14,7 @@ class ProjectLogger(Logger):
         handler = StreamHandler()
         handler.setFormatter(Formatter('[%(levelname)s] %(message)s'))
         self.addHandler(handler)
-        self.setLevel(DEBUG)
+        self.setLevel(INFO)
 
     def progress(self, msg):
         """

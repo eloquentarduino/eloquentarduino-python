@@ -45,3 +45,12 @@ class BadBoardResponseError(AssertionError):
     The board replied with an unexpected format
     """
     pass
+
+
+class BoardBenchmarkAlreadyExists(AssertionError):
+    """
+    The given board benchmark already exists
+    """
+    def __init__(self, key):
+        message = 'A benchmark record for [%s] already exists' % str(key)
+        super().__init__(message)

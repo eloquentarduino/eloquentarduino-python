@@ -23,7 +23,7 @@ class RollingWindow:
         assert num_windows > 0, "num_windows MUST be greater than 0"
         assert axis > 0, "axis MUST be greather than 0"
         assert len(X) == len(y), "X and y MUST have the same length"
-        assert len(y) > 1, "y MUST be of at least 2 elements"
+        # assert len(y) > 1, "y MUST be of at least 2 elements"
         assert features is None or isinstance(features, list) or isinstance(features, tuple), \
             'features MUST be None or a list'
 
@@ -63,7 +63,7 @@ class RollingWindow:
         Transform data
         """
         assert len(X) == len(y), "X and y MUST have the same length"
-        assert len(y) > 1, "y MUST be of at least 2 elements"
+        #assert len(y) > 1, "y MUST be of at least 2 elements"
 
         Xt, yt, Xw = None, None, None
 
@@ -97,7 +97,7 @@ class RollingWindow:
     def port(self):
         """
         Port to plain C++
-        :return: plain C++ code
+        :return: str plain C++ code
         """
         env = {
             'num_windows': self.num_windows,

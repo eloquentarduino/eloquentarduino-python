@@ -6,3 +6,5 @@ from eloquentarduino.ml.data.preprocessing.RfeStep import RfeStep
 from eloquentarduino.ml.data.preprocessing.SelectKBestStep import SelectKBestStep
 from eloquentarduino.ml.data.preprocessing.StandardizeStep import StandardizeStep
 from eloquentarduino.ml.data.preprocessing.UnitStep import UnitStep
+
+from eloquentarduino.ml.data.preprocessing.RollingWindow import RollingWindow

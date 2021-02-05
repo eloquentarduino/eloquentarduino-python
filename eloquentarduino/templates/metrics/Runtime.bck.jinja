@@ -1,0 +1,47 @@
+#include "Classifier.h"
+
+
+Eloquent::ML::Port::Classifier clf;
+float X_test[{{ X_test | shape}}] = {{ X_test | to_array }};
+int y_test[{{ y_test | shape }}] = {{ y_test | to_array }};
+
+
+void setup() {
+    Serial.begin(115200);
+    delay(3000);
+}
+
+void loop() {
+    uint16_t counter = 0;
+    uint16_t support = 0;
+    uint16_t confidence = 0;
+    uint32_t benchmark_start = micros();
+
+    // benchmark inference time
+    {% for k in range(repeat) %}
+        {% for i in range(y_test | length) %}
+            clf.predict(X_test[{{ i }}]);
+        {% endfor %}
+    {% endfor %}
+
+    uint32_t inference_time = micros() - benchmark_start;
+
+    // benchmark on-device accuracy
+    for (int i = 0; i < {{ y_test | length }}; i++) {
+        int y_pred = clf.predict(X_test[i]);
+
+        support += 1;
+        confidence += (y_pred == y_test[i]) ? 1 : 0;
+    }
+
+    Serial.print("Useless counter = ");
+    Serial.println(counter);
+    Serial.print("Avg. inference time = ");
+    Serial.print(inference_time / ({{ repeat }} * {{ y_test| length }}.0f));
+    Serial.println(" micros");
+    Serial.print("Score = ");
+    Serial.println((1.0f * confidence) / support);
+    Serial.println("=================");
+
+    delay(1000);
+}

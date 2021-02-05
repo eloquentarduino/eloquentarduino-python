@@ -5,6 +5,7 @@ from eloquentarduino.jupyter.project.ArduinoCli import ArduinoCli
 from eloquentarduino.jupyter.project.BoardConfiguration import BoardConfiguration
 from eloquentarduino.jupyter.project.Errors import BoardNotFoundError, MultipleBoardsFoundError, NoSerialPortFoundError, MultipleSerialPortsFoundError
 
+from eloquentarduino.jupyter.project.TeensyCli import TeensyCli
 
 class Board:
     """
@@ -180,6 +181,7 @@ class Board:
         """
         Compile sketch
         """
+        #return TeensyCli().run()
         self._assert(port=False)
         return self.cli(['compile', '--verify', '--fqbn', self.fqbn])
 
@@ -197,6 +199,7 @@ class Board:
 
     def upload(self):
         """Upload sketch"""
+        #return TeensyCli().run()
         self._assert(port=True)
         arguments = ['upload', '--verify', '--fqbn', self.fqbn, '--port', self.port]
 

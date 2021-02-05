@@ -1,0 +1,29 @@
+// axis = (1, 2) --> global min/max/mean/std
+float m = _past[0][0];
+float M = _past[0][0];
+float avg = 0;
+float var = 0;
+
+for (uint8_t k = 0; k < {{ composites_length }}; k++) {
+    for (uint16_t i = 0; i < {{ num_features_primitives }}; i++) {
+        float xi = _past[k][i];
+
+        if (xi < m) m = xi;
+        if (xi > M) M = xi;
+
+        avg += xi;
+    }
+}
+
+avg /= {{ composites_length * num_features_primitives }};
+
+for (uint8_t k = 0; k < {{ composites_length }}; k++) {
+    for (uint16_t i = 0; i < {{ num_features_primitives }}; i++) {
+        var += pow(_past[k][i] - avg, 2);
+    }
+}
+
+_features[0] = m;
+_features[1] = M;
+_features[2] = avg;
+_features[3] = var / {{ composites_length * num_features_primitives }};

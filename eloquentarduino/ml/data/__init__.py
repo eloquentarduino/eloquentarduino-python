@@ -5,3 +5,4 @@ from eloquentarduino.ml.data.Pipeline import Pipeline
 from eloquentarduino.ml.data.PipelineGridSearch import PipelineGridSearch
 from eloquentarduino.ml.data.RollingWindow import RollingWindow
 from eloquentarduino.ml.data.CheckpointFile import CheckpointFile
+from eloquentarduino.ml.data.Dataset import Dataset

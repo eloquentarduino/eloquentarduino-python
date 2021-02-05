@@ -1,0 +1,80 @@
+#define __min(a,b) ((a)<(b)?(a):(b))
+#define __max(a,b) ((a)>(b)?(a):(b))
+
+using namespace eloquent::io;
+
+{{ clf_primitives }}
+{{ clf_composites }}
+
+
+namespace Eloquent {
+    namespace ML {
+        /**
+         * Apply ML to ML outputs
+         */
+        class CascadingClassifier {
+            public:
+
+                /**
+                 * Ingest new feature vector
+                 */
+                void push(float *x) {
+                    // shift past
+                    for (uint16_t i = 0; i < {{ num_features_primitives }}; i++) {
+                        _past[_idx][i] = x[i];
+                    }
+                    //memcpy(_past[_idx], x, sizeof(float) * {{ num_features_primitives }});
+
+                    _outputs[_idx] = _primitiveClf.predict(x);
+                    _counter += 1;
+                    _idx = _counter % {{ composites_length }};
+                }
+
+                /**
+                 * Run inference
+                 */
+                uint8_t predict(float *x = NULL) {
+                    if (x != NULL) {
+                        push(x);
+                    }
+
+                    if (_counter < {{ composites_length }}) {
+                        return sqrt(-1);
+                    }
+
+                    // compute summary statistics
+                    {% if axis == 1 %}
+                        {% include './_featurewise.jinja' %}
+                    {% elif axis == 2 %}
+                        {% include './_windowwise.jinja' %}
+                    {% elif axis == (1, 2) %}
+                        {% include './_global.jinja' %}
+                    {% endif %}
+
+                    // append past outputs
+                    for (uint8_t i = 0; i < {{ composites_length }}; i++) {
+                        _features[{{ num_features - composites_length }} + i] = _outputs[(_idx + i) % {{ composites_length }}];
+                    }
+
+                    eloquent::io::print_array(_features, {{ num_features }});
+
+                    return _compositeClf.predict(_features);
+                }
+
+            protected:
+                uint8_t _idx = 0;
+                uint16_t _counter = 0;
+                uint8_t _outputs[{{ composites_length }}] = {0};
+                float _past[{{ composites_length }}][{{ num_features_primitives }}];
+                float _features[{{ num_features }}];
+                {% if axis == (1, 2) %}
+                float _min;
+                float _max;
+                float _avg;
+                float _std;
+                {% endif %}
+                Port::PrimitivesClassifier _primitiveClf;
+                Port::CompositesClassifier _compositeClf;
+        };
+    }
+}

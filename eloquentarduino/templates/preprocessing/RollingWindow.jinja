@@ -1,0 +1,59 @@
+#pragma once
+
+namespace Eloquent {
+    namespace ML {
+        namespace Port {
+            class {{ class_name }} {
+                public:
+                    float X[{{ depth * input_dim }}];
+
+                    /**
+                     * Constructor
+                     */
+                    {{ class_name }}() {
+                        for (uint8_t k = 0; k < {{ depth }}; k++) {
+                            for (uint16_t i = 0; i < {{ input_dim }}; i++) {
+                                _samples[k][i] = 0;
+                                X[k * {{ depth }} + i] = 0;
+                            }
+                        }
+                    }
+
+                    /**
+                     * Test if window is full
+                     */
+                    bool isFull() {
+                        return _idx >= {{ depth }};
+                    }
+
+                    /**
+                     * Add sample to rolling window
+                     */
+                    void append(float *x, bool update = true) {
+                        for (uint16_t i = 0; i < {{ input_dim }}; i++) {
+                            _samples[_head][i] = x[i];
+                        }
+
+                        _idx  = _idx + 1;
+                        _head = _idx % {{ depth }};
+
+                        if (update) {
+                            for (uint8_t k = 0; k < {{ depth }}; k++) {
+                                uint8_t w = (_head + k) % {{ depth }};
+                                uint16_t offset = k * {{ input_dim }};
+
+                                for (uint16_t i = 0; i < {{ input_dim }}; i++) {
+                                    X[offset + i] = _samples[w][i];
+                                }
+                            }
+                        }
+                    }
+
+                protected:
+                    uint8_t _head = 0;
+                    uint32_t _idx = 0;
+                    float _samples[{{ depth }}][{{ input_dim }}];
+            };
+        }
+    }
+}
