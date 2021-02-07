@@ -1,0 +1,53 @@
+#pragma once
+
+#include <EloquentArduino.h>
+#include <eloquentarduino/data_structures/Queue.h>
+
+
+{{ simplex_clf }}
+
+{{ complex_clf }}
+
+
+namespace Eloquent {
+    namespace ML {
+        namespace Port {
+            class {{ classname }} {
+                public:
+
+                    /**
+                     * Push new sample to the inner queue
+                     */
+                    void push(float *x) {
+                        push(_simplexClf.predict(x));
+                    }
+
+                    /**
+                     * Push new prediction to the inner queue
+                     */
+                    void push(uint8_t y) {
+                        _simplexPredictions.append(y);
+                    }
+
+                    /**
+                     * Run prediction
+                     * @param *x optional sample to push to the inner queue
+                     */
+                    uint8_t predict(float *x = NULL) {
+                        if (x != NULL)
+                            push(x);
+
+                        if (!_simplexPredictions.isFull())
+                            return sqrt(-1);
+
+                        return _complexClf.predict(_simplexPredictions.X);
+                    }
+
+                protected:
+                    Eloquent::DataStructures::Queue<{{ depth }}> _simplexPredictions;
+                    {{ simplex_classname }} _simplexClf;
+                    {{ complex_classname }} _complexClf;
+            };
+        }
+    }
+}
