@@ -17,9 +17,10 @@ eloquentarduino/jupyter/project/SerialMonitor.py
 eloquentarduino/jupyter/project/SketchFiles.py
 eloquentarduino/jupyter/project/TeensyCli.py
 eloquentarduino/jupyter/project/__init__.py
-eloquentarduino/ml/CascadingClassifier.py
 eloquentarduino/ml/Classifier.py
 eloquentarduino/ml/__init__.py
+eloquentarduino/ml/cascading/CascadingClassifier.py
+eloquentarduino/ml/cascading/__init__.py
 eloquentarduino/ml/data/CheckpointFile.py
 eloquentarduino/ml/data/Dataset.py
 eloquentarduino/ml/data/Pipeline.py
@@ -56,11 +57,6 @@ eloquentarduino/ml/metrics/training/ClassifierBenchmark.py
 eloquentarduino/ml/metrics/training/__init__.py
 eloquentarduino/ml/plot/__init__.py
 eloquentarduino/templates/RollingWindow.jinja
-eloquentarduino/templates/CascadingClassifier/CascadingClassifier.jinja
-eloquentarduino/templates/CascadingClassifier/__init__.py
-eloquentarduino/templates/CascadingClassifier/_featurewise.jinja
-eloquentarduino/templates/CascadingClassifier/_global.jinja
-eloquentarduino/templates/CascadingClassifier/_windowwise.jinja
 eloquentarduino/templates/Pipeline/FFT.jinja
 eloquentarduino/templates/Pipeline/Normalize.jinja
 eloquentarduino/templates/Pipeline/Pipeline.jinja
@@ -70,6 +66,11 @@ eloquentarduino/templates/Pipeline/RFE.jinja
 eloquentarduino/templates/Pipeline/SelectKBest.jinja
 eloquentarduino/templates/Pipeline/Standardize.jinja
 eloquentarduino/templates/Pipeline/Unit.jinja
+eloquentarduino/templates/cascading/CascadingClassifier.jinja
+eloquentarduino/templates/cascading/__init__.py
+eloquentarduino/templates/cascading/_featurewise.jinja
+eloquentarduino/templates/cascading/_global.jinja
+eloquentarduino/templates/cascading/_windowwise.jinja
 eloquentarduino/templates/magics/eloquent-arduino.h.jinja
 eloquentarduino/templates/metrics/Baseline.jinja
 eloquentarduino/templates/metrics/Empty.jinja
