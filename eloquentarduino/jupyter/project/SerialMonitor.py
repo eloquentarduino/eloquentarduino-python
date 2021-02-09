@@ -14,8 +14,27 @@ class SerialMonitor:
         with self.open(**kwargs) as serial:
             serial.write(message)
 
+    def stream(self, timeout=60, **kwargs):
+        """
+        Dump serial data
+        :param timeout:
+        """
+        self.project.assert_name()
+        start = time()
+
+        with Serial(self.project.board.port, self.project.board.baud_rate, timeout=1, **kwargs) as serial:
+            while time() - start < timeout:
+                try:
+                    char = serial.read().decode('utf-8')
+                    if char:
+                        print(char, end='')
+                except UnicodeDecodeError:
+                    pass
+
     def read(self, timeout=60, **kwargs):
-        """Read from serial monitor"""
+        """
+        Read from serial monitor
+        """
         self.project.assert_name()
         start = time()
         buffer = ''

@@ -23,6 +23,7 @@ class CascadingClassifier:
         self.depth = int(depth)
         self.window = RollingWindow(depth=self.depth)
         self.input_dim = None
+        self.classmap = {}
         # make compatible with sklearn classifiers
         self._estimator_type = 'classifier'
 
@@ -34,12 +35,14 @@ class CascadingClassifier:
         """
         X, y = [], []
 
-        for Xi, y0 in train:
+        for Xi, y0, *label in train:
             self.input_dim = Xi.shape[1]
             Xi = self.transform(Xi)
             yi = np.ones(len(Xi)) * y0
             X.append(Xi)
             y.append(yi)
+            if len(label) == 1:
+                self.classmap[int(y0)] = label[0]
 
         X = np.vstack(X)
         y = np.concatenate(y)
@@ -79,6 +82,7 @@ class CascadingClassifier:
 
         return jinja('cascading/CascadingClassifier.jinja', {
             'classname': classname,
+            'classmap': self.classmap,
             'simplex_classname': simplex_classname,
             'complex_classname': complex_classname,
             'simplex_clf': port(self.simplex_clf, classname=simplex_classname),

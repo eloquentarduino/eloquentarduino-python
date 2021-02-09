@@ -43,6 +43,29 @@ namespace Eloquent {
                         return _complexClf.predict(_simplexPredictions.X);
                     }
 
+                    {% if len(classmap) %}
+                        /**
+                         * Predict readable class name
+                         */
+                        const char* predictLabel(float *x) {
+                            return idxToLabel(predict(x));
+                        }
+
+                        /**
+                         * Convert class idx to readable name
+                         */
+                        const char* idxToLabel(uint8_t classIdx) {
+                            switch (classIdx) {
+                                {% for idx, name in classmap.items() %}
+                                    case {{ idx }}:
+                                        return "{{ name }}";
+                                {% endfor %}
+                                default:
+                                    return "Houston we have a problem";
+                            }
+                        }
+                    {% endif %}
+
                 protected:
                     Eloquent::DataStructures::Queue<{{ depth }}> _simplexPredictions;
                     {{ simplex_classname }} _simplexClf;
