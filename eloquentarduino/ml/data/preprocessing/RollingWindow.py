@@ -23,7 +23,7 @@ class RollingWindow:
         """
         self.transform(X)
 
-    def transform(self, X):
+    def transform(self, X, flatten=True):
         """
         Transform data
         :param X: input data
@@ -34,7 +34,7 @@ class RollingWindow:
         t = np.arange(len(X) - self.depth + 1)
         idx = (w + t.reshape((-1, 1)))
         idx = idx[::self.shift]
-        return X[idx].reshape((-1, self.input_dim * self.depth))
+        return X[idx].reshape((-1, self.input_dim * self.depth)) if flatten else X[idx]
 
     def port(self, class_name='RollingWindow'):
         """
