@@ -1,6 +1,5 @@
 import re
 import numpy as np
-import pandas as pd
 from micromlgen import port
 
 from eloquentarduino.ml.metrics.plot import Barplot
@@ -23,7 +22,7 @@ class Resources:
         :return:
         """
         with self.project.tmp_project() as tmp:
-            tmp.files.add('%s.ino' % tmp.name, contents=jinja('metrics/Empty.jinja'), exists_ok=True)
+            tmp.files.add('%s.ino' % tmp.name, contents=jinja('metrics/Baseline.jinja'), exists_ok=True)
             return self._benchmark_current(tmp)
 
     def benchmark(self, clf, x=None, n_features=1):

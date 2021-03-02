@@ -1,0 +1,36 @@
+#include "Classifier.h"
+
+#define REPEAT 20
+
+
+Eloquent::ML::Port::Classifier clf;
+uint32_t uselessCounter = 0;
+float X[{{ X | shape}}] = {{ X | to_array }};
+float y[{{ y | shape}}] = {{ y | to_array }};
+
+
+void setup() {
+    Serial.begin(115200);
+    delay(3000);
+}
+
+void loop() {
+    uint32_t benchmark_start = micros();
+
+    for (uint8_t k = 0; k < REPEAT; k++) {
+        {% for i in range(X | length) %}
+            uselessCounter += clf.predict(X[{{ i }}]);
+        {% endfor %}
+    }
+
+    uint32_t inference_time = micros() - benchmark_start;
+
+    Serial.print("Avg. inference time = ");
+    Serial.print(inference_time / (REPEAT * {{ X | length }}.0f));
+    Serial.println(" micros");
+    Serial.print("Userless counter = ");
+    Serial.println(uselessCounter);
+    Serial.println("============");
+
+    delay(1000);
+}

@@ -1,0 +1,46 @@
+#include <EloquentTinyML.h>
+
+
+{{ model_data }}
+
+
+
+namespace Eloquent {
+    namespace NN {
+        namespace Port {
+            class {{ class_name }} {
+                public:
+                    static const uint16_t NUM_INPUTS = {{ num_inputs }};
+                    static const uint16_t NUM_OUTPUTS = {{ num_outputs }};
+                    static const uint16_t SHAPE_X = {{ shape[0] }};
+                    static const uint16_t SHAPE_Y = {{ shape[1] }};
+
+                    float proba[{{ num_outputs }}] = {0};
+                    Eloquent::TinyML::TfLite<{{ num_inputs }}, {{ num_outputs }}, {{ arena_size }}> nn;
+
+                    /**
+                     * Init model
+                     */
+                     bool begin() {
+                        return nn.begin({{ model_name }});
+                     }
+
+                     /**
+                      * Predict class probabilities
+                      */
+                     void predictProba(float *x) {
+                        nn.predict(x, proba);
+                     }
+
+                    /**
+                     * Predict most probable class
+                     */
+                     uint8_t predictClass(float *x) {
+                        predictProba(x);
+
+                        return nn.probaToClass(proba);
+                     }
+            };
+        }
+    }
+}

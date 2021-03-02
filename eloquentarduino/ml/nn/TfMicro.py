@@ -1,24 +1,30 @@
-import numpy as np
-import tensorflow as tf
 import matplotlib.pyplot as plt
+import tensorflow as tf
 from tensorflow.keras import layers
+from tensorflow.keras.utils import to_categorical
+from tinymlgen import port
+
 from eloquentarduino.ml.data import Dataset
+from eloquentarduino.utils import jinja
 
 
 class TfMicro:
     """
     Eloquent interface to build a NN with Keras and Tf
     """
-    def __init__(self, X=None, y=None, dataset=None):
+    def __init__(self, X=None, y=None, dataset=None, fit_config={}):
         """
         :param X:
         :param y:
-        :param dataset: a eloquentarduino.ml.data.Dataset instance
+        :param dataset: Dataset
+        :param fit_config: options to apply when you call fit()
         """
-        assert dataset is not None or (X is not None and y is not None), 'you MUST supply a dataset'
+        # assert dataset is not None or (X is not None and y is not None), 'you MUST supply a dataset'
         assert dataset is None or isinstance(dataset, Dataset), 'dataset MUST be a eloquent.ml.data.Dataset instance'
+        assert isinstance(fit_config, dict), 'fit_config MUST be a dict'
 
         self.dataset = dataset if dataset is not None else Dataset('dataset', X, y)
+        self.fit_config = fit_config
         self.x_train = None
         self.x_test = None
         self.x_validate = None
@@ -28,6 +34,9 @@ class TfMicro:
         self.sequential = tf.keras.Sequential()
         self.layers = []
         self.history = None
+
+        if len(self.dataset.y.shape) == 1:
+            self.dataset.y = to_categorical(self.dataset.y)
 
     @property
     def num_features(self):
@@ -68,22 +77,7 @@ class TfMicro:
         if validation is None:
             validation = 1 - train - test
 
-        assert 0 < train < 1, 'train size MUST be in the range (0, 1)'
-        assert 0 < test < 1, 'test size MUST be in the range (0, 1)'
-        assert 0 <= validation < 1, 'validation size MUST be in the range [0, 1)'
-
-        train_split = int(train * self.dataset.length)
-        test_split = int(test * self.dataset.length) + train_split
-
-        if shuffle:
-            self.dataset.shuffle()
-
-        if validation > 0:
-            self.x_train, self.x_test, self.x_validate = np.split(self.dataset.X, [train_split, test_split])
-            self.y_train, self.y_test, self.y_validate = np.split(self.dataset.y, [train_split, test_split])
-        else:
-            self.x_train, self.x_test = np.split(self.dataset.X, [train_split])
-            self.y_train, self.y_test = np.split(self.dataset.y, [train_split])
+        self.x_train, self.y_train, self.x_validate, self.y_validate, self.x_test, self.y_test = self.dataset.split(test=test, validation=validation, shuffle=shuffle, return_empty=True)
 
         return self
 
@@ -97,12 +91,12 @@ class TfMicro:
 
         return self
 
-    def last_dense(self, **kwargs):
+    def softmax(self, **kwargs):
         """
         Add last dense layer
         :return: TfMicro
         """
-        self.add(layers.Dense(self.num_classes, **kwargs))
+        self.add(layers.Dense(self.num_classes, activation='softmax', **kwargs))
 
         return self.commit()
 
@@ -123,24 +117,46 @@ class TfMicro:
         """
         return self.sequential.summary(*args, **kwargs)
 
-    def compile(self, **kwargs):
+    def compile(self, optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'], **kwargs):
         """
         Compile the network
+        :param optimizer:
+        :param loss:
+        :param metrics:
         """
-        return self.sequential.compile(**kwargs)
+        return self.sequential.compile(optimizer=optimizer, loss=loss, metrics=metrics, **kwargs)
 
-    def fit(self, *args, **kwargs):
+    def fit(self, X, y, *args, **kwargs):
         """
-        Fit the network
+        Fit network (compatible api with Tf)
+        :param X:
+        :param y:
         """
-        if self.x_validate is not None:
+        self.sequential.fit(X, y, *args, **kwargs)
+
+    def self_fit(self, **kwargs):
+        """
+        Fit the network on given dataset
+        """
+        if self.x_validate is not None and len(self.x_validate) > 0:
             kwargs.update(validation_data=(self.x_validate, self.y_validate))
 
-        self.history = self.sequential.fit(self.x_train, self.y_train, *args, **kwargs)
+        if 'validation_data' in kwargs and kwargs['validation_data'][0] is None:
+            kwargs.pop('validation_data')
+
+        self.history = self.sequential.fit(self.x_train, self.y_train, **self.fit_config, **kwargs)
 
         return self.history
 
-    def evaluate(self):
+    def evaluate(self, x_test=None, y_test=None):
+        """
+        Evaluate accuracy on given dataset
+        :param x_test:
+        :param y_test:
+        """
+        return self.sequential.evaluate(x_test, y_test)
+
+    def self_evaluate(self):
         """
         Evaluate the network on train, test and validation
         :return: (train accuracy, validation accuracy?, test accuracy)
@@ -182,4 +198,23 @@ class TfMicro:
         plt.show()
 
         return self
+
+    def port(self, arena_size='1024 * 16', model_name='model', classname='TfMicro', optimize=False):
+        """
+        Port Tf model to plain C++
+        :param arena_size: size of tensor arena (read Tf docs)
+        :param model_name: name of the exported model variable
+        :param class_name: name of the exported class
+        :param optimize: list of optimizers to apply, or boolean (it is highly recommend to leave this at False)
+        """
+        return jinja('nn/TfMicro.jinja', {
+            'class_name': classname,
+            'model_name': model_name,
+            'model_data': port(self.sequential, variable_name=model_name, optimize=optimize),
+            'num_inputs': self.num_features,
+            'num_outputs': self.num_classes,
+            'arena_size': arena_size,
+            'shape': list(self.dataset.X.shape) + [0]
+        })
+
 
