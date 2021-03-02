@@ -99,6 +99,9 @@ eloquentarduino/templates/metrics/Runtime.bck.jinja
 eloquentarduino/templates/metrics/Runtime.jinja
 eloquentarduino/templates/nn/TfMicro.jinja
 eloquentarduino/templates/preprocessing/RollingWindow.jinja
+eloquentarduino/templates/third_party/snoopy/snoopy.jinja
+eloquentarduino/third_party/Snoopy.py
+eloquentarduino/third_party/__init__.py
 eloquentarduino/utils/__init__.py
 eloquentarduino/utils/jinja.py
 eloquentarduino/utils/misc.py
