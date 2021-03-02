@@ -1,0 +1,110 @@
+#ifndef ML_H
+#define ML_H 1
+
+
+#define NUM_FEATURES {{ num_features }}
+#define WINDOW_DEPTH {{ depth }}
+#define PREDICT_EVERY_N_SAMPLES {{ predict_every }}
+#define PERSIST_PREDICTION {{ persist }}
+
+#include "imu_AHRS.h"
+
+#include <EloquentArduino.h>
+#include <eloquentarduino/data_structures/NdQueue.h>
+#include <eloquentarduino/data_structures/LongShortTermVoting.h>
+
+extern uint8_t mlPredictionByte;
+
+{{ ported_clf }}
+
+
+class ML {
+  public:
+
+    ML() :
+        voting({{ voting[2] }}, {{ voting[3] }}) {
+
+        }
+
+    /**
+     * Add sample to queue for ML prediction.
+     * You can use the features you prefer here (accelerometer, gyroscope, yaw/pitch/roll...)
+     */
+    void update() {
+      float _ax = Ax / aRes;
+      float _ay = Ay / aRes;
+      float _az = Az / aRes;
+
+      float deltaX = _ax - _lastAx;
+      float deltaY = _ay - _lastAy;
+      float deltaZ = _az - _lastAz;
+      float deltaYaw = yaw - _lastYaw;
+      float deltaRoll = roll - _lastRoll;
+      float deltaPitch = pitch - _lastPitch;
+
+      _lastAx = _ax;
+      _lastAy = _ay;
+      _lastAz = _az;
+      _lastYaw = yaw;
+      _lastRoll = roll;
+      _lastPitch = pitch;
+
+      {% if diff %}
+      float features[] = {deltaYaw, deltaPitch, deltaRoll, deltaX, deltaY, deltaZ};
+      {% else %}
+      float features[] = {yaw, pitch, roll, _ax, _ay, _az};
+      {% endif %}
+
+      // clear the queue once in a while
+      if (queue.length() == UINT32_MAX - 1)
+        queue.clear();
+
+      // update queue
+      queue.append(features, false);
+
+      // run prediction once every n samples
+      if (queue.isFull() && (queue.length() % PREDICT_EVERY_N_SAMPLES) == 0) {
+        queue.update();
+
+        y = clf.predict(queue.X);
+
+        // apply robust decision
+        voting.vote(y);
+
+        if (voting.agree()) {
+          // use 0 to mark "no decision"
+          y = 1 + voting.decision();
+
+          Serial.print("pred: ");
+          Serial.println(clf.idxToLabel(y - 1));
+        }
+      }
+      else if (!PERSIST_PREDICTION) {
+        y = 0;
+      }
+
+      mlPredictionByte = y;
+    }
+
+  protected:
+    uint8_t y;
+    float _lastAx = 0, _lastAy = 0, _lastAz = 0, _lastYaw = 0, _lastRoll = 0, _lastPitch = 0;
+    Eloquent::DataStructures::NdQueue<NUM_FEATURES, WINDOW_DEPTH> queue;
+    Eloquent::DataStructures::LongShortTermVoting<{{ voting[0] }}, {{ voting[1] }}> voting;
+    Eloquent::ML::Port::Classifier clf;
+
+
+    void printFeatures() {
+      Serial.print('[');
+
+      for (uint8_t i = 0; i < NUM_FEATURES * WINDOW_DEPTH; i++) {
+        Serial.print(queue.X[i]);
+        Serial.print(',');
+      }
+
+      Serial.println(']');
+    }
+};
+
+
+#endif

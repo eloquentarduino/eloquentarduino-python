@@ -1,3 +1,4 @@
+import re
 import os.path
 
 
@@ -63,3 +64,29 @@ class SketchFiles:
 
         with open(self.path_to(*args), encoding="utf-8") as file:
             return file.read()
+
+    def find_replace(self, *args, find=None, replace=None, count=9999):
+        """
+        Find and replace contents in file
+        :param find: str
+        :param replace: str
+        :param count: int
+        """
+        assert find is not None, 'find MUST be set'
+        assert replace is not None, 'replace MUST be set'
+
+        contents = self.cat(*args).replace(find, replace, count)
+        self.add(*args, contents=contents, exists_ok=True)
+
+    def find_replace_regex(self, *args, find=None, replace=None, count=9999):
+        """
+        Find and replace contents in file
+        :param find: str
+        :param replace: str
+        :param count: int
+        """
+        assert find is not None, 'find MUST be set'
+        assert replace is not None, 'replace MUST be set'
+
+        contents = re.sub(find, replace, self.cat(*args), count)
+        self.add(*args, contents=contents, exists_ok=True)

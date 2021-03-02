@@ -25,6 +25,7 @@ class PandasDataset:
         self.columns = columns or self.df.columns
         self.df = self.df[columns]
         self.splits = []
+        self.every = 1
 
     @property
     def length(self):
@@ -81,8 +82,8 @@ class PandasDataset:
         :param n: int
         :return: self
         """
-        for i, split in enumerate(self.splits):
-            self.splits[i] = split._replace(df=split.df[::n].reset_index(drop=True))
+        self.every = n
+        self.df = self.df[::n]
 
         return self
 
@@ -95,6 +96,8 @@ class PandasDataset:
         indices = []
 
         for start, end in args:
+            start = start // self.every
+            end = end // self.every
             chunk = self.df[start:end].reset_index(drop=True)
             df = chunk if df is None else df.append(chunk).reset_index(drop=True)
             indices.append((start, end))
@@ -137,4 +140,15 @@ class PandasDataset:
         Plot 2 PCA components of splits
         """
         X = PCA(n_components=2).fit_transform(self.X)
-        plt.scatter(X[:, 0], X[:, 1], c=self.y, alpha=alpha, s=s, **kwargs)
+        fig, ax = plt.subplots()
+
+        # apply log scales
+        if abs(X[:, 0].max() - X[:, 0].min()) > 1000:
+            X[:, 0] -= X[:, 0].min() + 1
+            ax.set_xscale('log')
+
+        if abs(X[:, 1].max() - X[:, 1].min()) > 1000:
+            X[:, 1] -= X[:, 1].min() + 1
+            ax.set_yscale('log')
+
+        ax.scatter(X[:, 0], X[:, 1], c=self.y, alpha=alpha, s=s, **kwargs)
