@@ -69,7 +69,7 @@ class PandasDataset:
         Return a new PandasDataset with the diff() from the current DataFrame
         :return: PandasDataset
         """
-        clone = PandasDataset(self.df.diff(), self.columns)
+        clone = PandasDataset(self.df.diff().iloc[1:], self.columns)
 
         for split in self.splits:
             clone.add_split(split.name, *split.indices)
@@ -135,7 +135,7 @@ class PandasDataset:
         for split in self.splits:
             split.df[columns or self.columns].plot(title=split.name, xticks=range(0, len(split.df), len(split.df) // n_ticks), grid=grid, fontsize=fontsize, **kwargs)
 
-    def plot_splits_pca(self, alpha=0.2, s=2, **kwargs):
+    def plot_splits_pca(self, alpha=1, s=2, **kwargs):
         """
         Plot 2 PCA components of splits
         """

@@ -34,9 +34,7 @@ class TfMicro:
         self.sequential = tf.keras.Sequential()
         self.layers = []
         self.history = None
-
-        if len(self.dataset.y.shape) == 1:
-            self.dataset.y = to_categorical(self.dataset.y)
+        self.dataset.y = self.to_categorical(self.dataset.y)
 
     @property
     def num_features(self):
@@ -126,25 +124,35 @@ class TfMicro:
         """
         return self.sequential.compile(optimizer=optimizer, loss=loss, metrics=metrics, **kwargs)
 
+    def to_categorical(self, y):
+        """
+        Convert y to one-hot (if not already)
+        :param y:
+        :return: ndarray one-hot encoded y
+        """
+        if len(y.shape) == 1:
+            return to_categorical(y)
+        return y
+
     def fit(self, X, y, *args, **kwargs):
         """
         Fit network (compatible api with Tf)
         :param X:
         :param y:
         """
-        self.sequential.fit(X, y, *args, **kwargs)
+        self.sequential.fit(X, self.to_categorical(y), *args, **kwargs)
 
     def self_fit(self, **kwargs):
         """
         Fit the network on given dataset
         """
         if self.x_validate is not None and len(self.x_validate) > 0:
-            kwargs.update(validation_data=(self.x_validate, self.y_validate))
+            kwargs.update(validation_data=(self.x_validate, self.to_categorical(self.y_validate)))
 
         if 'validation_data' in kwargs and kwargs['validation_data'][0] is None:
             kwargs.pop('validation_data')
 
-        self.history = self.sequential.fit(self.x_train, self.y_train, **self.fit_config, **kwargs)
+        self.history = self.sequential.fit(self.x_train, self.to_categorical(self.y_train), **self.fit_config, **kwargs)
 
         return self.history
 
@@ -154,18 +162,18 @@ class TfMicro:
         :param x_test:
         :param y_test:
         """
-        return self.sequential.evaluate(x_test, y_test)
+        return self.sequential.evaluate(x_test, self.to_categorical(y_test))
 
     def self_evaluate(self):
         """
         Evaluate the network on train, test and validation
         :return: (train accuracy, validation accuracy?, test accuracy)
         """
-        _, train_acc = self.sequential.evaluate(self.x_train, self.y_train, verbose=0)
-        _, test_acc = self.sequential.evaluate(self.x_test, self.y_test, verbose=0)
+        _, train_acc = self.sequential.evaluate(self.x_train, self.to_categorical(self.y_train), verbose=0)
+        _, test_acc = self.sequential.evaluate(self.x_test, self.to_categorical(self.y_test), verbose=0)
 
         if self.x_validate is not None:
-            _, validation_acc = self.sequential.evaluate(self.x_validate, self.y_validate, verbose=0)
+            _, validation_acc = self.sequential.evaluate(self.x_validate, self.to_categorical(self.y_validate), verbose=0)
 
             return train_acc, validation_acc, test_acc
 

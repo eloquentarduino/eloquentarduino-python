@@ -21,13 +21,13 @@ class Snoopy:
     def set_dataset(self, dataset):
         self.dataset = dataset
 
-    def rolling_window(self, depth, shift=1, diff=True):
+    def diff(self):
+        self.config['diff'] = True
+        self.dataset = self.dataset.diff()
+
+    def rolling_window(self, depth, shift=1):
         def f(X):
             return RollingWindow(depth=depth, shift=shift).transform(X, flatten=True)
-
-        if diff:
-            self.config['diff'] = True
-            self.dataset = self.dataset.diff()
 
         self.config['depth'] = depth
         self.dataset.transform_splits(f)

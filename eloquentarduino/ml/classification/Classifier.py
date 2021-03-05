@@ -3,6 +3,7 @@ import eloquentarduino
 import micromlgen
 from sklearn.base import clone
 from sklearn.model_selection import KFold, train_test_split
+from keras.utils import to_categorical
 from eloquentarduino.utils import jinja
 from eloquentarduino.ml.data import Dataset
 from eloquentarduino.ml.metrics.device.parsers import CompileLogParser
@@ -81,15 +82,19 @@ class Classifier:
         scores = []
 
         for train_idx, test_idx in kfold.split(dataset.X, dataset.y):
-            clf = self.create_for_dataset(dataset.X, dataset.y)
+            self.clf = clf = self.create_for_dataset(dataset.X, dataset.y)
             x_train = dataset.X[train_idx]
             y_train = dataset.y[train_idx]
             x_test = dataset.X[test_idx]
             y_test = dataset.y[test_idx]
 
-            if self.is_tf() and validation_size > 0:
-                x_train, x_validate, y_train, y_validate = train_test_split(x_train, y_train, test_size=validation_size)
-                clf.fit(x_train, y_train, validation_data=(x_validate, y_validate))
+            if self.is_tf():
+                y_train = to_categorical(y_train)
+                if validation_size > 0:
+                    x_train, x_validate, y_train, y_validate = train_test_split(x_train, y_train, test_size=validation_size)
+                    clf.fit(x_train, y_train, validation_data=(x_validate, y_validate))
+                else:
+                    clf.fit(x_train, y_train)
             else:
                 clf.fit(x_train, y_train)
 
