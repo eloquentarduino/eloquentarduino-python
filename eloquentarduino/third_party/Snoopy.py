@@ -30,15 +30,18 @@ class Snoopy:
             return RollingWindow(depth=depth, shift=shift).transform(X, flatten=True)
 
         self.config['depth'] = depth
-        self.dataset.transform_splits(f)
+        self.config['shift'] = shift
+        # @todo fix this
+        #self.dataset.transform_splits(f)
 
     def set_classifier(self, clf, cv=3):
         assert self.dataset is not None, 'you MUST set a dataset first'
 
-        scores = cross_validate(clf, self.dataset.X, self.dataset.y, cv=cv, return_estimator=True)
+        X, y = self.dataset.Xy_shuffle
+        scores = cross_validate(clf, X, y, cv=cv, return_estimator=True)
         best_idx = scores['test_score'].argmax()
         self.clf = scores['estimator'][best_idx]
-        self.clf.fit(self.dataset.X, self.dataset.y)
+        self.clf.fit(X, y)
 
         return scores['test_score'][best_idx]
 

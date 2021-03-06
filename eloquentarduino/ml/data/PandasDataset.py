@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from collections import namedtuple
 from sklearn.decomposition import PCA
+from sklearn.utils import shuffle
 
 
 Split = namedtuple('Split', 'name df np indices')
@@ -49,6 +50,14 @@ class PandasDataset:
         :return: np.ndarray
         """
         return np.concatenate([np.ones(len(split.np)) * i for i, split in enumerate(self.splits)])
+
+    @property
+    def Xy_shuffle(self):
+        """
+        Get X and y shuffled
+        :return:
+        """
+        return shuffle(self.X, self.y)
 
     @property
     def classmap(self):
@@ -122,7 +131,8 @@ class PandasDataset:
         :param grid: bool wether to display the grid
         :param fontsize: int font size for the axis values
         """
-        self.df[columns or self.columns].plot(title=title, xticks=range(0, self.length, self.length // n_ticks), grid=grid, fontsize=fontsize, **kwargs)
+        plt.figure()
+        self.df[columns or self.columns].plot(title=title, xticks=range(0, self.length, self.length // n_ticks), grid=grid, fontsize=fontsize, rot=70, **kwargs)
 
     def plot_splits(self, columns=None, n_ticks=15, grid=True, fontsize=6, **kwargs):
         """
@@ -133,9 +143,10 @@ class PandasDataset:
         :param fontsize: int font size for the axis values
         """
         for split in self.splits:
-            split.df[columns or self.columns].plot(title=split.name, xticks=range(0, len(split.df), len(split.df) // n_ticks), grid=grid, fontsize=fontsize, **kwargs)
+            plt.figure()
+            split.df[columns or self.columns].plot(title=split.name, xticks=range(0, len(split.df), len(split.df) // n_ticks), grid=grid, fontsize=fontsize, rot=70, **kwargs)
 
-    def plot_splits_pca(self, alpha=1, s=2, **kwargs):
+    def plot_splits_pca(self, alpha=1, s=2, xlog=False, ylog=False, **kwargs):
         """
         Plot 2 PCA components of splits
         """
@@ -143,12 +154,14 @@ class PandasDataset:
         fig, ax = plt.subplots()
 
         # apply log scales
-        if abs(X[:, 0].max() - X[:, 0].min()) > 1000:
-            X[:, 0] -= X[:, 0].min() + 1
+        if xlog:
+            if abs(X[:, 0].max() - X[:, 0].min()) > 1000:
+                X[:, 0] -= X[:, 0].min() + 1
             ax.set_xscale('log')
 
-        if abs(X[:, 1].max() - X[:, 1].min()) > 1000:
-            X[:, 1] -= X[:, 1].min() + 1
+        if ylog:
+            if abs(X[:, 1].max() - X[:, 1].min()) > 1000:
+                X[:, 1] -= X[:, 1].min() + 1
             ax.set_yscale('log')
 
         ax.scatter(X[:, 0], X[:, 1], c=self.y, alpha=alpha, s=s, **kwargs)
