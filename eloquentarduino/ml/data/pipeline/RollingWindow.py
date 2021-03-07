@@ -39,7 +39,7 @@ class RollingWindow(BaseStep):
         :return: str
         """
         assert self.input_dim is not None, 'Unfitted'
-        return jinja('preprocessing/RollingWindow.jinja', {
+        return jinja('ml/RollingWindow.jinja', {
             'class_name': class_name,
             'depth': self.depth,
             'input_dim': self.input_dim

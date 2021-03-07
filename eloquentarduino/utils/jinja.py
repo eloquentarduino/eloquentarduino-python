@@ -51,6 +51,8 @@ def jinja_env(loader):
     env.filters['shape'] = shape
     env.filters['to_array'] = to_array
     env.globals['np'] = np
+    env.globals['enumerate'] = enumerate
+    env.globals['isinstance'] = isinstance
     env.globals['train_test_split'] = train_test_split
 
     return env

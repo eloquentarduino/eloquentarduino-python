@@ -97,7 +97,7 @@ class ClassifierBenchmark:
 
     def preprocess(self, dataset_name, pipeline):
         """
-        Add preprocessing pipeline to datasets
+        Add ml pipeline to datasets
         :param dataset_name:
         :param pipeline:
         :return:
