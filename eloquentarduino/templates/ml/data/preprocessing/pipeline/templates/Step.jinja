@@ -1,0 +1,15 @@
+{% extends './Namespace.jinja' %}
+
+{% block body %}
+
+    class {{ name }} {% if name != 'Step' %}: public Step {% endif %} {
+        public:
+            {% if name != 'Step' %} using Step::Step; {% endif %}
+
+            {% block public %}{% endblock %}
+
+        protected:
+            {% block protected %}{% endblock %}
+    };
+
+{% endblock %}

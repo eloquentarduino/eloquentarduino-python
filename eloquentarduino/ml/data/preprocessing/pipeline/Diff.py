@@ -1,3 +1,4 @@
+import numpy as np
 from eloquentarduino.ml.data.preprocessing.pipeline.BaseStep import BaseStep
 
 
@@ -22,7 +23,7 @@ class Diff(BaseStep):
         Compute diff()
         :return: ndarray
         """
-        return X[1:, :] - X[0:-1]
+        return np.vstack((X[0].reshape((1, -1)), X[1:, :] - X[0:-1]))
 
     def get_template_data(self):
         """

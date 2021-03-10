@@ -1,48 +1,35 @@
-namespace Eloquent {
-    namespace ML {
-        namespace Data {
-            namespace Preprocessing {
-                namespace Pipeline {
-                    namespace Ported {
-                        namespace {{ pipeline }} {
-                            class {{ name }} : public Step {
-                                public:
-                                    /**
-                                     * @inplace
-                                     */
-                                    bool transform(float *source, float *dest) {
-                                        float norm = 0;
-                                        float invNorm = 0;
+{% extends './templates/Step.jinja' %}
 
-                                        for (uint16_t i = 0; i < {{ input_dim }}; i++) {
-                                            {% if norm == 'l1' %}
-                                                norm += abs(source[i]);
-                                            {% elif norm == 'l2' %}
-                                                norm += pow(source[i], 2);
-                                            {% elif norm == 'inf' %}
-                                                norm = max(norm, abs(source[i]));
-                                            {% else %}
-                                                ERROR: unknown norm {{ norm }}
-                                            {% endif %}
-                                        }
+{% block public %}
 
-                                        {% if norm == 'l2' %}
-                                            norm = sqrt(norm);
-                                        {% endif %}
+    /**
+     * @inplace
+     */
+    bool transform(float *source) {
+        float norm = 0;
+        float invNorm = 0;
 
-                                        invNorm = 1 / norm;
-
-                                        for (uint16_t i = 0; i < {{ input_dim }}; i++) {
-                                            source[i] *= invNorm;
-                                        }
-
-                                        return true;
-                                    }
-                            };
-                        }
-                    }
-                }
-            }
+        for (uint16_t i = 0; i < {{ input_dim }}; i++) {
+            {% if norm == 'l1' %}
+                norm += abs(source[i]);
+            {% elif norm == 'l2' %}
+                norm += pow(source[i], 2);
+            {% else %}
+                ERROR: unknown norm {{ norm }}
+            {% endif %}
         }
+
+        {% if norm == 'l2' %}
+            norm = sqrt(norm);
+        {% endif %}
+
+        invNorm = 1 / norm;
+
+        for (uint16_t i = 0; i < {{ input_dim }}; i++) {
+            source[i] *= invNorm;
+        }
+
+        return true;
     }
-}
+
+{% endblock %}

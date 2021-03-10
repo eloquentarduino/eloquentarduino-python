@@ -22,13 +22,41 @@ class Pipeline:
 
         assert len([step.name for step in steps]) == len(set([step.name for step in steps])), 'steps names MUST be unique'
 
+    @property
+    def input_dim(self):
+        """
+        Get input dim of the whole pipeline
+        """
+        return self.steps[0].input_dim
+
+    @property
+    def working_dim(self):
+        """
+        Get work data size
+        """
+        return max([step.working_dim for step in self.steps])
+
+    @property
+    def output_dim(self):
+        """
+        Get output size (works only after fitting)
+        """
+        return self.dataset.X.shape[1]
+
+    @property
+    def includes(self):
+        """
+        Get list of included libraries
+        """
+        return [library for step in self.steps for library in step.includes]
+
     def fit(self):
         """
         Fit the steps
         :return: self
         """
         for step in self.steps:
-            self.dataset.X, self.dataset.y = step.fit(self.dataset.X, self.dataset.y)
+            self.dataset = self.dataset.replace(*step.fit(self.dataset.X, self.dataset.y))
 
         return self
 
@@ -37,7 +65,6 @@ class Pipeline:
         Apply pipeline
         :param X:
         """
-        #assert X.shape[1] == self.dataset.X.shape[1], 'X MUST match with the training X'
 
         for step in self.steps:
             X = step.transform(X)
@@ -50,7 +77,11 @@ class Pipeline:
         """
         return jinja('ml/data/preprocessing/pipeline/Pipeline.jinja', {
             'name': self.name,
-            'steps': self.steps
+            'pipeline': self.name,
+            'steps': self.steps,
+            'input_dim': self.input_dim,
+            'working_dim': max([1, self.working_dim, self.output_dim]),
+            'includes': self.includes
         }, pretty=True)
 
 

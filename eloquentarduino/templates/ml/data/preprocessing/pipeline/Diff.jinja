@@ -1,33 +1,25 @@
-namespace Eloquent {
-    namespace ML {
-        namespace Data {
-            namespace Preprocessing {
-                namespace Pipeline {
-                    namespace Ported {
-                        namespace {{ pipeline }} {
-                            class {{ name }} : public Step {
-                                public:
-                                    /**
-                                     * @inplace
-                                     */
-                                    bool transform(float *source, float *dest) {
-                                        for (uint16_t i = 0; i < {{ input_dim }}; i++) {
-                                            current = source[i];
-                                            source[i] -= old[i];
-                                            old[i] = current;
-                                        }
+{% extends './templates/Step.jinja' %}
 
-                                        return true;
-                                    }
+{% block public %}
 
-                                protected:
-                                    float current;
-                                    float old[{{ input_dim }}] = {0};
-                            };
-                        }
-                    }
-                }
-            }
+    /**
+     * @inplace
+     */
+    bool transform(float *source) {
+        for (uint16_t i = 0; i < {{ input_dim }}; i++) {
+            current = source[i];
+            source[i] -= old[i];
+            old[i] = current;
         }
+
+        return true;
     }
-}
+
+{% endblock %}
+
+{% block protected %}
+
+    float current;
+    float old[{{ input_dim }}] = {0};
+
+{% endblock %}

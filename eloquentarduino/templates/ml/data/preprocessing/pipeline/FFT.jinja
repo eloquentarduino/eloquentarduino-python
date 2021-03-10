@@ -1,0 +1,31 @@
+{% extends './templates/Step.jinja' %}
+
+{% block public %}
+    /**
+     *
+     */
+    bool transform(float *source) {
+        for (uint8_t featureIdx = 0; featureIdx < {{ num_features }}; featureIdx++) {
+            arduinoFFT fft;
+            uint16_t offset = featureIdx * {{ fft_length }};
+            double real[{{ fft_length * 2 }}] = {0};
+            double imag[{{ fft_length * 2 }}] = {0};
+
+            for (int i = featureIdx, j = 0; i < {{ input_dim }}; i += {{ num_features }}, j++) {
+                real[j] = source[i];
+            }
+
+            fft.Compute(real, imag, {{ fft_length * 2 }}, FFT_FORWARD);
+            fft.ComplexToMagnitude(real, imag, {{ fft_length * 2 }});
+
+            for (int i = 0; i < {{ fft_length }}; i++) {
+                buffer[offset + i] = real[i];
+            }
+        }
+
+        memcpy(source, buffer, sizeof(float) * {{ num_features * fft_length }});
+
+        return true;
+     }
+
+{% endblock %}

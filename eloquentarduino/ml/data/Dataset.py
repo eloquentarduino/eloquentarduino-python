@@ -41,6 +41,20 @@ class Dataset:
         # account for one-hot encoding
         return len(np.unique(self.y)) if len(self.y.shape) == 1 else self.y.shape[1]
 
+    def replace(self, X=None, y=None):
+        """
+        Replace X and y
+        :param X:
+        :param y:
+        """
+        if X is None:
+            X = self.X
+
+        if y is None:
+            y = self.y
+
+        return Dataset(name=self.name, X=X.copy(), y=y.copy())
+
     def shuffle(self, **kwargs):
         """
         Shuffle X and y

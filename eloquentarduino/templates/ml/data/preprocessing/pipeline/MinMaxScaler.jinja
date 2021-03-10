@@ -1,37 +1,28 @@
-namespace Eloquent {
-    namespace ML {
-        namespace Data {
-            namespace Preprocessing {
-                namespace Pipeline {
-                    namespace Ported {
-                        namespace {{ pipeline }} {
-                            class {{ name }} : public Step {
-                                public:
-                                    /**
-                                     * @inplace
-                                     */
-                                    bool transform(float *source, float *dest) {
-                                        for (uint16_t i = 0; i < {{ input_dim }}; i++) {
-                                            {% if ax == 0 %}
-                                               source[i] = (source[i] - {{ min }}) * {{ inv_range }};
-                                            {% else %}
-                                                source[i] = (source[i] - m[i % {{ num_features }}]) * invRange[i % {{ num_features }}];
-                                            {% endif %}
-                                        }
+{% extends './templates/Step.jinja' %}
 
-                                        return true;
-                                    }
-
-                                protected:
-                                    {% if ax > 0 %}
-                                        float m[{{ min[:num_features] | shape }}] = {{ min[:num_features] | to_array }};
-                                        float invRange[{{ inv_range[:num_features] | shape }}] = {{ inv_range[:num_features] | to_array }};
-                                    {% endif %}
-                            };
-                        }
-                    }
-                }
-            }
+{% block public %}
+    /**
+     * @inplace
+     */
+    bool transform(float *source) {
+        for (uint16_t i = 0; i < {{ input_dim }}; i++) {
+            {% if ax == 0 %}
+               source[i] = (source[i] - {{ min }}) * {{ inv_range }};
+            {% else %}
+                source[i] = (source[i] - m[i % {{ num_features }}]) * invRange[i % {{ num_features }}];
+            {% endif %}
         }
+
+        return true;
     }
-}
+
+{% endblock %}
+
+{% block protected %}
+
+    {% if ax > 0 %}
+        float m[{{ min[:num_features] | shape }}] = {{ min[:num_features] | to_array }};
+        float invRange[{{ inv_range[:num_features] | shape }}] = {{ inv_range[:num_features] | to_array }};
+    {% endif %}
+
+{% endblock %}

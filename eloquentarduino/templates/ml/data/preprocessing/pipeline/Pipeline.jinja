@@ -1,51 +1,53 @@
-#pragma once
+{% extends './templates/Namespace.jinja' %}
 
-{% include './AbstractStep.jinja' %}
+{% block preamble %}
 
-{% for i, step in enumerate(steps) %}
-{{ step.port(pipeline=name) }}
-{% endfor %}
+    #pragma once
+
+    {% for library in includes %}
+    #include "{{ library }}"
+    {% endfor %}
+
+    {% include './AbstractStep.jinja' %}
+
+    {% for i, step in enumerate(steps) %}
+    {{ step.port(pipeline=name) }}
+    {% endfor %}
+
+{% endblock %}
+
+{% block body %}
 
 
-namespace Eloquent {
-    namespace ML {
-        namespace Data {
-            namespace Preprocessing {
-                namespace Pipeline {
-                    namespace Ported {
-                        namespace {{ name }} {
-                            class {{ name }} {
-                                public:
-                                    /**
-                                     * Constructor
-                                     */
-                                    {{ name }}() {
-                                        {% for i, step in enumerate(steps) %}
-                                            steps[{{ i }}] = new {{ step.name }}();
-                                        {% endfor %}
-                                    }
+    class {{ name }} {
+        public:
+            float X[{{ working_dim }}] = {0};
 
-                                    /**
-                                     * Transform input vector
-                                     */
-                                    bool transform(float *x) {
-                                        {% for i, step in enumerate(steps) %}
-                                            {% if step.inplace %}
-                                                // {{ step.name }} (inplace)
-                                                if (!steps[{{ i }}]->transform(x, NULL)) {
-                                                    return false;
-                                                }
-                                            {% endif %}
-                                        {% endfor %}
-                                    }
-
-                                protected:
-                                    Step *steps[{{ steps | length }}];
-                            };
-                        }
-                    }
-                }
+            /**
+             * Constructor
+             */
+            {{ name }}() {
+                {% for i, step in enumerate(steps) %}
+                    steps[{{ i }}] = new {{ step.name }}(buffer);
+                {% endfor %}
             }
-        }
-    }
-}
+
+            /**
+             * Transform input vector
+             */
+            bool transform(float *x) {
+                memcpy(X, x, sizeof(float) * {{ input_dim }});
+
+                return {% for i, step in enumerate(steps) %}
+                    // {{ step.name }}
+                    {% if i > 0 %} && {% endif %} steps[{{ i }}]->transform(X)
+                {% endfor %};
+            }
+
+        protected:
+            // shared temporary memory for the steps
+            float buffer[{{ working_dim }}] = {0};
+            Step *steps[{{ steps | length }}];
+    };
+
+{% endblock %}

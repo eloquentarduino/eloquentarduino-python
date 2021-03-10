@@ -10,6 +10,7 @@ class BaseStep:
         self.input_dim = None
         self.inplace = False
         self.working_dim = 0
+        self.includes = []
 
     def set_X(self, X):
         """
@@ -37,6 +38,12 @@ class BaseStep:
         """
         raise NotImplemented('get_template_data')
 
+    def include_c_library(self, library):
+        """
+        Include library headers once ported to C++
+        """
+        self.includes.append(library)
+
     def port(self, pipeline):
         """
         Port to plain C++
@@ -45,6 +52,6 @@ class BaseStep:
         """
         template_name = type(self).__name__
         template_data = self.get_template_data()
-        template_data.update(name=self.name, input_dim=self.input_dim, pipeline=pipeline)
+        template_data.update(name=self.name, input_dim=self.input_dim, working_dim=self.working_dim, pipeline=pipeline)
 
         return jinja('ml/data/preprocessing/pipeline/%s.jinja' % template_name, template_data)

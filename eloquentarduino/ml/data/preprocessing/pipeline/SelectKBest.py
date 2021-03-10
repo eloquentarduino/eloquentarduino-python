@@ -18,6 +18,7 @@ class SelectKBest(BaseStep):
         super().__init__(name)
         self.k = k
         self.kbest = KBest(k=k, score_func=score_func)
+        self.idx = None
         self.inplace = True
 
     def fit(self, X, y):
@@ -26,6 +27,8 @@ class SelectKBest(BaseStep):
         """
         self.set_X(X)
         self.kbest.fit(X, y)
+        self.idx = (-self.kbest.scores_).argsort()[:self.k]
+        self.idx = np.sort(self.idx)
 
         return self.transform(X), y
 
@@ -33,15 +36,13 @@ class SelectKBest(BaseStep):
         """
         Transform
         """
-        return self.kbest.transform(X)
+        return X[:, self.idx]
 
     def get_template_data(self):
         """
         Template data
         """
-        idx = (-self.kbest.scores_).argsort()[:self.k]
-        idx = np.sort(idx)
         return {
             'k': self.k,
-            'idx': idx
+            'idx': self.idx
         }

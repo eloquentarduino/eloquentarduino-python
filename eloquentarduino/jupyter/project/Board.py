@@ -14,7 +14,7 @@ class Board:
     def __init__(self, project):
         self.project = project
         self.BoardModel = namedtuple('BoardModel', 'name fqbn')
-        self.baud_rate = 9600
+        self.baud_rate = 115200
         self.cli_path = None
         self.model = None
         self.label = None

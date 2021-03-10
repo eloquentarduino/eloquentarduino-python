@@ -1,31 +1,22 @@
-namespace Eloquent {
-    namespace ML {
-        namespace Data {
-            namespace Preprocessing {
-                namespace Pipeline {
-                    namespace Ported {
-                        namespace {{ pipeline }} {
-                            class {{ name }} : public Step {
-                                public:
-                                    /**
-                                     * @inplace
-                                     */
-                                    bool transform(float *source, float *dest) {
-                                        for (int i = 0; i < {{ k }}; i++) {
-                                            xt[i] = x[idx[i]];
-                                        }
+{% extends './templates/Step.jinja' %}
 
+{% block public %}
 
-                                        return true;
-                                    }
-
-                                protected:
-                                    uint16_t idx[{{ idx | length }}] = {{ idx | to_array }};
-                            };
-                        }
-                    }
-                }
-            }
+    /**
+     * @inplace
+     */
+    bool transform(float *source) {
+        for (int i = 0; i < {{ k }}; i++) {
+            source[i] = source[idx[i]];
         }
+
+
+        return true;
     }
-}
+
+{% endblock %}
+
+{% block protected %}
+    uint16_t idx[{{ idx | length }}] = {{ idx | to_array }};
+
+{% endblock %}

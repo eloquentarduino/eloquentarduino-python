@@ -1,21 +1,24 @@
-namespace Eloquent {
-    namespace ML {
-        namespace Data {
-            namespace Preprocessing {
-                namespace Pipeline {
-                    namespace Ported {
-                        namespace {{ name }} {
-                            class Step {
-                                public:
-                                    /**
-                                     * Step interface
-                                     */
-                                    bool transform(float *source, float *dest) = 0;
-                            };
-                        }
-                    }
-                }
-            }
-        }
+{% extends './templates/Step.jinja' %}
+{% set name = 'Step' %}
+
+{% block public %}
+
+    /**
+     * @param workArea shared buffer to store intermediate results
+     */
+    Step(float *workArea) : buffer(workArea) {
+
     }
-}
+
+    /**
+     * Step interface
+     */
+    virtual bool transform(float *source) = 0;
+
+{% endblock %}
+
+{% block protected %}
+
+    float *buffer;
+
+{% endblock %}
