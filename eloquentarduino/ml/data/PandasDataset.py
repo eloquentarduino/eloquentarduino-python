@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from copy import copy
 from collections import namedtuple
 from sklearn.decomposition import PCA
 from sklearn.utils import shuffle
@@ -73,12 +74,21 @@ class PandasDataset:
         """
         return self.df.describe(*args, **kwargs)
 
+    def clone(self):
+        """
+        Clone dataset
+        """
+        clone = copy(self)
+        clone.df = self.df.copy()
+
+        return clone
+
     def diff(self):
         """
         Return a new PandasDataset with the diff() from the current DataFrame
         :return: PandasDataset
         """
-        clone = PandasDataset(self.df.diff().iloc[1:], self.columns)
+        clone = PandasDataset(self.df.copy().diff().iloc[1:], self.columns)
 
         for split in self.splits:
             clone.add_split(split.name, *split.indices)
@@ -121,6 +131,37 @@ class PandasDataset:
 
         for i, split in enumerate(self.splits):
             self.splits[i] = split._replace(np=transformer(split.np))
+
+    def concat(self, other, *others):
+        """
+        Concat other datasets to the current
+        """
+        splits = [(split.name, split.indices) for split in self.splits]
+        offset = len(self.df)
+
+        for other_split in other.splits:
+            existing = [(i, self_split) for i, self_split in enumerate(self.splits) if self_split.name == other_split.name]
+
+            if len(existing) == 1:
+                # merge indices
+                i, existing_split = existing[0]
+                splits[i][1].extend([(start + offset, end + offset) for start, end in other_split.indices])
+            elif len(existing) == 0:
+                # create new split
+                splits.append((other_split.name, other_split.indices))
+            else:
+                raise AssertionError('found multiple matches for the split %s' % other_split.name)
+
+        clone = PandasDataset(self.df.copy().append(other.df.copy().reset_index(drop=True)).reset_index(drop=True), self.columns)
+
+        for name, indices in splits:
+            clone.add_split(name, *indices)
+
+        # concat multiple df
+        if len(others) > 0:
+            return clone.clone().concat(*others)
+
+        return clone
 
     def plot(self, title='', columns=None, n_ticks=15, grid=True, fontsize=6,  **kwargs):
         """
