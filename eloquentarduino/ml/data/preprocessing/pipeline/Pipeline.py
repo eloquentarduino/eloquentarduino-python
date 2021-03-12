@@ -23,6 +23,13 @@ class Pipeline:
         assert len([step.name for step in steps]) == len(set([step.name for step in steps])), 'steps names MUST be unique'
 
     @property
+    def X(self):
+        """
+        Get X
+        """
+        return self.dataset.X
+
+    @property
     def input_dim(self):
         """
         Get input dim of the whole pipeline
