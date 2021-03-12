@@ -44,6 +44,7 @@ eloquentarduino/ml/data/preprocessing/StandardizeStep.py
 eloquentarduino/ml/data/preprocessing/UnitStep.py
 eloquentarduino/ml/data/preprocessing/__init__.py
 eloquentarduino/ml/data/preprocessing/pipeline/BaseStep.py
+eloquentarduino/ml/data/preprocessing/pipeline/BoxCox.py
 eloquentarduino/ml/data/preprocessing/pipeline/Diff.py
 eloquentarduino/ml/data/preprocessing/pipeline/FFT.py
 eloquentarduino/ml/data/preprocessing/pipeline/MinMaxScaler.py
@@ -53,6 +54,7 @@ eloquentarduino/ml/data/preprocessing/pipeline/PolynomialFeatures.py
 eloquentarduino/ml/data/preprocessing/pipeline/SelectKBest.py
 eloquentarduino/ml/data/preprocessing/pipeline/StandardScaler.py
 eloquentarduino/ml/data/preprocessing/pipeline/Window.py
+eloquentarduino/ml/data/preprocessing/pipeline/YeoJohnson.py
 eloquentarduino/ml/data/preprocessing/pipeline/__init__.py
 eloquentarduino/ml/metrics/__init__.py
 eloquentarduino/ml/metrics/device/BenchmarkEndToEnd.py
@@ -106,6 +108,7 @@ eloquentarduino/templates/metrics/Runtime.bck.jinja
 eloquentarduino/templates/metrics/Runtime.jinja
 eloquentarduino/templates/ml/RollingWindow.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/AbstractStep.jinja
+eloquentarduino/templates/ml/data/preprocessing/pipeline/BoxCox.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/Diff.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/FFT.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/MinMaxScaler.jinja
@@ -115,6 +118,7 @@ eloquentarduino/templates/ml/data/preprocessing/pipeline/PolynomialFeatures.jinj
 eloquentarduino/templates/ml/data/preprocessing/pipeline/SelectKBest.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/StandardScaler.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/Window.jinja
+eloquentarduino/templates/ml/data/preprocessing/pipeline/YeoJohnson.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/templates/Namespace.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/templates/Step.jinja
 eloquentarduino/templates/nn/TfMicro.jinja
