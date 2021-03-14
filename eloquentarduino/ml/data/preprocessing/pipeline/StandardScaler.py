@@ -6,39 +6,47 @@ class StandardScaler(BaseStep):
     """
     Implementation of sklearn.ml.StandardScaler
     """
-    def __init__(self, name='StandardScaler', ax=0):
+    def __init__(self, name='StandardScaler', num_features=-1):
         """
         :param name:
-        :param ax: int {0: global; 1: for each feature; N: for each feature, flattened}
+        :param num_features: int {0: global; 1: for each feature; N: for each feature, flattened}
         """
-        assert isinstance(ax, int), 'ax MUST be an integer'
+        assert isinstance(num_features, int), 'ax MUST be an integer'
 
         super().__init__(name)
-        self.ax = ax
+        self.num_features = num_features
         self.mean = None
         self.std = None
         self.repeat = 1
         self.inplace = True
 
+    def get_config(self):
+        """
+        Get config options
+        """
+        return {'num_features': self.num_features}
+
     def fit(self, X, y):
         """
         Learn mean/std
         """
-        if self.ax == 0:
+        self.set_X(X)
+
+        if self.num_features == -1:
+            self.num_features = self.input_dim
+
+        if self.num_features == 0:
             self.mean = X.mean()
             self.std = X.std()
-        elif self.ax == 1:
-            self.mean = X.mean(axis=0)
-            self.std = X.std(axis=0)
         else:
-            mean = [X[:, i::self.ax].min() for i in range(self.ax)]
-            std = [X[:, i::self.ax].max() for i in range(self.ax)]
+            assert self.input_dim % self.num_features == 0, 'num_features MUST be a divisor of X.shape[1]'
 
-            self.repeat = X.shape[1] // self.ax
+            mean = [X[:, i::self.num_features].mean() for i in range(self.num_features)]
+            std = [X[:, i::self.num_features].std() for i in range(self.num_features)]
+
+            self.repeat = self.input_dim // self.num_features
             self.mean = np.asarray(mean * self.repeat)
             self.std = np.asarray(std * self.repeat)
-
-        self.set_X(X)
 
         return self.transform(X), y
 
@@ -55,8 +63,7 @@ class StandardScaler(BaseStep):
 
         """
         return {
-            'ax': self.ax,
-            'mean': self.mean,
-            'inv_std': 1 / self.std,
-            'num_features': self.input_dim // self.repeat,
+            'mean': self.mean[:self.num_features],
+            'inv_std': 1 / self.std[:self.num_features],
+            'num_features': self.num_features,
         }

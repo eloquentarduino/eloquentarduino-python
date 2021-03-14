@@ -1,5 +1,6 @@
 from eloquentarduino.ml.data import Dataset
 from eloquentarduino.utils import jinja
+from sklearn.model_selection import cross_validate
 
 
 class Pipeline:
@@ -17,17 +18,25 @@ class Pipeline:
         assert isinstance(steps, list), 'steps MUST be a list'
 
         self.name = name
-        self.dataset = dataset
+        self.X = dataset.X.copy()
+        self.y = dataset.y.copy()
         self.steps = steps
 
         assert len([step.name for step in steps]) == len(set([step.name for step in steps])), 'steps names MUST be unique'
 
-    @property
-    def X(self):
+    def __str__(self):
         """
-        Get X
+        Convert to string
         """
-        return self.dataset.X
+        steps = '\n'.join([str(step) for step in self.steps])
+
+        return '%s\n%s\n%s' % (self.name, '-' * len(self.name), steps)
+
+    def __repr__(self):
+        """
+        Convert to string
+        """
+        return str(self)
 
     @property
     def input_dim(self):
@@ -48,7 +57,7 @@ class Pipeline:
         """
         Get output size (works only after fitting)
         """
-        return self.dataset.X.shape[1]
+        return self.X.shape[1]
 
     @property
     def includes(self):
@@ -63,7 +72,7 @@ class Pipeline:
         :return: self
         """
         for step in self.steps:
-            self.dataset = self.dataset.replace(*step.fit(self.dataset.X, self.dataset.y))
+            self.X, self.y = step.fit(self.X, self.y)
 
         return self
 
@@ -78,6 +87,25 @@ class Pipeline:
 
         return X
 
+    def score(self, clf, cv=3, return_average_accuracy=True, return_best_estimator=False):
+        """
+        Score a classifier on this pipeline via cross validation
+        :param clf:
+        :param cv: int cross validation splits
+        :param return_average_accuracy: bool
+        :param return_best_estimator: bool
+        """
+        scores = cross_validate(clf, self.X, self.y, cv=cv, return_estimator=True)
+
+        if return_average_accuracy:
+            return scores['test_score'].mean()
+
+        if return_best_estimator:
+            max_score_idx = scores['test_score'].argmax()
+            return scores['estimator'][max_score_idx]
+
+        return scores
+
     def port(self):
         """
         Port to C++
@@ -87,7 +115,8 @@ class Pipeline:
             'pipeline': self.name,
             'steps': self.steps,
             'input_dim': self.input_dim,
-            'working_dim': max([1, self.working_dim, self.output_dim]),
+            'output_dim': max([self.output_dim, self.working_dim]),
+            'working_dim': max([1, self.working_dim]),
             'includes': self.includes
         }, pretty=True)
 

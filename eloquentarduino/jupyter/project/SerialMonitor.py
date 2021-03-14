@@ -112,34 +112,40 @@ class SerialMonitor:
         self.project.assert_name()
         assert isinstance(dest, str) and len(dest) > 0, 'dest CANNOT be empty'
         assert samples > 0, 'samples MUST be grater than 0'
+
         # list of allowed characters
-        alphabet = '0123456789.\n%s' % delimiter
+        alphabet = '-0123456789.\n%s' % delimiter
+
         with Serial(self.project.board.port, self.project.board.baud_rate, timeout=serial_timeout, **kwargs) as serial:
             with self.project.files.open('data', dest, mode=('a' if append else 'w')) as file:
                 self.project.logger.info('Starting streaming acquisition... ')
                 start_time = time()
                 buffer = ''
+
                 while True:
                     char = serial.read().decode('utf-8')
-                    if len(char) < 1 or char not in alphabet:
-                        continue
-                    # when delimiter is found, check if it's a number
-                    if char == delimiter or char == '\n':
-                        try:
-                            float(buffer)
-                            file.write(buffer)
-                            self.project.logger.progress('.')
-                            samples -= 1
-                            if samples == 0:
-                                break
-                            else:
-                                file.write(delimiter)
-                        except ValueError:
-                            self.project.logger.error('ValueError %s', buffer)
-                        buffer = ''
-                    # append character to buffer
-                    else:
-                        buffer += char
+
+                    if len(char) == 1 and char in alphabet:
+                        # when delimiter is found, check if we have a number
+                        if char == delimiter or char == '\n':
+                            if len(buffer) > 0:
+                                try:
+                                    float(buffer)
+                                    file.write(buffer)
+                                    self.project.logger.progress('.')
+                                    samples -= 1
+
+                                    if samples == 0:
+                                        break
+                                    else:
+                                        # write delimiter or newline
+                                        file.write(char)
+                                except ValueError:
+                                    self.project.logger.error('ValueError %s', buffer)
+                                buffer = ''
+                        # append character to buffer
+                        else:
+                            buffer += char
                     # abort on timeout
                     if time() - start_time > timeout:
                         raise RuntimeError('Timeout')

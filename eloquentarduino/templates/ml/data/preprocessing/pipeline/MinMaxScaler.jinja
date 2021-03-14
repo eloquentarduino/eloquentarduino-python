@@ -6,7 +6,7 @@
      */
     bool transform(float *source) {
         for (uint16_t i = 0; i < {{ input_dim }}; i++) {
-            {% if ax == 0 %}
+            {% if num_features == 0 %}
                source[i] = (source[i] - {{ min }}) * {{ inv_range }};
             {% else %}
                 source[i] = (source[i] - m[i % {{ num_features }}]) * invRange[i % {{ num_features }}];
@@ -20,9 +20,9 @@
 
 {% block protected %}
 
-    {% if ax > 0 %}
-        float m[{{ min[:num_features] | shape }}] = {{ min[:num_features] | to_array }};
-        float invRange[{{ inv_range[:num_features] | shape }}] = {{ inv_range[:num_features] | to_array }};
+    {% if num_features > 0 %}
+        float m[{{ min | shape }}] = {{ min | to_array }};
+        float invRange[{{ inv_range | shape }}] = {{ inv_range | to_array }};
     {% endif %}
 
 {% endblock %}

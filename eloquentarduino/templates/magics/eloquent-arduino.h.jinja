@@ -43,5 +43,18 @@ namespace eloquent {
             capture();
             printArray(features, length);
         }
+
+        /**
+         * Assert that two arrays are equal
+         */
+        bool assertArrayMatch(float *test, float *actual, uint16_t length) {
+            for (uint16_t i = 0; i < length; i++) {
+                if (abs(test[i] - actual[i]) > 0.001) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 }

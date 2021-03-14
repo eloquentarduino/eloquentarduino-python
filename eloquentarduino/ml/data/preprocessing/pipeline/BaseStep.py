@@ -12,6 +12,28 @@ class BaseStep:
         self.working_dim = 0
         self.includes = []
 
+    def __str__(self):
+        """
+        Convert to string
+        """
+        config = self.get_config()
+        config.update(input_dim=self.input_dim)
+        config = ', '.join(['%s=%s' % (key, str(val)) for key, val in config.items()])
+
+        return '%s (%s)' % (self.name, config)
+
+    def __repr__(self):
+        """
+        Convert to string
+        """
+        return str(self)
+
+    def get_config(self):
+        """
+        Get configuration options
+        """
+        return {}
+
     def set_X(self, X):
         """
         Update input dim

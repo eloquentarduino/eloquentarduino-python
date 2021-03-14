@@ -17,6 +17,12 @@ class Norm(BaseStep):
         super().__init__(name)
         self.norm = norm
 
+    def get_config(self):
+        """
+        Get config options
+        """
+        return {'norm': self.norm}
+
     def fit(self, X, y):
         """
         Fit

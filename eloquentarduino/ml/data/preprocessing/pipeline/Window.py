@@ -21,6 +21,12 @@ class Window(BaseStep):
         self.shift = shift if isinstance(shift, int) else int(length * shift)
         self.flatten = flatten
 
+    def get_config(self):
+        """
+        Get config options
+        """
+        return {'length': self.length, 'shift': self.shift}
+
     def fit(self, X, y):
         """
         Fit

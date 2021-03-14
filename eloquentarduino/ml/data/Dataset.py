@@ -1,12 +1,96 @@
 import numpy as np
+import pandas as pd
+from os.path import basename, splitext, sep
+from glob import glob
 from functools import reduce
 from sklearn.utils import shuffle
+from sklearn.datasets import load_iris, load_digits
+from sklearn.model_selection import train_test_split
 
 
 class Dataset:
     """
     Abstraction of a dataset
     """
+    @staticmethod
+    def Iris():
+        """
+        Create the Iris dataset
+        """
+        return Dataset('Iris', *load_iris(return_X_y=True))
+
+    @staticmethod
+    def MNIST_Tensorflow():
+        """
+        Create the MNIST dataset formatted for Tensorflow
+        """
+        X, y = load_digits(return_X_y=True)
+
+        return Dataset('MNIST Tf', np.expand_dims(X.reshape((-1, 8, 8)), -1), y)
+
+    @staticmethod
+    def read_csv(filename, name=None, label_column=None, columns=None, **kwargs):
+        """
+        Create dataset from csv file
+        """
+        if name is None:
+            name = splitext(basename(filename))[0]
+
+        assert len(name) > 0, 'dataset name CANNOT be empty'
+
+        df = pd.read_csv(filename, **kwargs)
+
+        # select given columns
+        if columns is not None:
+            df = df[columns]
+
+        # use label column or set y to -1
+        if label_column is None:
+            X = df.to_numpy()
+            y = -np.ones(len(df))
+        else:
+            columns = [column for column in df.columns if column != label_column]
+            X = df[columns].to_numpy()
+            y = df[label_column].to_numpy()
+
+        return Dataset(name, X, y)
+
+    @staticmethod
+    def read_folder(folder, file_pattern='*.csv', delimiter=',', skiprows=0):
+        """
+        Load all files from a folder
+        :param folder: str
+        :param file_pattern: str pattern for glob()
+        :param delimiter: str
+        :param skiprows: int
+        """
+        X, y = None, None
+        labels = []
+
+        for class_idx, filename in enumerate(glob("%s/%s" % (folder, file_pattern))):
+            label = splitext(basename(filename))[0]
+            Xi = np.loadtxt(filename, dtype=np.float, delimiter=delimiter, skiprows=skiprows)
+            yi = np.ones(len(Xi)) * class_idx
+
+            labels.append((label, len(Xi)))
+
+            if X is None:
+                X = Xi
+                y = yi
+            else:
+                X = np.vstack((X, Xi))
+                y = np.concatenate((y, yi))
+
+        name = [segment for segment in folder.split(sep) if len(segment)][-1]
+        dataset = Dataset(name, X, y)
+        offset = 0
+
+        for label, length in labels:
+            dataset.label_samples(label, (offset, offset + length))
+            offset += length
+
+        return dataset
+
     def __init__(self, name, X, y):
         """
         :param name:
@@ -16,6 +100,7 @@ class Dataset:
         self.name = name
         self.X = X
         self.y = y
+        self.classmap = {-1: 'UNLABELLED'}
 
     @property
     def length(self):
@@ -40,6 +125,38 @@ class Dataset:
         """
         # account for one-hot encoding
         return len(np.unique(self.y)) if len(self.y.shape) == 1 else self.y.shape[1]
+
+    def describe(self):
+        """
+        Calls pandas.DataFrame.describe()
+        """
+        return pd.DataFrame(self.X).describe()
+
+    def train_test_split(self, **kwargs):
+        """
+        Train/test split
+        """
+        return train_test_split(self.X, self.y, **kwargs)
+
+    def drop_unlabelled(self):
+        """
+        Remove unlabelled samples
+        """
+        idx = (self.y == -1)
+        self.X = self.X[~idx]
+        self.y = self.y[~idx]
+
+    def label_samples(self, label, *ranges):
+        """
+        Add a label to a subset of the dataset
+        :param label: str name of the given samples
+        :param ranges: list of (start, end) tuples
+        """
+        label_id = self._get_label_id(label)
+        self.classmap[label_id] = label
+
+        for start, end in ranges:
+            self.y[start:end] = label_id
 
     def replace(self, X=None, y=None):
         """
@@ -100,3 +217,14 @@ class Dataset:
             arrays = [arr for arr in arrays if len(arr) > 0]
 
         return arrays
+
+    def _get_label_id(self, label):
+        """
+        Get id for a label
+        :param label: str
+        """
+        for lid, lab in self.classmap.items():
+            if label == lab:
+                return lid
+
+        return max(self.classmap.keys()) + 1

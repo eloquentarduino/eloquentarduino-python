@@ -21,6 +21,12 @@ class SelectKBest(BaseStep):
         self.idx = None
         self.inplace = True
 
+    def get_config(self):
+        """
+        Get config options
+        """
+        return {'k': self.k}
+
     def fit(self, X, y):
         """
         Fit
