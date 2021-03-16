@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from tinymlgen import port
 from functools import reduce
 from eloquentarduino.utils import jinja
+from eloquentarduino.ml.classification.tensorflow.gridsearch.LayerProxy import LayerProxy
 
 
 Layer = namedtuple('Layer', 'layer args kwargs')
@@ -160,6 +161,13 @@ class NeuralNetwork:
         self.X = X
         self.y = y
 
+    def predict(self, X):
+        """
+        Predict
+        :param X:
+        """
+        return self.sequential.predict(X)
+
     def score(self, X, y):
         """
         Compute score on given data
@@ -199,7 +207,7 @@ class NeuralNetwork:
         plt.legend()
         plt.show()
 
-    def port(self, arena_size='1024 * 16', model_name='model', classname='NeuralNetwork'):
+    def port(self, arena_size='1024 * 16', model_name='model', classname='NeuralNetwork', classmap=None):
         """
         Port Tf model to plain C++
         :param arena_size: int|str size of tensor arena (read Tf docs)
@@ -213,6 +221,7 @@ class NeuralNetwork:
             'num_inputs': self.num_inputs,
             'num_outputs': self.num_classes,
             'arena_size': arena_size,
+            'classmap': classmap
         })
 
     def to_categorical(self, y):

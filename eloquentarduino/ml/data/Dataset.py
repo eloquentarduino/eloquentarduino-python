@@ -4,6 +4,7 @@ from os.path import basename, splitext, sep
 from glob import glob
 from functools import reduce
 from sklearn.utils import shuffle
+from sklearn.preprocessing import OneHotEncoder
 from sklearn.datasets import load_iris, load_digits
 from sklearn.model_selection import train_test_split
 
@@ -81,6 +82,8 @@ class Dataset:
                 X = np.vstack((X, Xi))
                 y = np.concatenate((y, yi))
 
+        assert X is not None, '%s is empty' % folder
+
         name = [segment for segment in folder.split(sep) if len(segment)][-1]
         dataset = Dataset(name, X, y)
         offset = 0
@@ -101,6 +104,14 @@ class Dataset:
         self.X = X
         self.y = y
         self.classmap = {-1: 'UNLABELLED'}
+
+    @property
+    def y_categorical(self):
+        """
+        Convert y to one-hot
+        :return: ndarray
+        """
+        return OneHotEncoder(handle_unknown='ignore').fit_transform(self.y.reshape(-1, 1)).toarray()
 
     @property
     def length(self):

@@ -11,6 +11,13 @@ class SklearnClassifier:
         """
         pass
 
+    def hyperparameters_grid(self, X=None):
+        """
+        Get default hyperparameters values from grid search
+        :param X:
+        """
+        return {}
+
     def port(self, classname=None, classmap=None, **kwargs):
         """
         Port to plain C++

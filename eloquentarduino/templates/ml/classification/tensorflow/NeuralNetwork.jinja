@@ -35,11 +35,35 @@ namespace Eloquent {
                             /**
                              * Predict most probable class
                              */
-                             uint8_t predictClass(float *x) {
+                             uint8_t predict(float *x) {
                                 predictProba(x);
 
                                 return nn.probaToClass(proba);
                              }
+
+                             {% if classmap is not none %}
+                                /**
+                                 * Get most probable class name
+                                 */
+                                 const char* predictLabel(float *x) {
+                                    return idxToLabel(predictClass(x));
+                                 }
+
+                                 /**
+                                  * Convert class idx to readable name
+                                  */
+                                 const char* idxToLabel(uint8_t classIdx) {
+                                     switch (classIdx) {
+                                         {% for idx, name in classmap.items() %}
+                                             case {{ idx }}:
+                                                 return "{{ name }}";
+                                         {% endfor %}
+                                         default:
+                                             return "Houston we have a problem";
+                                     }
+                                 }
+
+                             {% endif %}
                     };
                 }
             }
