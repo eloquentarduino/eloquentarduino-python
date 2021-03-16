@@ -25,14 +25,18 @@ eloquentarduino/ml/classification/Classifier.py
 eloquentarduino/ml/classification/__init__.py
 eloquentarduino/ml/classification/sklearn/DecisionTreeClassifier.py
 eloquentarduino/ml/classification/sklearn/GaussianNB.py
+eloquentarduino/ml/classification/sklearn/GridSearch.py
 eloquentarduino/ml/classification/sklearn/LogisticRegression.py
 eloquentarduino/ml/classification/sklearn/RandomForestClassifier.py
 eloquentarduino/ml/classification/sklearn/SVC.py
 eloquentarduino/ml/classification/sklearn/SklearnClassifier.py
 eloquentarduino/ml/classification/sklearn/XGBClassifier.py
 eloquentarduino/ml/classification/sklearn/__init__.py
+eloquentarduino/ml/classification/tensorflow/GridSearch.py
 eloquentarduino/ml/classification/tensorflow/NeuralNetwork.py
 eloquentarduino/ml/classification/tensorflow/__init__.py
+eloquentarduino/ml/classification/tensorflow/gridsearch/LayerProxy.py
+eloquentarduino/ml/classification/tensorflow/gridsearch/__init__.py
 eloquentarduino/ml/data/CheckpointFile.py
 eloquentarduino/ml/data/Dataset.py
 eloquentarduino/ml/data/PandasDataset.py
@@ -79,8 +83,6 @@ eloquentarduino/ml/metrics/plot/Series.py
 eloquentarduino/ml/metrics/plot/__init__.py
 eloquentarduino/ml/metrics/training/ClassifierBenchmark.py
 eloquentarduino/ml/metrics/training/__init__.py
-eloquentarduino/ml/nn/TfMicro.py
-eloquentarduino/ml/nn/__init__.py
 eloquentarduino/ml/plot/__init__.py
 eloquentarduino/plot/PCAPlotter.py
 eloquentarduino/plot/__init__.py
@@ -119,7 +121,6 @@ eloquentarduino/templates/ml/data/preprocessing/pipeline/Window.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/YeoJohnson.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/templates/Namespace.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/templates/Step.jinja
-eloquentarduino/templates/nn/TfMicro.jinja
 eloquentarduino/templates/third_party/snoopy/snoopy.jinja
 eloquentarduino/third_party/Snoopy.py
 eloquentarduino/third_party/__init__.py
