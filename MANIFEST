@@ -23,6 +23,8 @@ eloquentarduino/ml/cascading/CascadingClassifier.py
 eloquentarduino/ml/cascading/__init__.py
 eloquentarduino/ml/classification/Classifier.py
 eloquentarduino/ml/classification/__init__.py
+eloquentarduino/ml/classification/abstract/GridSearchResult.py
+eloquentarduino/ml/classification/abstract/__init__.py
 eloquentarduino/ml/classification/sklearn/DecisionTreeClassifier.py
 eloquentarduino/ml/classification/sklearn/GaussianNB.py
 eloquentarduino/ml/classification/sklearn/GridSearch.py
@@ -32,6 +34,8 @@ eloquentarduino/ml/classification/sklearn/SVC.py
 eloquentarduino/ml/classification/sklearn/SklearnClassifier.py
 eloquentarduino/ml/classification/sklearn/XGBClassifier.py
 eloquentarduino/ml/classification/sklearn/__init__.py
+eloquentarduino/ml/classification/sklearn/gridsearch/GridSearchResult.py
+eloquentarduino/ml/classification/sklearn/gridsearch/__init__.py
 eloquentarduino/ml/classification/tensorflow/GridSearch.py
 eloquentarduino/ml/classification/tensorflow/NeuralNetwork.py
 eloquentarduino/ml/classification/tensorflow/__init__.py
