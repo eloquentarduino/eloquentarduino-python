@@ -39,12 +39,14 @@ class NeuralNetwork:
         self.history = None
         self.X = None
         self.y = None
-        self.options = {
-            'epochs': 20,
-            'valid_size': 0.2,
+        self.compile_options= {
             'loss': 'categorical_crossentropy',
             'metrics': ['accuracy'],
             'optimizer': 'rmsprop',
+        }
+        self.fit_options = {
+            'epochs': 20,
+            'valid_size': 0.2,
             'batch_size': 8
         }
 
@@ -88,42 +90,61 @@ class NeuralNetwork:
         Set validation percent size
         :param percent: float
         """
-        self.options['valid_size'] = percent
+        self.fit['valid_size'] = percent
 
     def set_epochs(self, epochs):
         """
         Set number of epochs for training
         :param epochs: int
         """
-        self.options['epochs'] = epochs
+        self.fit_options['epochs'] = epochs
 
     def set_optimizer(self, optimizer):
         """
         Set optimizer
         :param optimizer: str
         """
-        self.options['optimizer'] = optimizer
+        if optimizer is None:
+            return
+
+        self.compile_options['optimizer'] = optimizer
 
     def set_loss(self, loss):
         """
         Set loss function
         :param loss: str
         """
-        self.options['loss'] = loss
+        if loss is None:
+            return
+        self.compile_options['loss'] = loss
 
     def set_metrics(self, metrics):
         """
         Set metrics
         :param metrics: list
         """
-        self.options['metrics'] = metrics
+        if metrics is None:
+            return
+        self.compile_options['metrics'] = metrics
 
     def set_batch_size(self, batch_size):
         """
         Set batch_size
         :param batch_size: int
         """
-        self.options['batch_size'] = batch_size
+        self.fit_options['batch_size'] = batch_size
+
+    def set_compile_option(self, key, value):
+        """
+        Set compile option
+        """
+        self.compile_options[key] = value
+
+    def set_fit_option(self, key, value):
+        """
+        Set fit option
+        """
+        self.fit_options[key] = value
 
     def fit(self, X, y):
         """
@@ -152,12 +173,13 @@ class NeuralNetwork:
 
         validation_data = None
 
-        if self.options['valid_size'] > 0:
-            X, X_valid, y, y_valid = train_test_split(X, y, test_size=self.options['valid_size'])
+        if self.fit_options['valid_size'] > 0:
+            X, X_valid, y, y_valid = train_test_split(X, y, test_size=self.fit_options['valid_size'])
             validation_data = (X_valid, y_valid)
+            del self.fit_options['valid_size']
 
-        self.sequential.compile(optimizer=self.options['optimizer'], loss=self.options['loss'], metrics=self.options['metrics'])
-        self.history = self.sequential.fit(X, y, epochs=self.options['epochs'], validation_data=validation_data, batch_size=self.options['batch_size'])
+        self.sequential.compile(**self.compile_options)
+        self.history = self.sequential.fit(X, y, validation_data=validation_data, **self.fit_options)
         self.X = X
         self.y = y
 
@@ -184,6 +206,16 @@ class NeuralNetwork:
         Get topology summary
         """
         return self.sequential.summary(*args, **kwargs)
+
+    def describe(self):
+        """
+        Get layers description
+        """
+        return {
+            'layers': self.layer_definitions,
+            'compile_options': self.compile_options,
+            'fit_options': self.fit_options
+        }
 
     def plot_train_loss(self, skip=2):
         """

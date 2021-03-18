@@ -6,6 +6,7 @@ from eloquentarduino.ml.data import Dataset
 from eloquentarduino.ml.classification.sklearn.SklearnClassifier import SklearnClassifier
 
 
+# @todo refactor to class
 Result = namedtuple('GridSearchResult', 'clf dataset hyperparameters accuracy resources inference_time')
 
 
@@ -29,6 +30,7 @@ class GridSearch:
         self.only = only
         self.also = also
         self.exclude = exclude
+        self.results = []
 
     @property
     def combinations(self):
@@ -78,6 +80,24 @@ class GridSearch:
 
                 results.append(Result(clf=clf, dataset=self.dataset, hyperparameters=combination, accuracy=accuracy, resources=None, inference_time=None))
 
-        return sorted(results, key=lambda result: result.accuracy, reverse=True)
+        self.results = sorted(results, key=lambda result: result.accuracy, reverse=True)
+
+        return self.results
+
+    def instantiate(self, i=0, **kwargs):
+        """
+        Instantiate result
+        :param i: int
+        :return: sklearn.Classifier
+        """
+        assert len(self.results) > 0, 'Unfitted'
+        assert i < len(self.results), '%d is out of range'
+
+        result = self.results[i]
+        clf = result.clf
+
+        clf.fit(self.dataset.X, self.dataset.y, **kwargs)
+
+        return clf
 
 

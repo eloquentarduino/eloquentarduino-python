@@ -52,6 +52,10 @@ class LayerProxy:
 
         return self
 
+    @property
+    def tf_type(self):
+        return getattr(layers, self.type)
+
     def enumerate(self):
         """
         List all the combinations for the hyperparameters
@@ -74,4 +78,4 @@ class LayerProxy:
         """
         Instantiate Keras layer
         """
-        return getattr(layers, self.type)(*self.args, **self.kwargs)
+        return self.tf_type(*self.args, **self.kwargs)

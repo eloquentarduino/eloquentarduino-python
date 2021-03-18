@@ -15,7 +15,6 @@ class XGBClassifier(SklearnClassifier, SklearnImplementation):
                 'min_samples_leaf': [5, 10, 20],
                 'max_features': [0.5, 0.75, "sqrt", None],
                 'gamma': [0, 1, 10],
-                'eta': [0.1, 0.3, 0.7]
             }
 
         num_samples, num_features = X.shape[:2]

@@ -6,6 +6,7 @@ from eloquentarduino.ml.classification.tensorflow import NeuralNetwork
 from eloquentarduino.ml.classification.tensorflow.gridsearch import LayerProxy
 
 
+# @todo refactor to class
 Result = namedtuple('GridSearchResult', 'dataset layers history accuracy resources inference_time')
 
 
@@ -45,14 +46,28 @@ class GridSearch:
         Add a layer that will sometimes be added to the network
         :param layer:
         """
-        assert isinstance(layer, LayerProxy), 'layer MUST be instantiated via GridSearch.layers factory'
+        return self.add_branch([None, layer])
 
-        # double the combinations and add the layer only to half of them
+    def add_branch(self, branches):
+        """
+        Create a branch in the search space for each of the supplied layers
+        :param branches: list
+        """
+        for layer in branches:
+            assert layer is None or isinstance(layer, LayerProxy), 'all branches MUST be instantiated via GridSearch.layers factory'
+
         new_combinations = []
 
-        for hyper_layer in layer.enumerate():
-            new_combinations += [copy(combination) for combination in self.combinations]
-            new_combinations += [copy(combination) + [copy(hyper_layer)] for combination in self.combinations]
+        for layer in branches:
+            branch_combinations = []
+
+            if layer is None:
+                branch_combinations = [copy(combination) for combination in self.combinations]
+            else:
+                for hyper_layer in layer.enumerate():
+                    branch_combinations += [copy(combination) + [copy(hyper_layer)] for combination in self.combinations]
+
+            new_combinations += branch_combinations
 
         self.combinations = new_combinations
 
@@ -62,7 +77,7 @@ class GridSearch:
         """
         self.add_layer(GridSearch.layers.Dense(units=self.dataset.num_classes, activation='softmax'))
 
-    def compile(self, loss='categorical_crossentropy', optimizer='rmsprop', metrics=['accuracy'], **kwargs):
+    def compile(self, loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'], **kwargs):
         """
         Set compile options
         """
@@ -129,21 +144,16 @@ class GridSearch:
 
         result = self.results[i]
         nn = NeuralNetwork()
-        sequential = tf.keras.Sequential()
-
-        fit_options = self.fit_options
-        fit_options.update(**kwargs)
 
         for layer in result.layers:
-            if isinstance(layer, LayerProxy):
-                layer = layer.instantiate()
+            nn.add_layer(layer.tf_type, *layer.args, **layer.kwargs)
 
-            sequential.add(layer)
+        for key, val in self.compile_options.items():
+            nn.set_compile_option(key, val)
 
-        sequential.compile(**self.compile_options)
-        sequential.fit(self.dataset.X, self.dataset.y_categorical, **fit_options)
+        for key, val in self.fit_options.items():
+            nn.set_fit_option(key, val)
 
-        nn.sequential = sequential
-        nn.history = result.history
+        nn.fit(self.dataset.X, self.dataset.y_categorical)
 
         return nn
