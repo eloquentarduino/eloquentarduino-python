@@ -25,6 +25,8 @@ eloquentarduino/ml/classification/Classifier.py
 eloquentarduino/ml/classification/__init__.py
 eloquentarduino/ml/classification/abstract/GridSearchResult.py
 eloquentarduino/ml/classification/abstract/__init__.py
+eloquentarduino/ml/classification/device/ClassifierResources.py
+eloquentarduino/ml/classification/device/__init__.py
 eloquentarduino/ml/classification/sklearn/DecisionTreeClassifier.py
 eloquentarduino/ml/classification/sklearn/GaussianNB.py
 eloquentarduino/ml/classification/sklearn/GridSearch.py
@@ -37,12 +39,14 @@ eloquentarduino/ml/classification/sklearn/__init__.py
 eloquentarduino/ml/classification/sklearn/gridsearch/GridSearchResult.py
 eloquentarduino/ml/classification/sklearn/gridsearch/__init__.py
 eloquentarduino/ml/classification/tensorflow/GridSearch.py
+eloquentarduino/ml/classification/tensorflow/Layer.py
 eloquentarduino/ml/classification/tensorflow/NeuralNetwork.py
 eloquentarduino/ml/classification/tensorflow/__init__.py
-eloquentarduino/ml/classification/tensorflow/gridsearch/LayerProxy.py
+eloquentarduino/ml/classification/tensorflow/gridsearch/GridSearchResult.py
 eloquentarduino/ml/classification/tensorflow/gridsearch/__init__.py
 eloquentarduino/ml/data/CheckpointFile.py
 eloquentarduino/ml/data/Dataset.py
+eloquentarduino/ml/data/DatasetLoader.py
 eloquentarduino/ml/data/PandasDataset.py
 eloquentarduino/ml/data/RollingWindow.py
 eloquentarduino/ml/data/__init__.py
@@ -125,6 +129,8 @@ eloquentarduino/templates/ml/data/preprocessing/pipeline/Window.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/YeoJohnson.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/templates/Namespace.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/templates/Step.jinja
+eloquentarduino/templates/on_device/Resources.jinja
+eloquentarduino/templates/on_device/ResourcesBaseline.jinja
 eloquentarduino/templates/third_party/snoopy/snoopy.jinja
 eloquentarduino/third_party/Snoopy.py
 eloquentarduino/third_party/__init__.py
