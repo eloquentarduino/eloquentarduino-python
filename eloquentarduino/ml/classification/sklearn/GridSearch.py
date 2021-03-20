@@ -4,10 +4,7 @@ from sklearn.base import clone
 from sklearn.model_selection import cross_validate
 from eloquentarduino.ml.data import Dataset
 from eloquentarduino.ml.classification.sklearn.SklearnClassifier import SklearnClassifier
-
-
-# @todo refactor to class
-Result = namedtuple('GridSearchResult', 'clf dataset hyperparameters accuracy resources inference_time')
+from eloquentarduino.ml.classification.sklearn.gridsearch.GridSearchResult import GridSearchResult
 
 
 class GridSearch:
@@ -78,7 +75,7 @@ class GridSearch:
             if accuracy > 0:
                 clf = result['estimator'][best_idx]
 
-                results.append(Result(clf=clf, dataset=self.dataset, hyperparameters=combination, accuracy=accuracy, resources=None, inference_time=None))
+                results.append(GridSearchResult(clf=clf, dataset=self.dataset, hyperparameters=combination, accuracy=accuracy))
 
         self.results = sorted(results, key=lambda result: result.accuracy, reverse=True)
 

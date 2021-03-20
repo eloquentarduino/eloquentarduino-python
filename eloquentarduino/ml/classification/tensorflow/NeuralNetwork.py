@@ -1,17 +1,13 @@
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
-from collections import namedtuple
-from tensorflow.keras import layers
+from copy import copy
 from tensorflow.keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 from tinymlgen import port
 from functools import reduce
 from eloquentarduino.utils import jinja
-from eloquentarduino.ml.classification.tensorflow.gridsearch.LayerProxy import LayerProxy
-
-
-Layer = namedtuple('Layer', 'layer args kwargs')
+from eloquentarduino.ml.classification.tensorflow.Layer import Layer, layers
 
 
 class NeuralNetwork:
@@ -19,6 +15,19 @@ class NeuralNetwork:
     Tensorflow neural network abstraction
     """
     def __init__(self):
+        self.layer_definitions = []
+        self.X = None
+        self.y = None
+        self.compile_options = {
+            'loss': 'categorical_crossentropy',
+            'metrics': ['accuracy'],
+            'optimizer': 'adam',
+        }
+        self.fit_options = {
+            'epochs': 20,
+            'valid_size': 0.2,
+            'batch_size': 8
+        }
         self.reset()
 
     @property
@@ -29,32 +38,31 @@ class NeuralNetwork:
     def num_classes(self):
         return self.y.shape[1]
 
+    def clone(self):
+        """
+        Clone current network
+        """
+        nn = NeuralNetwork()
+        nn.layer_definitions = [copy(layer) for layer in self.layer_definitions]
+        nn.compile_options = self.compile_options
+        nn.fit_options = self.fit_options
+        nn.X = self.X
+        nn.y = self.y
+
+        return nn
+
     def reset(self):
         """
         Reset the network
         """
-        self.layer_definitions = []
-        self.layers = []
         self.sequential = None
         self.history = None
-        self.X = None
-        self.y = None
-        self.compile_options= {
-            'loss': 'categorical_crossentropy',
-            'metrics': ['accuracy'],
-            'optimizer': 'rmsprop',
-        }
-        self.fit_options = {
-            'epochs': 20,
-            'valid_size': 0.2,
-            'batch_size': 8
-        }
 
     def add_dense(self, *args, **kwargs):
         """
         Add dense layer
         """
-        return self.add_layer(layers.Dense, *args, **kwargs)
+        return self.add_layer(layers.Dense(*args, **kwargs))
 
     def add_softmax(self):
         """
@@ -66,22 +74,22 @@ class NeuralNetwork:
         """
         Add Conv2D layer
         """
-        return self.add_layer(layers.Conv2D, *args, **kwargs)
+        return self.add_layer(layers.Conv2D(*args, **kwargs))
 
     def add_flatten(self):
         """
         Add flatten layer
         """
-        return self.add_layer(layers.Flatten)
+        return self.add_layer(layers.Flatten())
 
     def add_layer(self, layer, *args, **kwargs):
         """
         Add generic layer
         :param layer: layers.Layer
         """
-        assert str(layer.__module__).startswith('tensorflow.python.keras.layers'), 'layer MUST be a tensorflow.keras layer'
+        assert isinstance(layer, Layer), 'layer MUST be instantiated via the eloquentarduino.ml.classification.tensorflow.layers factory'
 
-        self.layer_definitions.append(Layer(layer=layer, args=args, kwargs=kwargs))
+        self.layer_definitions.append(layer)
 
         return self
 
@@ -90,7 +98,7 @@ class NeuralNetwork:
         Set validation percent size
         :param percent: float
         """
-        self.fit['valid_size'] = percent
+        self.fit_options['valid_size'] = percent
 
     def set_epochs(self, epochs):
         """
@@ -152,7 +160,6 @@ class NeuralNetwork:
         :param X:
         :param y:
         """
-        self.layers = []
         self.sequential = tf.keras.Sequential()
         y = self.to_categorical(y)
 
@@ -166,14 +173,11 @@ class NeuralNetwork:
             if i == 0 and 'input_shape' not in kwargs:
                 kwargs['input_shape'] = X.shape[1:]
 
-            layer = layer_definition.layer(*layer_definition.args, **kwargs)
-
-            self.layers.append(layer)
-            self.sequential.add(layer)
+            self.sequential.add(layer_definition.instantiate())
 
         validation_data = None
 
-        if self.fit_options['valid_size'] > 0:
+        if self.fit_options.get('valid_size', 0) > 0:
             X, X_valid, y, y_valid = train_test_split(X, y, test_size=self.fit_options['valid_size'])
             validation_data = (X_valid, y_valid)
             del self.fit_options['valid_size']
@@ -235,7 +239,10 @@ class NeuralNetwork:
         """
         plt.title('Accuracy')
         plt.plot(self.history.history['accuracy'][skip:], label='train')
-        plt.plot(self.history.history['val_accuracy'][skip:], label='validation')
+
+        if 'val_accuracy' in self.history.history:
+            plt.plot(self.history.history['val_accuracy'][skip:], label='validation')
+
         plt.legend()
         plt.show()
 

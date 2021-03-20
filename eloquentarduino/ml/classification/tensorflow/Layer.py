@@ -1,8 +1,8 @@
 from itertools import product
-from tensorflow.keras import layers
+from tensorflow.keras import layers as tf_layers
 
 
-class LayerProxy:
+class Layer:
     """
     Proxy for Tensorflow Keras layers
     """
@@ -15,7 +15,7 @@ class LayerProxy:
         """
         Convert to string
         """
-        return '%s(%s, %s)' % (self.type, self.args, self.kwargs)
+        return ('%s [%s, %s]' % (self.type, self.args, self.kwargs)).replace('(), ', '').replace(', {}', '')
 
     def __repr__(self):
         """
@@ -37,11 +37,11 @@ class LayerProxy:
 
     def __getattr__(self, layer_type):
         """
-        Make the LayerProxy object to behave as a layer factory
+        Make the Layer proxy object to behave as a layer factory
         """
-        assert hasattr(layers, layer_type), 'unknown layer %s' % layer_type
+        assert hasattr(tf_layers, layer_type), 'unknown layer %s' % layer_type
 
-        return LayerProxy(layer_type)
+        return Layer(layer_type)
 
     def __call__(self, *args, **kwargs):
         """
@@ -54,7 +54,7 @@ class LayerProxy:
 
     @property
     def tf_type(self):
-        return getattr(layers, self.type)
+        return getattr(tf_layers, self.type)
 
     def enumerate(self):
         """
@@ -65,17 +65,21 @@ class LayerProxy:
         hyper_parameters = {k.replace('hyper_', ''): v for k, v in self.kwargs.items() if k.startswith('hyper_')}
 
         if len(hyper_parameters) == 0:
-            yield LayerProxy(self.type, *self.args, **fixed_parameters)
+            yield Layer(self.type, *self.args, **fixed_parameters)
             return
 
         for hyper_values in product(*hyper_parameters.values()):
             hyper_combination = {k: v for k, v in zip(hyper_parameters.keys(), hyper_values)}
             hyper_combination.update(fixed_parameters)
 
-            yield LayerProxy(self.type, *self.args, **hyper_combination)
+            yield Layer(self.type, *self.args, **hyper_combination)
 
     def instantiate(self):
         """
         Instantiate Keras layer
         """
         return self.tf_type(*self.args, **self.kwargs)
+
+
+# factory-like instance
+layers = Layer(None)

@@ -176,6 +176,31 @@ class Project:
         sleep(wait_for)
         return output
 
+    def get_resources(self):
+        """
+        Get required flash and memory
+        """
+        compile_log = self.compile()
+        flash_pattern = r'Sketch uses (\d+) bytes.+?Maximum is (\d+)'
+        memory_pattern = r'Global variables use (\d+).+?Maximum is (\d+)'
+        flash_match = re.search(flash_pattern, compile_log.replace("\n", ""))
+        memory_match = re.search(memory_pattern, compile_log.replace("\n", ""))
+
+        if flash_match is None and memory_match is None:
+            raise RuntimeError('Cannot parse compilation log: %s' % compile_log)
+
+        flash, flash_max = [int(g) for g in flash_match.groups()] if flash_match is not None else [0, 1]
+        memory, memory_max = [int(g) for g in memory_match.groups()] if memory_match is not None else [0, 1]
+
+        return {
+            'flash': flash,
+            'flash_max': flash_max,
+            'flash_percent': float(flash) / flash_max,
+            'memory': memory,
+            'memory_max': memory_max,
+            'memory_percent': float(memory) / memory_max,
+        }
+
 
 # singleton instance
 project = Project()

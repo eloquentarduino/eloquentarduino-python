@@ -2,19 +2,15 @@ import tensorflow as tf
 from copy import copy
 from collections import namedtuple
 from sklearn.model_selection import train_test_split
-from eloquentarduino.ml.classification.tensorflow import NeuralNetwork
-from eloquentarduino.ml.classification.tensorflow.gridsearch import LayerProxy
-
-
-# @todo refactor to class
-Result = namedtuple('GridSearchResult', 'dataset layers history accuracy resources inference_time')
+from eloquentarduino.ml.classification.tensorflow import NeuralNetwork, Layer
+from eloquentarduino.ml.classification.tensorflow.gridsearch.GridSearchResult import GridSearchResult
 
 
 class GridSearch:
     """
     Grid search for Tensorflow models
     """
-    layers = LayerProxy(None)
+    layers = Layer(None)
 
     def __init__(self, dataset):
         """
@@ -31,7 +27,7 @@ class GridSearch:
         Add a layer that will always be added to the network
         :param layer:
         """
-        assert isinstance(layer, LayerProxy), 'layer MUST be instantiated via GridSearch.layers factory'
+        assert isinstance(layer, Layer), 'layer MUST be instantiated via GridSearch.layers factory'
 
         # add layer to all combinations
         new_combinations = []
@@ -54,7 +50,7 @@ class GridSearch:
         :param branches: list
         """
         for layer in branches:
-            assert layer is None or isinstance(layer, LayerProxy), 'all branches MUST be instantiated via GridSearch.layers factory'
+            assert layer is None or isinstance(layer, Layer), 'all branches MUST be instantiated via GridSearch.layers factory'
 
         new_combinations = []
 
@@ -106,34 +102,35 @@ class GridSearch:
             self.dataset.shuffle()
             X_train, X_test, y_train, y_test = self.dataset.X, None, self.dataset.y, None
 
-        X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size=validation_size)
-
         for i, combination in enumerate(self.combinations):
             if show_progress:
                 print(i if i % 5 == 0 else '.', end='')
 
-            sequential = tf.keras.Sequential()
+            nn = NeuralNetwork()
 
             for layer in combination:
-                if isinstance(layer, LayerProxy):
-                    layer = layer.instantiate()
-                sequential.add(layer)
+                nn.add_layer(copy(layer))
 
-            sequential.compile(**self.compile_options)
-            history = sequential.fit(X_train, y_train, validation_data=(X_valid, y_valid), **self.fit_options)
+            for key, val in self.compile_options.items():
+                nn.set_compile_option(key, val)
+
+            for key, val in self.fit_options.items():
+                nn.set_fit_option(key, val)
+
+            nn.fit(X_train, y_train)
 
             if X_test is None:
-                accuracy = max(history.history['val_accuracy'])
+                accuracy = max(nn.history.history['val_accuracy'])
             else:
-                accuracy = sequential.evaluate(X_test, y_test)[1]
+                accuracy = nn.score(X_test, y_test)
 
-            results.append(Result(dataset=self.dataset, layers=combination, history=history, accuracy=accuracy, resources=None, inference_time=None))
+            results.append(GridSearchResult(dataset=self.dataset, clf=nn, accuracy=accuracy))
 
         self.results = sorted(results, key=lambda result: result.accuracy, reverse=True)
 
         return self.results
 
-    def instantiate(self, i=0, **kwargs):
+    def instantiate(self, i=0, fit=True, **kwargs):
         """
         Instantiate result
         :param i: int
@@ -142,18 +139,9 @@ class GridSearch:
         assert len(self.results) > 0, 'Unfitted'
         assert i < len(self.results), '%d is out of range'
 
-        result = self.results[i]
-        nn = NeuralNetwork()
+        nn = self.results[i].clf.clone()
 
-        for layer in result.layers:
-            nn.add_layer(layer.tf_type, *layer.args, **layer.kwargs)
-
-        for key, val in self.compile_options.items():
-            nn.set_compile_option(key, val)
-
-        for key, val in self.fit_options.items():
-            nn.set_fit_option(key, val)
-
-        nn.fit(self.dataset.X, self.dataset.y_categorical)
+        if fit:
+            nn.fit(self.dataset.X, self.dataset.y_categorical)
 
         return nn

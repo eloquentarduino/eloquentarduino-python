@@ -1,10 +1,26 @@
 from micromlgen import port
+from eloquentarduino.ml.classification.device import ClassifierResources
 
 
 class SklearnClassifier:
     """
     Abstract base class for classifiers from the sklearn package
     """
+    @property
+    def sklearn_base(self):
+        return [base for base in self.__class__.__bases__ if base.__module__.startswith('sklearn.')][0]
+
+    def fit(self, X, y):
+        """
+        Fit
+        """
+        self.sklearn_base.fit(self, X, y)
+        # keep track of X and y
+        self.X = X
+        self.y = y
+
+        return self
+
     def reset(self):
         """
         Reset the classifier
@@ -25,3 +41,9 @@ class SklearnClassifier:
         :param classmap: dict classmap in the format {class_idx: class_name}
         """
         return port(self, classname=classname, classmap=classmap, **kwargs)
+
+    def on_device(self, project=None):
+        """
+        Get device benchmarker
+        """
+        return ClassifierResources(self, project=project)
