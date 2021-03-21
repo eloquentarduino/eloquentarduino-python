@@ -102,11 +102,6 @@ eloquentarduino/templates/benchmarks/sklearn/Resources.jinja
 eloquentarduino/templates/benchmarks/sklearn/Runtime.jinja
 eloquentarduino/templates/benchmarks/tf/Resources.jinja
 eloquentarduino/templates/benchmarks/tf/Runtime.jinja
-eloquentarduino/templates/cascading/CascadingClassifier.jinja
-eloquentarduino/templates/cascading/__init__.py
-eloquentarduino/templates/cascading/_featurewise.jinja
-eloquentarduino/templates/cascading/_global.jinja
-eloquentarduino/templates/cascading/_windowwise.jinja
 eloquentarduino/templates/magics/eloquent-arduino.h.jinja
 eloquentarduino/templates/metrics/Baseline.jinja
 eloquentarduino/templates/metrics/Empty.jinja
@@ -129,8 +124,12 @@ eloquentarduino/templates/ml/data/preprocessing/pipeline/Window.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/YeoJohnson.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/templates/Namespace.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/templates/Step.jinja
-eloquentarduino/templates/on_device/Resources.jinja
-eloquentarduino/templates/on_device/ResourcesBaseline.jinja
+eloquentarduino/templates/on_device/sklearn/InferenceTime.jinja
+eloquentarduino/templates/on_device/sklearn/Resources.jinja
+eloquentarduino/templates/on_device/sklearn/ResourcesBaseline.jinja
+eloquentarduino/templates/on_device/tensorflow/InferenceTime.jinja
+eloquentarduino/templates/on_device/tensorflow/Resources.jinja
+eloquentarduino/templates/on_device/tensorflow/ResourcesBaseline.jinja
 eloquentarduino/templates/third_party/snoopy/snoopy.jinja
 eloquentarduino/third_party/Snoopy.py
 eloquentarduino/third_party/__init__.py
