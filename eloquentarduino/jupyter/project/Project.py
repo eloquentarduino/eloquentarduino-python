@@ -3,7 +3,7 @@ import re
 import os.path
 from copy import copy
 from datetime import datetime
-from time import sleep
+from time import time, sleep
 
 from eloquentarduino.jupyter.project.Board import Board
 from eloquentarduino.jupyter.project.Errors import UploadNotVerifiedError, ArduinoCliCommandError
@@ -180,7 +180,9 @@ class Project:
         """
         Get required flash and memory
         """
+        start_time = time()
         compile_log = self.compile()
+        compile_time = time() - start_time
         flash_pattern = r'Sketch uses (\d+) bytes.+?Maximum is (\d+)'
         memory_pattern = r'Global variables use (\d+).+?Maximum is (\d+)'
         flash_match = re.search(flash_pattern, compile_log.replace("\n", ""))
@@ -193,6 +195,7 @@ class Project:
         memory, memory_max = [int(g) for g in memory_match.groups()] if memory_match is not None else [0, 1]
 
         return {
+            'time': compile_time,
             'flash': flash,
             'flash_max': flash_max,
             'flash_percent': float(flash) / flash_max,

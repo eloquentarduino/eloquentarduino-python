@@ -8,6 +8,7 @@ from tinymlgen import port
 from functools import reduce
 from eloquentarduino.utils import jinja
 from eloquentarduino.ml.classification.tensorflow.Layer import Layer, layers
+from eloquentarduino.ml.classification.device import ClassifierResources
 
 
 class NeuralNetwork:
@@ -37,6 +38,15 @@ class NeuralNetwork:
     @property
     def num_classes(self):
         return self.y.shape[1]
+
+    @property
+    def train_accuracy(self):
+        """
+        Get train accuracy
+        """
+        accuracy = self.history.history.get('val_accuracy', self.history.history['accuracy'])
+
+        return accuracy[-1]
 
     def clone(self):
         """
@@ -154,7 +164,7 @@ class NeuralNetwork:
         """
         self.fit_options[key] = value
 
-    def fit(self, X, y):
+    def fit(self, X, y, **kwargs):
         """
         Fit the network
         :param X:
@@ -162,6 +172,8 @@ class NeuralNetwork:
         """
         self.sequential = tf.keras.Sequential()
         y = self.to_categorical(y)
+
+        self.fit_options.update(kwargs)
 
         # build the network
         for i, layer_definition in enumerate(self.layer_definitions):
@@ -186,6 +198,8 @@ class NeuralNetwork:
         self.history = self.sequential.fit(X, y, validation_data=validation_data, **self.fit_options)
         self.X = X
         self.y = y
+
+        return self
 
     def predict(self, X):
         """
@@ -262,6 +276,13 @@ class NeuralNetwork:
             'arena_size': arena_size,
             'classmap': classmap
         })
+
+    def on_device(self, project=None):
+        """
+        Get device benchmarker
+        :param project: Project
+        """
+        return ClassifierResources(self, project=project)
 
     def to_categorical(self, y):
         """

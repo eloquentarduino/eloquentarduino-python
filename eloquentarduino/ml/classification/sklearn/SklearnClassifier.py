@@ -45,5 +45,6 @@ class SklearnClassifier:
     def on_device(self, project=None):
         """
         Get device benchmarker
+        :param project: Project
         """
         return ClassifierResources(self, project=project)
