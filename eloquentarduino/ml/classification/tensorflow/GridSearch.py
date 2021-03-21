@@ -1,12 +1,13 @@
-import tensorflow as tf
 from copy import copy
-from collections import namedtuple
+
 from sklearn.model_selection import train_test_split
+
+from eloquentarduino.ml.classification.abstract.GridSearch import GridSearch as GridSearchBase
 from eloquentarduino.ml.classification.tensorflow import NeuralNetwork, Layer
 from eloquentarduino.ml.classification.tensorflow.gridsearch.GridSearchResult import GridSearchResult
 
 
-class GridSearch:
+class GridSearch(GridSearchBase):
     """
     Grid search for Tensorflow models
     """
@@ -16,11 +17,11 @@ class GridSearch:
         """
         Constructor
         """
+        super().__init__()
         self.dataset = dataset
         self.combinations = [[]]
         self.compile_options = {}
         self.fit_options = {}
-        self.results = []
 
     def add_layer(self, layer):
         """
@@ -80,7 +81,7 @@ class GridSearch:
         self.compile_options = kwargs
         self.compile_options.update(loss=loss, optimizer=optimizer, metrics=metrics)
 
-    def search(self, epochs=30, validation_size=0.2, test_size=0.2, show_progress=True, verbose=0, **kwargs):
+    def search(self, epochs=30, validation_size=0.2, test_size=0.2, show_progress=True, verbose=0, project=None, **kwargs):
         """
         Perform search
         :param epochs: int
@@ -88,8 +89,9 @@ class GridSearch:
         :param test_size: float
         :param show_progress: bool
         :param verbose: int
+        :param project: Project
         """
-        results = []
+        self.results = []
 
         assert validation_size > 0, 'validation_size MUST be greater than 0'
 
@@ -124,9 +126,10 @@ class GridSearch:
             else:
                 accuracy = nn.score(X_test, y_test)
 
-            results.append(GridSearchResult(dataset=self.dataset, clf=nn, accuracy=accuracy))
+            result = GridSearchResult(dataset=self.dataset, clf=nn, accuracy=accuracy)
+            self.append_result(result, project=project)
 
-        self.results = sorted(results, key=lambda result: result.accuracy, reverse=True)
+        self.results = sorted(self.results, key=lambda result: result.accuracy, reverse=True)
 
         return self.results
 

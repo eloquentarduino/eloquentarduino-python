@@ -3,11 +3,12 @@ from itertools import product
 from sklearn.base import clone
 from sklearn.model_selection import cross_validate
 from eloquentarduino.ml.data import Dataset
+from eloquentarduino.ml.classification.abstract.GridSearch import GridSearch as GridSearchBase
 from eloquentarduino.ml.classification.sklearn.SklearnClassifier import SklearnClassifier
 from eloquentarduino.ml.classification.sklearn.gridsearch.GridSearchResult import GridSearchResult
 
 
-class GridSearch:
+class GridSearch(GridSearchBase):
     """
     Perform grid search parameter optimization on sklearn classifiers
     """
@@ -22,12 +23,12 @@ class GridSearch:
         assert isinstance(clf, SklearnClassifier), 'clf MUST be a SklearnClassifier'
         assert isinstance(dataset, Dataset), 'dataset MUST be a Dataset'
 
+        super().__init__()
         self.clf = clf
         self.dataset = dataset
         self.only = only
         self.also = also
         self.exclude = exclude
-        self.results = []
 
     @property
     def combinations(self):
@@ -53,13 +54,14 @@ class GridSearch:
         for values in product(*hyperparameters.values()):
             yield {key: val for key, val in zip(hyperparameters.keys(), values)}
 
-    def search(self, cv=3, show_progress=False):
+    def search(self, cv=3, project=None, show_progress=False):
         """
         Perform search
         :param cv: int cross validation rounds
+        :param project: Project
         :param show_progress: bool if True, a progress indicator is shown
         """
-        results = []
+        self.results = []
 
         for i, combination in enumerate(self.combinations):
             if show_progress:
@@ -75,9 +77,9 @@ class GridSearch:
             if accuracy > 0:
                 clf = result['estimator'][best_idx]
 
-                results.append(GridSearchResult(clf=clf, dataset=self.dataset, hyperparameters=combination, accuracy=accuracy))
+                self.append_result(GridSearchResult(clf=clf, dataset=self.dataset, hyperparameters=combination, accuracy=accuracy), project=project)
 
-        self.results = sorted(results, key=lambda result: result.accuracy, reverse=True)
+        self.results = sorted(self.results, key=lambda result: result.accuracy, reverse=True)
 
         return self.results
 
