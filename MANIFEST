@@ -23,6 +23,7 @@ eloquentarduino/ml/cascading/CascadingClassifier.py
 eloquentarduino/ml/cascading/__init__.py
 eloquentarduino/ml/classification/Classifier.py
 eloquentarduino/ml/classification/__init__.py
+eloquentarduino/ml/classification/abstract/GridSearch.py
 eloquentarduino/ml/classification/abstract/GridSearchResult.py
 eloquentarduino/ml/classification/abstract/__init__.py
 eloquentarduino/ml/classification/device/ClassifierResources.py
