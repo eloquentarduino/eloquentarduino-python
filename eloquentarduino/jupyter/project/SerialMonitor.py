@@ -149,7 +149,10 @@ class SerialMonitor:
                     # abort on timeout
                     if time() - start_time > timeout:
                         raise RuntimeError('Timeout')
+
+                file.write('\n')
                 self.project.logger.info('DONE')
+
         if dump:
             self.project.files.cat('data/%s' % dest)
 
