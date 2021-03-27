@@ -1,14 +1,31 @@
 from micromlgen import port
+from sklearn.base import clone
+from eloquentarduino.ml.classification.abstract.Classifier import Classifier
 from eloquentarduino.ml.classification.device import ClassifierResources
 
 
-class SklearnClassifier:
+class SklearnClassifier(Classifier):
     """
     Abstract base class for classifiers from the sklearn package
     """
+    def __call__(self, *args, **kwargs):
+        """
+        Proxy all calls to sklearn classifier
+        """
+        return self.sklearn_base(self, *args, **kwargs)
+
+    def __getattr__(self, item):
+        """
+        Proxy all calls to sklearn classifier
+        """
+        return getattr(self.sklearn_base, item)
+
     @property
     def sklearn_base(self):
         return [base for base in self.__class__.__bases__ if base.__module__.startswith('sklearn.')][0]
+
+    def clone(self):
+        return clone(self)
 
     def fit(self, X, y):
         """

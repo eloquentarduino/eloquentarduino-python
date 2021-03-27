@@ -100,9 +100,10 @@ class Dataset:
         :param X:
         :param y:
         """
+        valid_rows = ~np.isnan(X).any(axis=1)
         self.name = name
-        self.X = X
-        self.y = y
+        self.X = X[valid_rows]
+        self.y = y[valid_rows]
         self.classmap = {-1: 'UNLABELLED'}
 
     @property

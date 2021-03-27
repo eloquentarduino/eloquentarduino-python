@@ -12,6 +12,7 @@ from eloquentarduino.ml.metrics.device.parsers import CompileLogParser
 class Classifier:
     """
     Abstraction of a classifier
+    @deprecated
     """
     def __init__(self, name, generator):
         """

@@ -7,11 +7,12 @@ from sklearn.model_selection import train_test_split
 from tinymlgen import port
 from functools import reduce
 from eloquentarduino.utils import jinja
+from eloquentarduino.ml.classification.abstract.Classifier import Classifier
 from eloquentarduino.ml.classification.tensorflow.Layer import Layer, layers
 from eloquentarduino.ml.classification.device import ClassifierResources
 
 
-class NeuralNetwork:
+class NeuralNetwork(Classifier):
     """
     Tensorflow neural network abstraction
     """
@@ -158,11 +159,11 @@ class NeuralNetwork:
         """
         self.compile_options[key] = value
 
-    def set_fit_option(self, key, value):
+    def set_fit_option(self, **kwargs):
         """
-        Set fit option
+        Set fit options
         """
-        self.fit_options[key] = value
+        self.fit_options.update(**kwargs)
 
     def fit(self, X, y, **kwargs):
         """
