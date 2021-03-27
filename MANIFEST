@@ -23,6 +23,7 @@ eloquentarduino/ml/cascading/CascadingClassifier.py
 eloquentarduino/ml/cascading/__init__.py
 eloquentarduino/ml/classification/Classifier.py
 eloquentarduino/ml/classification/__init__.py
+eloquentarduino/ml/classification/abstract/Classifier.py
 eloquentarduino/ml/classification/abstract/GridSearch.py
 eloquentarduino/ml/classification/abstract/GridSearchResult.py
 eloquentarduino/ml/classification/abstract/__init__.py
@@ -93,7 +94,10 @@ eloquentarduino/ml/metrics/plot/__init__.py
 eloquentarduino/ml/metrics/training/ClassifierBenchmark.py
 eloquentarduino/ml/metrics/training/__init__.py
 eloquentarduino/ml/plot/__init__.py
+eloquentarduino/plot/Bar.py
+eloquentarduino/plot/ConfusionMatrix.py
 eloquentarduino/plot/PCAPlotter.py
+eloquentarduino/plot/RankMatrix.py
 eloquentarduino/plot/__init__.py
 eloquentarduino/plot/dynamic/Bar.py
 eloquentarduino/plot/dynamic/__init__.py
