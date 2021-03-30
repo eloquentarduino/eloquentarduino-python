@@ -15,13 +15,15 @@ class StatMoments(BaseStep):
         assert moments > 0, 'moments MUST be greater than 0'
         super().__init__(name)
         self.num_features = num_features
-        self.n_moments = moments
+        self.num_moments = moments
 
     def fit(self, X, y):
         """
         Fit
         """
         self.set_X(X)
+        
+        self.working_dim = (self.input_dim // self.num_features) * self.num_moments
 
         # nothing to fit
         return self.transform(X), y
@@ -43,19 +45,21 @@ class StatMoments(BaseStep):
             moments = mean if moments is None else np.hstack((moments, mean))
 
             # var
-            if self.n_moments > 1:
+            if self.num_moments > 1:
                 var = ((samples - mean) ** 2).mean(axis=1).reshape((-1, 1))
                 moments = np.hstack((moments, var))
 
                 # skew
-                if self.n_moments > 2:
-                    skew = (((samples - mean) / var) ** 3).mean(axis=1).reshape((-1, 1))
+                if self.num_moments > 2:
+                    skew = (((samples - mean) ** 3) / (var ** 1.5)).mean(axis=1).reshape((-1, 1))
                     moments = np.hstack((moments, skew))
 
                     # kurtosis
-                    if self.n_moments > 3:
-                        kurtosis = (((samples - mean) / var) ** 4).mean(axis=1).reshape((-1, 1))
+                    if self.num_moments > 3:
+                        kurtosis = (((samples - mean) ** 4) / (var ** 2)).mean(axis=1).reshape((-1, 1))
                         moments = np.hstack((moments, kurtosis))
+
+        moments[np.isnan(moments)] = 0
 
         return moments
 
@@ -63,4 +67,8 @@ class StatMoments(BaseStep):
         """
 
         """
-        return {}
+        return {
+            'num_features': self.num_features,
+            'num_moments': self.num_moments,
+            'num_samples': self.input_dim // self.num_features
+        }

@@ -1,0 +1,60 @@
+{% extends './templates/Step.jinja' %}
+
+{% block public %}
+
+    /**
+     * @inplace
+     */
+    bool transform(float *source) {
+        uint16_t idx = 0;
+
+        for (uint16_t k = 0; k < {{ num_features }}; k++) {
+            // mean
+            float mean = 0;
+            float var  = 0;
+            float skew = 0;
+            float kurt = 0;
+
+            for (uint16_t i = k; i < {{ input_dim }}; i += {{ num_features }}) {
+                mean += source[i];
+            }
+
+            mean /= {{ num_samples }};
+            buffer[idx++] = mean;
+
+            {% if num_moments > 1 %}
+                for (uint16_t i = k; i < {{ input_dim }}; i += {{ num_features }}) {
+                    float d = source[i] - mean;
+                    float t = d * d;
+
+                    var += t;
+                    {% if num_moments > 2 %}
+                        skew += t * d;
+                    {% endif %}
+                    {% if num_moments > 3 %}
+                        kurt += t * t;
+                    {% endif %}
+                }
+
+                var /= {{ num_samples }};
+                buffer[idx++] = var;
+
+                {% if num_moments > 2 %}
+                    buffer[idx++] = skew / ({{ num_samples }} * pow(var, 1.5));
+                {% endif %}
+                {% if num_moments > 3 %}
+                    buffer[idx++] = kurt / ({{ num_samples }} * var * var);
+                {% endif %}
+            {% endif %}
+        }
+
+        memcpy(source, buffer, {{ num_features * num_moments }});
+
+        return true;
+    }
+
+{% endblock %}
+
+{% block protected %}
+
+{% endblock %}
