@@ -24,6 +24,12 @@ class SklearnClassifier(Classifier):
     def sklearn_base(self):
         return [base for base in self.__class__.__bases__ if base.__module__.startswith('sklearn.')][0]
 
+    def get_params(self, *args, **kwargs):
+        try:
+            return self.sklearn_base.get_params(self, *args, **kwargs)
+        except IndexError:
+            return {}
+
     def clone(self):
         return clone(self)
 

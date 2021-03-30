@@ -35,7 +35,7 @@ class FFT(BaseStep):
 
         assert (fft_samples & (fft_samples - 1) == 0), 'input dimension MUST be a power of 2'
 
-        self.working_dim = self.input_dim // 2
+        self.working_dim = fft_samples // 2
 
         return self.transform(X), y
 
@@ -45,7 +45,7 @@ class FFT(BaseStep):
         """
         fft = None
         for feature_idx in range(self.num_features):
-            # arduinoFFT library produces one element less than Numpy (¯\_(ツ)_/¯)
+            # arduinoFFT library produces one element less than Numpy
             feature_fft = np.abs(np.fft.rfft(X[:, feature_idx::self.num_features])[:, :-1])
             fft = feature_fft if fft is None else np.hstack((fft, feature_fft))
 

@@ -16,7 +16,11 @@ class NeuralNetwork(Classifier):
     """
     Tensorflow neural network abstraction
     """
-    def __init__(self):
+    def __init__(self, compile_options={}, fit_options={}):
+        """
+        :param compile_options:
+        :param fit_options:
+        """
         self.layer_definitions = []
         self.X = None
         self.y = None
@@ -30,6 +34,10 @@ class NeuralNetwork(Classifier):
             'valid_size': 0.2,
             'batch_size': 8
         }
+        self.compile_options.update(compile_options)
+        self.fit_options.update(fit_options)
+        self.sequential = None
+        self.history = None
         self.reset()
 
     @property
@@ -53,10 +61,8 @@ class NeuralNetwork(Classifier):
         """
         Clone current network
         """
-        nn = NeuralNetwork()
+        nn = NeuralNetwork(compile_options=self.compile_options, fit_options=self.fit_options)
         nn.layer_definitions = [copy(layer) for layer in self.layer_definitions]
-        nn.compile_options = self.compile_options
-        nn.fit_options = self.fit_options
         nn.X = self.X
         nn.y = self.y
 

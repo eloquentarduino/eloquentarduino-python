@@ -19,11 +19,11 @@
             fft.ComplexToMagnitude(real, imag, {{ fft_length * 2 }});
 
             for (int i = 0; i < {{ fft_length }}; i++) {
-                buffer[offset + i] = real[i];
+                buffer[i] = real[i];
             }
-        }
 
-        memcpy(source, buffer, sizeof(float) * {{ num_features * fft_length }});
+            memcpy(source + offset, buffer, sizeof(float) * {{ fft_length }});
+        }
 
         return true;
      }

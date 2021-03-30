@@ -1,13 +1,30 @@
 from math import ceil, sqrt
-from xgboost import XGBClassifier as SklearnImplementation
+from copy import deepcopy
+from xgboost import XGBClassifier as XGBImplementation
 from eloquentarduino.ml.classification.sklearn.SklearnClassifier import SklearnClassifier
 
 
-class XGBClassifier(SklearnClassifier, SklearnImplementation):
+class XGBClassifier(SklearnClassifier, XGBImplementation):
     """
     xgboost.XGBClassifier wrapper
     """
+    def __init__(self, random_state=0, **kwargs):
+        """
+        Patch constructor
+        """
+        super().__init__(random_state, **kwargs)
+
+    @property
+    def sklearn_base(self):
+        """
+        Get xgboost implementation
+        """
+        return [base for base in self.__class__.__bases__ if base.__module__.startswith('xgboost.')][0]
+
     def hyperparameters_grid(self, X=None):
+        """
+
+        """
         if X is None:
             return {
                 'n_estimators': [10, 25, 50],

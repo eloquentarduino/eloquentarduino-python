@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from os.path import basename, splitext, sep
 from glob import glob
 from functools import reduce
@@ -100,10 +101,13 @@ class Dataset:
         :param X:
         :param y:
         """
-        valid_rows = ~np.isnan(X).any(axis=1)
         self.name = name
+        try:
+            valid_rows = ~np.isnan(X).any(axis=1)
+        except TypeError:
+            valid_rows = slice(0, 999999)
         self.X = X[valid_rows]
-        self.y = y[valid_rows]
+        self.y = np.asarray(y)[valid_rows]
         self.classmap = {-1: 'UNLABELLED'}
 
     @property
@@ -138,11 +142,12 @@ class Dataset:
         # account for one-hot encoding
         return len(np.unique(self.y)) if len(self.y.shape) == 1 else self.y.shape[1]
 
-    def describe(self):
+    @property
+    def df(self):
         """
-        Calls pandas.DataFrame.describe()
+        Convert dataset to pd.DataFrame
         """
-        return pd.DataFrame(self.X).describe()
+        return pd.DataFrame(np.hstack((self.X, self.y.reshape((-1, 1)))))
 
     def train_test_split(self, **kwargs):
         """
@@ -229,6 +234,18 @@ class Dataset:
             arrays = [arr for arr in arrays if len(arr) > 0]
 
         return arrays
+
+    def plot(self, title='', columns=None, n_ticks=15, grid=True, fontsize=6,  **kwargs):
+        """
+        Plot dataframe
+        :param title: str title of plot
+        :param columns: list columns to plot
+        :param n_ticks: int number of ticks on the x axis
+        :param grid: bool wether to display the grid
+        :param fontsize: int font size for the axis values
+        """
+        plt.figure()
+        self.df[columns or self.df.columns].plot(title=title, xticks=range(0, self.length, self.length // n_ticks), grid=grid, fontsize=fontsize, rot=70, **kwargs)
 
     def _get_label_id(self, label):
         """

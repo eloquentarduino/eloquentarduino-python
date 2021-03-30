@@ -39,7 +39,7 @@ class MinMaxScaler(BaseStep):
             self.min = X.min()
             self.max = X.max()
         else:
-            assert self.input_dim % self.num_features == 0, 'num_features MUST be a divisor of X.shape[1]'
+            assert (self.input_dim % self.num_features) == 0, 'num_features MUST be a divisor of X.shape[1]'
             
             mins = [X[:, i::self.num_features].min() for i in range(self.num_features)]
             maxs = [X[:, i::self.num_features].max() for i in range(self.num_features)]
