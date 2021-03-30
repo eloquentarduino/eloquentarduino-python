@@ -69,6 +69,7 @@ eloquentarduino/ml/data/preprocessing/pipeline/PolynomialFeatures.py
 eloquentarduino/ml/data/preprocessing/pipeline/RFE.py
 eloquentarduino/ml/data/preprocessing/pipeline/SelectKBest.py
 eloquentarduino/ml/data/preprocessing/pipeline/StandardScaler.py
+eloquentarduino/ml/data/preprocessing/pipeline/StatMoments.py
 eloquentarduino/ml/data/preprocessing/pipeline/Window.py
 eloquentarduino/ml/data/preprocessing/pipeline/YeoJohnson.py
 eloquentarduino/ml/data/preprocessing/pipeline/__init__.py
