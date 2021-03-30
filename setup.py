@@ -4,10 +4,10 @@ from glob import glob
 from os.path import isdir
 
 
-def package_name(folder):
-  if folder.endswith(os.path.sep):
-    folder = folder[:-1]
-  return folder.replace(os.path.sep, '.')
+#def package_name(folder):
+#  if folder.endswith(os.path.sep):
+#    folder = folder[:-1]
+#  return folder.replace(os.path.sep, '.')
 
 
 #packages = [package_name(folder) for folder in glob('eloquentarduino/**', recursive=True)
@@ -22,13 +22,13 @@ data = ["templates/on_device/sklearn/ResourcesBaseline.jinja", "templates/on_dev
 setup(
   name = 'eloquentarduino',
   packages = packages,
-  version = '0.0.-1',
+  version = '0.0.43',
   license='MIT',
   description = 'A set of utilities to work with Arduino from Python and Jupyter Notebooks',
   author = 'Simone Salerno',
   author_email = 'eloquentarduino@gmail.com',
   url = 'https://github.com/eloquentarduino/eloquentarduino-python',
-  download_url = 'https://github.com/eloquentarduino/eloquentarduino-python/blob/master/dist/eloquentarduino-0.0.-1.tar.gz?raw=true',
+  download_url = 'https://github.com/eloquentarduino/eloquentarduino-python/blob/master/dist/eloquentarduino-0.0.43.tar.gz?raw=true',
   keywords = [
     'ML',
     'Jupyter',
