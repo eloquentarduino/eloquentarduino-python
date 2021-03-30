@@ -4,17 +4,20 @@ from glob import glob
 from os.path import isdir
 
 
-def package_name(folder):
-  if folder.endswith(os.path.sep):
-    folder = folder[:-1]
-  return folder.replace(os.path.sep, '.')
+#def package_name(folder):
+#  if folder.endswith(os.path.sep):
+#    folder = folder[:-1]
+#  return folder.replace(os.path.sep, '.')
 
 
-packages = [package_name(folder) for folder in glob('eloquentarduino/**', recursive=True)
-            if isdir(folder) and '__pycache__' not in folder]
+#packages = [package_name(folder) for folder in glob('eloquentarduino/**', recursive=True)
+#            if isdir(folder) and '__pycache__' not in folder]
 
-data = [filename.replace('eloquentarduino/', '')
-        for filename in glob('eloquentarduino/templates/**/*.jinja', recursive=True)]
+#data = [filename.replace('eloquentarduino/', '')
+#        for filename in glob('eloquentarduino/templates/**/*.jinja', recursive=True)]
+
+packages = PACKAGES
+data = TEMPLATES
 
 setup(
   name = 'eloquentarduino',
