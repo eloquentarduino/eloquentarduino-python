@@ -67,6 +67,7 @@ eloquentarduino/ml/data/preprocessing/pipeline/Pipeline.py
 eloquentarduino/ml/data/preprocessing/pipeline/PipelineGridSearch.py
 eloquentarduino/ml/data/preprocessing/pipeline/PolynomialFeatures.py
 eloquentarduino/ml/data/preprocessing/pipeline/RFE.py
+eloquentarduino/ml/data/preprocessing/pipeline/RateLimit.py
 eloquentarduino/ml/data/preprocessing/pipeline/SelectKBest.py
 eloquentarduino/ml/data/preprocessing/pipeline/StandardScaler.py
 eloquentarduino/ml/data/preprocessing/pipeline/StatMoments.py
@@ -124,8 +125,10 @@ eloquentarduino/templates/ml/data/preprocessing/pipeline/Norm.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/Pipeline.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/PolynomialFeatures.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/RFE.jinja
+eloquentarduino/templates/ml/data/preprocessing/pipeline/RateLimit.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/SelectKBest.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/StandardScaler.jinja
+eloquentarduino/templates/ml/data/preprocessing/pipeline/StatMoments.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/Window.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/YeoJohnson.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/templates/Namespace.jinja

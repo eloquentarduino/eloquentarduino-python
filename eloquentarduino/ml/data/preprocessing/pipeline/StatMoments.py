@@ -23,7 +23,7 @@ class StatMoments(BaseStep):
         """
         self.set_X(X)
         
-        self.working_dim = (self.input_dim // self.num_features) * self.num_moments
+        self.working_dim = self.num_features * self.num_moments
 
         # nothing to fit
         return self.transform(X), y
