@@ -15,6 +15,15 @@ class CustomEnvironment(Environment):
         return os.path.normpath(os.path.join(os.path.dirname(parent), template))
 
 
+class CustomLoader(FileSystemLoader):
+    """
+    Make compatible with Windows and Unix
+    """
+    def get_source(self, environment, template):
+        template = template.replace(os.path.sep, '/')
+        return super().get_source(environment, template)
+
+
 def shape(arr):
     """
     Convert array shape to C
@@ -111,7 +120,8 @@ def jinja(template_name, template_data={}, pretty=False):
     )
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    loader = FileSystemLoader(os.path.join(dir_path, '..', 'templates'))
+    #loader = FileSystemLoader(os.path.join(dir_path, '..', 'templates'))
+    loader = CustomLoader(os.path.join(dir_path, '..', 'templates'))
     template = jinja_env(loader=loader).get_template(template_name)
     output = template.render(template_data)
 
