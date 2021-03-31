@@ -3,6 +3,7 @@
 {% block preamble %}
 
     #pragma once
+    #include <cstring>
 
     {% for library in includes %}
     #include "{{ library }}"

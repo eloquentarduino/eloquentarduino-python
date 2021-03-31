@@ -47,7 +47,7 @@
             {% endif %}
         }
 
-        memcpy(source, buffer, {{ num_features * num_moments }});
+        memcpy(source, buffer, {{ num_features * num_moments }} * sizeof(float));
 
         return true;
     }

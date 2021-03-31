@@ -34,6 +34,7 @@ class Window(BaseStep):
         self.set_X(X)
 
         idx = self.idx(X)
+        self.working_dim = self.input_dim * self.length
 
         return self.transform(X), [mode(window)[0][0] for window in y[idx]]
 
