@@ -74,21 +74,25 @@ class SnoopyGridSearch:
 
             for j, clf in enumerate(classifiers):
                 print('searching %d/%d...' % (i * len(classifiers) + j + 1, n_combinations))
-                y_pred = clf.clone().fit(pipeline.X, pipeline.y).predict(X_test)
 
-                for short_votes in [1, 5, 10, 15]:
-                    for long_votes in [1, 3, 5, 10]:
-                        for quorum in [0.5, 0.7, 0.85]:
-                            scores.append({
-                                'pipeline': pipeline,
-                                'clf': clf,
-                                'voting': {
-                                    'short': short_votes,
-                                    'long': long_votes,
-                                    'quorum': quorum
-                                },
-                                'scores': self._apply_voting(y_test, y_pred, short_votes, long_votes, short_votes * quorum, long_votes * quorum)
-                            })
+                try:
+                    y_pred = clf.clone().fit(pipeline.X, pipeline.y).predict(X_test)
+
+                    for short_votes in [1, 5, 10, 15]:
+                        for long_votes in [1, 3, 5, 10]:
+                            for quorum in [0.5, 0.7, 0.85]:
+                                scores.append({
+                                    'pipeline': pipeline,
+                                    'clf': clf,
+                                    'voting': {
+                                        'short': short_votes,
+                                        'long': long_votes,
+                                        'quorum': quorum
+                                    },
+                                    'scores': self._apply_voting(y_test, y_pred, short_votes, long_votes, short_votes * quorum, long_votes * quorum)
+                                })
+                except ValueError as err:
+                    print('ValueError', err)
 
         return sorted(scores, key=lambda x: x['scores']['accuracy'], reverse=True)
 

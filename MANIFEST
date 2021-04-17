@@ -71,6 +71,7 @@ eloquentarduino/ml/data/preprocessing/pipeline/RateLimit.py
 eloquentarduino/ml/data/preprocessing/pipeline/SelectKBest.py
 eloquentarduino/ml/data/preprocessing/pipeline/StandardScaler.py
 eloquentarduino/ml/data/preprocessing/pipeline/StatMoments.py
+eloquentarduino/ml/data/preprocessing/pipeline/TSFRESH.py
 eloquentarduino/ml/data/preprocessing/pipeline/Window.py
 eloquentarduino/ml/data/preprocessing/pipeline/YeoJohnson.py
 eloquentarduino/ml/data/preprocessing/pipeline/__init__.py
@@ -90,7 +91,6 @@ eloquentarduino/ml/metrics/device/parsers/CompileLogParser.py
 eloquentarduino/ml/metrics/device/parsers/__init__.py
 eloquentarduino/ml/metrics/plot/Bar.py
 eloquentarduino/ml/metrics/plot/Barplot.py
-eloquentarduino/ml/metrics/plot/ConfusionMatrix.py
 eloquentarduino/ml/metrics/plot/Series.py
 eloquentarduino/ml/metrics/plot/__init__.py
 eloquentarduino/ml/metrics/training/ClassifierBenchmark.py
@@ -129,6 +129,9 @@ eloquentarduino/templates/ml/data/preprocessing/pipeline/RateLimit.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/SelectKBest.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/StandardScaler.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/StatMoments.jinja
+eloquentarduino/templates/ml/data/preprocessing/pipeline/TSFRESH.jinja
+eloquentarduino/templates/ml/data/preprocessing/pipeline/TSFRESH_@only.jinja
+eloquentarduino/templates/ml/data/preprocessing/pipeline/TSFRESH_if.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/Window.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/YeoJohnson.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/templates/Namespace.jinja
@@ -136,12 +139,17 @@ eloquentarduino/templates/ml/data/preprocessing/pipeline/templates/Step.jinja
 eloquentarduino/templates/on_device/sklearn/InferenceTime.jinja
 eloquentarduino/templates/on_device/sklearn/Resources.jinja
 eloquentarduino/templates/on_device/sklearn/ResourcesBaseline.jinja
+eloquentarduino/templates/on_device/sklearn/_Resources.jinja
 eloquentarduino/templates/on_device/tensorflow/InferenceTime.jinja
 eloquentarduino/templates/on_device/tensorflow/Resources.jinja
 eloquentarduino/templates/on_device/tensorflow/ResourcesBaseline.jinja
+eloquentarduino/templates/on_device/tensorflow/_Resources.jinja
 eloquentarduino/templates/third_party/snoopy/snoopy.jinja
 eloquentarduino/third_party/Snoopy.py
 eloquentarduino/third_party/__init__.py
+eloquentarduino/third_party/snoopy/SnoopyGridSearch.py
+eloquentarduino/third_party/snoopy/Voting.py
+eloquentarduino/third_party/snoopy/__init__.py
 eloquentarduino/utils/__init__.py
 eloquentarduino/utils/jinja.py
 eloquentarduino/utils/misc.py
