@@ -1,13 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
 from sklearn.preprocessing import quantile_transform
 from sklearn.covariance import EllipticEnvelope
 
 
-class PCAPlotter:
+class TSNEPlotter:
     """
-    Plot PCA components
+    Plot t-SNE components
     """
     def __init__(self, X, y):
         """
@@ -18,7 +18,7 @@ class PCAPlotter:
         self.X = X
         self.y = np.asarray(y)
 
-    def plot(self, n=2, outliers=True, sparsity=0):
+    def plot(self, n=2, outliers=True, sparsity=0, **kwargs):
         """
         Plot
         :param n: int either 2 or 3
@@ -31,25 +31,25 @@ class PCAPlotter:
         X = self.X[::(1 + sparsity)]
         y = self.y[::(1 + sparsity)]
 
-        pca = PCA(n_components=n).fit_transform(X)
+        tsne = TSNE(n_components=n, **kwargs).fit_transform(X, y)
 
         if n == 2:
             ax = plt.figure().add_subplot()
         else:
             ax = plt.figure().add_subplot(111, projection='3d')
-            ax.set_zlabel('PCA component #3')
+            ax.set_zlabel('t-SNE component #3')
 
         if not outliers:
-            outliers = EllipticEnvelope().fit_predict(pca, None)
-            pca = pca[outliers > 0]
+            outliers = EllipticEnvelope().fit_predict(tsne, None)
+            tsne = tsne[outliers > 0]
             y = y[outliers > 0]
 
-        scatter = ax.scatter(*pca.T.tolist(), c=y)
+        scatter = ax.scatter(*tsne.T.tolist(), c=y)
         ax.legend(*scatter.legend_elements(), title="Classes")
-        ax.set_xlabel('PCA component #1')
-        ax.set_ylabel('PCA component #2')
+        ax.set_xlabel('t-SNE component #1')
+        ax.set_ylabel('t-SNE component #2')
 
         if n == 3:
-            ax.set_zlabel('PCA component #3')
+            ax.set_zlabel('t-SNE component #3')
 
         plt.show()
