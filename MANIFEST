@@ -100,6 +100,7 @@ eloquentarduino/plot/Bar.py
 eloquentarduino/plot/ConfusionMatrix.py
 eloquentarduino/plot/PCAPlotter.py
 eloquentarduino/plot/RankMatrix.py
+eloquentarduino/plot/TSNEPlotter.py
 eloquentarduino/plot/__init__.py
 eloquentarduino/plot/dynamic/Bar.py
 eloquentarduino/plot/dynamic/__init__.py
