@@ -37,9 +37,9 @@ class FFT(BaseStep):
 
         self.working_dim = fft_samples // 2
 
-        return self.transform(X), y
+        return self.transform(X, y)
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         """
         Transform
         """
@@ -49,7 +49,7 @@ class FFT(BaseStep):
             feature_fft = np.abs(np.fft.rfft(X[:, feature_idx::self.num_features])[:, :-1])
             fft = feature_fft if fft is None else np.hstack((fft, feature_fft))
 
-        return fft
+        return fft, y
 
     def get_template_data(self):
         """

@@ -8,7 +8,7 @@
     bool transform(float *source) {
         counter += 1;
 
-        if (counter == {{ skip }}) {
+        if (counter == {{ skip + 1 }}) {
             counter = 0;
 
             return true;

@@ -48,15 +48,16 @@ class MinMaxScaler(BaseStep):
             self.min = np.asarray(mins * self.repeat)
             self.max = np.asarray(maxs * self.repeat)
 
-        return self.transform(X), y
+        return self.transform(X, y)
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         """
-        Transform X
+        Transform
         :return: ndarray
         """
         assert self.min is not None and self.max is not None, 'Unfitted'
-        return (X - self.min) / (self.max - self.min)
+
+        return (X - self.min) / (self.max - self.min), y
 
     def get_template_data(self):
         """

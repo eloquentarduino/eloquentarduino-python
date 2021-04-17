@@ -16,11 +16,13 @@ class NeuralNetwork(Classifier):
     """
     Tensorflow neural network abstraction
     """
-    def __init__(self, compile_options={}, fit_options={}):
+    def __init__(self, compile_options={}, fit_options={}, name=''):
         """
-        :param compile_options:
-        :param fit_options:
+        :param compile_options: dict
+        :param fit_options: dict
+        :param name: str
         """
+        self.name = name
         self.layer_definitions = []
         self.X = None
         self.y = None
@@ -39,6 +41,18 @@ class NeuralNetwork(Classifier):
         self.sequential = None
         self.history = None
         self.reset()
+
+    def __str__(self):
+        """
+        Get string representation
+        """
+        return self.name or str(self.describe())
+
+    def __repr__(self):
+        """
+        Get string representation
+        """
+        return str(self)
 
     @property
     def num_inputs(self):

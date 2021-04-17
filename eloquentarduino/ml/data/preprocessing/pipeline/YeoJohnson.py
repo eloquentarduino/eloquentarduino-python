@@ -18,13 +18,13 @@ class YeoJohnson(BaseStep):
         self.set_X(X)
         self.power.fit(X)
 
-        return self.transform(X), y
+        return self.transform(X, y)
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         """
         Transform
         """
-        return self.power.transform(X)
+        return self.power.transform(X), y
 
     def get_template_data(self):
         """

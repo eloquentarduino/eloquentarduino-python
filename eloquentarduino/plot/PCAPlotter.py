@@ -18,16 +18,21 @@ class PCAPlotter:
         self.X = X
         self.y = np.asarray(y)
 
-    def plot(self, n=2, outliers=True):
+    def plot(self, n=2, outliers=True, sparsity=0):
         """
         Plot
         :param n: int either 2 or 3
         :param outliers: bool if to remove outliers
+        :param sparsity: int how many samples to skip
         """
         assert n == 2 or n == 3, 'n MUST be 2 or 3'
+        assert sparsity >= 0, 'sparsity MUST be non-negative'
 
-        pca = PCA(n_components=n).fit_transform(self.X)
-        y = self.y
+        X = self.X[::(1 + sparsity)]
+        y = self.y[::(1 + sparsity)]
+
+        pca = PCA(n_components=n).fit_transform(X)
+        y = y
 
         if n == 2:
             ax = plt.figure().add_subplot()

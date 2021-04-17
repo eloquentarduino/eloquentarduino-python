@@ -76,16 +76,17 @@ class Pipeline:
 
         return self
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         """
         Apply pipeline
         :param X:
+        :param y:
         """
 
         for step in self.steps:
-            X = step.transform(X)
+            X, y = step.transform(X, y)
 
-        return X
+        return X, y if y is not None else X
 
     def score(self, clf, cv=3, return_average_accuracy=True, return_best_estimator=False):
         """
@@ -106,13 +107,13 @@ class Pipeline:
 
         return scores
 
-    def port(self):
+    def port(self, classname='Pipeline'):
         """
         Port to C++
         """
         return jinja('ml/data/preprocessing/pipeline/Pipeline.jinja', {
-            'name': self.name,
-            'pipeline': self.name,
+            'ns': self.name,
+            'classname': classname,
             'steps': self.steps,
             'input_dim': self.input_dim,
             'output_dim': max([self.output_dim, self.working_dim]),

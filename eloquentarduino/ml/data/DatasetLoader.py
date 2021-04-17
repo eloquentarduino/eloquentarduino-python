@@ -60,7 +60,7 @@ class DatasetsLoader:
         """
         pattern = re.compile(pattern)
 
-        for filename in glob('%s/*' % folder):
+        for filename in sorted(glob('%s/*' % folder)):
             if pattern.search(os.path.basename(filename)) is None:
                 continue
 

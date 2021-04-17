@@ -133,7 +133,7 @@ class Project:
         self.logger.info('Compile OK')
         return output
 
-    def upload(self, compile=True, retry=True, success_message=r'ok|verified|done|found|success', wait_for=4):
+    def upload(self, compile=True, retry=True, success_message=r'ok|verified|done|found|success|wrote', wait_for=4):
         """
         Upload sketch using arduino-cli
         :param compile: wether to compile the sketch before uploading

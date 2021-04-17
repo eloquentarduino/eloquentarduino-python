@@ -1,6 +1,7 @@
 import re
 import os
 import os.path
+import math
 import numpy as np
 from eloquentarduino.utils.misc import is_list
 from jinja2 import Environment, FileSystemLoader, BaseLoader
@@ -59,6 +60,8 @@ def jinja_env(loader):
     env = CustomEnvironment(loader=loader)
     env.filters['shape'] = shape
     env.filters['to_array'] = to_array
+    env.filters['ceil'] = math.ceil
+    env.filters['floor'] = math.floor
     env.globals['np'] = np
     env.globals['enumerate'] = enumerate
     env.globals['isinstance'] = isinstance

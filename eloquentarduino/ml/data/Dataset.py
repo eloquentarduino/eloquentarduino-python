@@ -55,7 +55,7 @@ class Dataset:
             X = df[columns].to_numpy()
             y = df[label_column].to_numpy()
 
-        return Dataset(name, X, y)
+        return Dataset(name, X, y, columns=columns)
 
     @staticmethod
     def read_folder(folder, file_pattern='*.csv', delimiter=',', skiprows=0):
@@ -69,7 +69,7 @@ class Dataset:
         X, y = None, None
         labels = []
 
-        for class_idx, filename in enumerate(glob("%s/%s" % (folder, file_pattern))):
+        for class_idx, filename in enumerate(sorted(glob("%s/%s" % (folder, file_pattern)))):
             label = splitext(basename(filename))[0]
             Xi = np.loadtxt(filename, dtype=np.float, delimiter=delimiter, skiprows=skiprows)
             yi = np.ones(len(Xi)) * class_idx
@@ -95,19 +95,22 @@ class Dataset:
 
         return dataset
 
-    def __init__(self, name, X, y):
+    def __init__(self, name, X, y, columns=None):
         """
         :param name:
         :param X:
         :param y:
+        :param columns:
         """
         self.name = name
         try:
             valid_rows = ~np.isnan(X).any(axis=1)
         except TypeError:
             valid_rows = slice(0, 999999)
+
         self.X = X[valid_rows]
         self.y = np.asarray(y)[valid_rows]
+        self.columns = columns
         self.classmap = {-1: 'UNLABELLED'}
 
     @property
@@ -147,7 +150,19 @@ class Dataset:
         """
         Convert dataset to pd.DataFrame
         """
-        return pd.DataFrame(np.hstack((self.X, self.y.reshape((-1, 1)))))
+        if self.columns:
+            columns = self.columns + ['y']
+        else:
+            columns = None
+
+        return pd.DataFrame(np.hstack((self.X, self.y.reshape((-1, 1)))), columns=columns)
+
+    @property
+    def class_labels(self):
+        """
+        Get labels of classes
+        """
+        return [label for idx, label in self.classmap.items() if idx >= 0]
 
     def train_test_split(self, **kwargs):
         """
@@ -198,13 +213,35 @@ class Dataset:
 
         return self
 
-    def random(self, size):
+    def random(self, size=0):
         """
         Get random samples
         :param size: int number of samples to return
         """
+        if size == 0:
+            size = self.length
+
         idx = np.random.permutation(self.length)[:size]
         return self.X[idx], self.y[idx]
+
+    def take(self, size):
+        """
+        Take a subset of the dataset
+        """
+        return Dataset(self.name, *self.random(size))
+
+    def keep_gaussian(self, multiplier=3):
+        """
+        Discard outliers based on variance
+        """
+        mean = self.X.mean(axis=0)
+        std = self.X.std(axis=0)
+        lower = mean - multiplier * std
+        upper = mean + multiplier * std
+        keep = np.all((self.X >= lower) & (self.X <= upper), axis=1)
+
+        self.X = self.X[keep]
+        self.y = self.y[keep]
 
     def split(self, test=0, validation=0, return_empty=True, shuffle=True):
         """

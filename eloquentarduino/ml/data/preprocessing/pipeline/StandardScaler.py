@@ -48,15 +48,15 @@ class StandardScaler(BaseStep):
             self.mean = np.asarray(mean * self.repeat)
             self.std = np.asarray(std * self.repeat)
 
-        return self.transform(X), y
+        return self.transform(X, y)
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         """
-        Transform X
-        :return: ndarray
+        Transform
         """
         assert self.mean is not None and self.std is not None, 'Unfitted'
-        return (X - self.mean) / self.std
+
+        return (X - self.mean) / self.std, y
 
     def get_template_data(self):
         """

@@ -29,18 +29,18 @@ class Norm(BaseStep):
         """
         self.set_X(X)
         # nothing to fit
-        return self.transform(X), y
+        return self.transform(X, y)
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         """
         Transform
         """
         if self.norm == 'l2':
-            return X / np.linalg.norm(X, axis=1).reshape((-1, 1))
+            return X / np.linalg.norm(X, axis=1).reshape((-1, 1)), y
         elif self.norm == 'l1':
-            return X / np.sum(np.abs(X), axis=1).reshape((-1, 1))
+            return X / np.sum(np.abs(X), axis=1).reshape((-1, 1)), y
         elif self.norm == 'inf':
-            return X / np.max(np.abs(X), axis=1).reshape((-1, 1))
+            return X / np.max(np.abs(X), axis=1).reshape((-1, 1)), y
 
     def get_template_data(self):
         """

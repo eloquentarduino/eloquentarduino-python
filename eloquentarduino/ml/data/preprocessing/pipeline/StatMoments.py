@@ -22,13 +22,16 @@ class StatMoments(BaseStep):
         Fit
         """
         self.set_X(X)
+
+        if self.num_features < 1:
+            self.num_features = int(self.input_dim * self.num_features)
         
         self.working_dim = self.num_features * self.num_moments
 
         # nothing to fit
-        return self.transform(X), y
+        return self.transform(X, y)
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         """
         Extract moments
         :return: np.ndarray
@@ -59,9 +62,14 @@ class StatMoments(BaseStep):
                         kurtosis = (((samples - mean) ** 4) / (var ** 2)).mean(axis=1).reshape((-1, 1))
                         moments = np.hstack((moments, kurtosis))
 
+            # more stats
+            #rms = (samples ** 2).mean(axis=1).reshape((-1, 1))
+            #waveform_length = np.abs(np.diff(samples, axis=1)).mean(axis=1).reshape((-1, 1))
+            #moments = np.hstack((moments, rms, waveform_length))
+
         moments[np.isnan(moments)] = 0
 
-        return moments
+        return moments, y
 
     def get_template_data(self):
         """

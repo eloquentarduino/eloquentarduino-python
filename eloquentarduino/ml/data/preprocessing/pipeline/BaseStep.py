@@ -47,9 +47,11 @@ class BaseStep:
         """
         raise NotImplemented
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         """
         Transform input
+        :param X:
+        :param y:
         """
         raise NotImplemented
 
@@ -66,14 +68,22 @@ class BaseStep:
         """
         self.includes.append(library)
 
-    def port(self, pipeline):
+    def port(self, ns):
         """
         Port to plain C++
-        :param pipeline: str pipeline name
+        :param ns: str namespace for the pipeline
         :return: str C++ code
         """
         template_name = type(self).__name__
         template_data = self.get_template_data()
-        template_data.update(name=self.name, input_dim=self.input_dim, working_dim=self.working_dim, pipeline=pipeline)
+        template_data.update(name=self.name, input_dim=self.input_dim, working_dim=self.working_dim, ns=ns)
 
-        return jinja('ml/data/preprocessing/pipeline/%s.jinja' % template_name, template_data)
+        return self.postprocess_port(jinja('ml/data/preprocessing/pipeline/%s.jinja' % template_name, template_data))
+
+    def postprocess_port(self, ported):
+        """
+        Apply post-processing to ported code
+        :param ported: str
+        :return: str
+        """
+        return ported

@@ -4,11 +4,19 @@
 
     class {{ name }} {% if name != 'Step' %}: public Step {% endif %} {
         public:
-            {% if name != 'Step' %} using Step::Step; {% endif %}
+            {% if name != 'Step' %}
+                /**
+                 * @param workArea shared buffer to store intermediate results
+                 */
+                {{ name }}(float *workArea) : buffer(workArea) {
+
+                }
+            {% endif %}
 
             {% block public %}{% endblock %}
 
         protected:
+            float *buffer;
             {% block protected %}{% endblock %}
     };
 

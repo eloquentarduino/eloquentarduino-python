@@ -12,7 +12,7 @@
     {% include './AbstractStep.jinja' %}
 
     {% for i, step in enumerate(steps) %}
-    {{ step.port(pipeline=name) }}
+    {{ step.port(ns=ns) }}
     {% endfor %}
 
 {% endblock %}
@@ -20,14 +20,15 @@
 {% block body %}
 
 
-    class {{ name }} {
+    class {{ classname }} {
         public:
             float X[{{ output_dim }}] = {0};
+            time_t latency = 0;
 
             /**
              * Constructor
              */
-            {{ name }}() {
+            {{ classname }}() {
                 {% for i, step in enumerate(steps) %}
                     steps[{{ i }}] = new {{ step.name }}(buffer);
                 {% endfor %}
@@ -39,10 +40,16 @@
             bool transform(float *x) {
                 memcpy(X, x, sizeof(float) * {{ input_dim }});
 
-                return {% for i, step in enumerate(steps) %}
+                time_t start = micros();
+                bool transformed =
+                {% for i, step in enumerate(steps) %}
                     // {{ step.name }}
                     {% if i > 0 %} && {% endif %} steps[{{ i }}]->transform(X)
                 {% endfor %};
+
+                latency = micros() - start;
+
+                return transformed;
             }
 
         protected:

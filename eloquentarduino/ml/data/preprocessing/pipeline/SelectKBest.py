@@ -36,13 +36,13 @@ class SelectKBest(BaseStep):
         self.idx = (-self.kbest.scores_).argsort()[:self.k]
         self.idx = np.sort(self.idx)
 
-        return self.transform(X), y
+        return self.transform(X, y)
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         """
         Transform
         """
-        return X[:, self.idx]
+        return X[:, self.idx], y
 
     def get_template_data(self):
         """

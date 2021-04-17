@@ -2,6 +2,7 @@ from itertools import combinations
 from math import floor
 from collections import namedtuple
 from collections.abc import Iterable
+from copy import copy
 
 from eloquentarduino.ml.data.preprocessing.pipeline.Pipeline import Pipeline
 from eloquentarduino.ml.data.preprocessing.pipeline.BoxCox import BoxCox
@@ -12,6 +13,7 @@ from eloquentarduino.ml.data.preprocessing.pipeline.Norm import Norm
 from eloquentarduino.ml.data.preprocessing.pipeline.PolynomialFeatures import PolynomialFeatures
 from eloquentarduino.ml.data.preprocessing.pipeline.SelectKBest import SelectKBest
 from eloquentarduino.ml.data.preprocessing.pipeline.StandardScaler import StandardScaler
+from eloquentarduino.ml.data.preprocessing.pipeline.StatMoments import StatMoments
 from eloquentarduino.ml.data.preprocessing.pipeline.Window import Window
 from eloquentarduino.ml.data.preprocessing.pipeline.YeoJohnson import YeoJohnson
 
@@ -30,7 +32,7 @@ class PipelineGridSearch:
         self.global_scaling = global_scaling
         self.feature_selection = feature_selection
 
-    def naive_search(self, clf, max_steps=3, cv=3, always_confirm=False, show_progress=False):
+    def naive_search(self, clf, max_steps=3, cv=3, always_confirm=False, show_progress=False, test=None):
         """
         Perform a naive search for the optimal pipeline
         :param clf:
@@ -38,7 +40,10 @@ class PipelineGridSearch:
         :param cv: int cross validation splits
         :param always_confirm: bool if True, the function doesn't ask for confirmation
         :param show_progress: bool if True, a progress indicator is shown
+        :param test: tuple (X_test, y_test)
         """
+        assert test is None or isinstance(test, tuple) and len(test) == 2, 'test MUST be None or a (X_test, y_test) tuple'
+
         Result = namedtuple('Result', 'pipeline accuracy')
         results = []
         combs = list(self.enumerate(max_steps))
@@ -52,11 +57,22 @@ class PipelineGridSearch:
             try:
                 pipeline = Pipeline('PipelineGridSearch', self.dataset, steps=steps)
                 pipeline.fit()
-                results.append(Result(pipeline=pipeline, accuracy=pipeline.score(clf, cv=cv, return_average_accuracy=True)))
-            except ValueError:
-                pass
-            except AssertionError:
-                pass
+
+                # estimate accuracy via cross-validation
+                if test is None:
+                    accuracy = pipeline.score(clf, cv=cv, return_average_accuracy=True)
+                else:
+                    # use provided test set
+                    X_test, y_test = test
+                    accuracy = clf.fit(pipeline.X, pipeline.y).score(*pipeline.transform(X_test, y_test))
+
+                results.append(Result(pipeline=pipeline, accuracy=accuracy))
+            except ValueError as ex:
+                print('ValueError', ex)
+            except IndexError as ex:
+                print('Index error', ex)
+            except AssertionError as ex:
+                print('Assertion error', ex)
 
         return sorted(results, key=lambda result: -result.accuracy)
 
@@ -83,19 +99,21 @@ class PipelineGridSearch:
                 StandardScaler(name='StandardScalerGlobal', num_features=0)
             ]
 
-        if self.feature_selection:
-            steps += [
-                SelectKBest(name='1/4 K best', k=self.dataset.num_features // 4),
-                SelectKBest(name='1/2 K best', k=self.dataset.num_features // 2),
-            ]
-
         final_steps = []
 
         if self.is_time_series:
             final_steps = [
                 [Window(length=self.duration)],
-                [Window(name='Window for FFT', length=self.duration), FFT(num_features=1/self.duration)]
+                [Window(name='Window for FFT', length=self.duration), FFT(num_features=1/self.duration)],
+                [Window(name='Window for FFT', length=self.duration), StatMoments(num_features=1/self.duration)]
             ]
+
+        # #todo
+        #if self.feature_selection:
+        #    final_steps += [
+        #        SelectKBest(name='1/4 K best', k=self.dataset.num_features // 4),
+        #        SelectKBest(name='1/2 K best', k=self.dataset.num_features // 2),
+        #    ]
 
         for n in range(1, max_steps + 1):
             for combination in combinations(steps, n):

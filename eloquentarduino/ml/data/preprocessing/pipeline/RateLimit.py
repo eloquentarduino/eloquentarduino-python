@@ -21,14 +21,13 @@ class RateLimit(BaseStep):
         """
         self.set_X(X)
         # nothing to fit
-        return self.transform(X), y
+        return self.transform(X, y)
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         """
-        Nothing to transform
-        :return: ndarray
+        Transform
         """
-        return X
+        return X[::(self.skip + 1)], y[::(self.skip + 1)]
 
     def get_template_data(self):
         """

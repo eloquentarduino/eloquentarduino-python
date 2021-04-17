@@ -16,14 +16,14 @@ class Diff(BaseStep):
         """
         self.set_X(X)
         # nothing to fit
-        return self.transform(X), y
+        return self.transform(X, y)
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         """
         Compute diff()
         :return: ndarray
         """
-        return np.vstack((X[0].reshape((1, -1)), X[1:, :] - X[0:-1]))
+        return np.vstack((X[0].reshape((1, -1)), X[1:, :] - X[0:-1])), y
 
     def get_template_data(self):
         """

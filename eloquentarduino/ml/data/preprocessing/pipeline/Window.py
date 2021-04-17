@@ -32,19 +32,17 @@ class Window(BaseStep):
         Fit
         """
         self.set_X(X)
-
-        idx = self.idx(X)
         self.working_dim = self.input_dim * self.length
 
-        return self.transform(X), [mode(window)[0][0] for window in y[idx]]
+        return self.transform(X, y)
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         """
         Transform
         """
         idx = self.idx(X)
 
-        return X[idx].reshape((-1, self.input_dim * self.length)) if self.flatten else X[idx]
+        return X[idx].reshape((-1, self.input_dim * self.length)) if self.flatten else X[idx], np.asarray([mode(window)[0][0] for window in y[idx]])
 
     def idx(self, X):
         """

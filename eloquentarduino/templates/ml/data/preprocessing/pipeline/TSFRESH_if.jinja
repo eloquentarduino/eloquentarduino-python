@@ -1,0 +1,179 @@
+{% extends './templates/Step.jinja' %}
+
+{% block public %}
+
+    /**
+     * @inplace
+     */
+    bool transform(float *source) {
+        uint16_t idx = 0;
+        const float global_low[] = {{ constants['global_low'] | to_array }};
+        const float global_high[] = {{ constants['global_high'] | to_array }};
+
+        for (uint16_t k = 0; k < {{ num_features }}; k++) {
+            float minimum = 9999999;
+            float maximum = -9999999;
+            float abs_min = 0;
+            float abs_max = 0;
+            flost mean = 0;
+            float sum  = 0;
+            float sum2 = 0;
+            float mean_abs_change = 0;
+            float c31 = 0;
+            float cid_ce = 0;
+            float energy_ratio = 0;
+            float abs_sum = 0;
+            float mean_second_derivative_center = 0;
+            float zero_crossings = 0;
+            float range_count = 0;
+            float time_reversal_asymmetry_statistic1 = 0;
+
+            for (uint16_t i = k; i < {{ input_dim }}; i += {{ num_features }}) {
+                float xi = source[i];
+                float abs_xi = abs(xi);
+
+                {% if 'square' in opt %}
+                    float xi2 = xi * xi;
+                {% endif %}
+
+                {% if 'prev' in opt or 'prev2' in opt %}
+                    float xi_prev = (i >= k + {{ num_features }}) ? source[i - {{ num_features }}] : xi;
+                    float diff = xi - xi_prev;
+                {% endif %}
+
+                {% if 'prev2' in opt %}
+                    float xi_prev2 = (i >= k + {{ 2 * num_features }}) ? source[i - {{ 2 * num_features }}] : xi;
+                {% endif %}
+
+                {% if 'energy_ratio' in features %}
+                    uint16_t feature_idx = (i - k) * {{ 1 / num_features }};
+                {% endif %}
+
+                // start of features
+                {% if 'minimum' in features %}
+                    minimum = min(xi, minimum);
+                {% endif %}
+
+                {% if 'maximum' in features %}
+                    maximum = max(xi, maximum);
+                {% endif %}
+
+                {% if 'abs_min' in features %}
+                    abs_min = min(abs_xi, abs_min);
+                {% endif %}
+
+                {% if 'abs_max' in features %}
+                    abs_max = max(abs_xi, abs_max);
+                {% endif %}
+
+                {% if 'mean' in features %}
+                    sum += xi;
+                {% endif %}
+
+                {% if 'abs_energy' in features %}
+                    sum2 += xi2;
+                {% endif %}
+
+                {% if 'mass_center' in features %}
+                    abs_sum += abs_xi;
+                {% endif %}
+
+                {% if 'mean_abs_change' in features %}
+                    mean_abs_change += abs(diff);
+                {% endif %}
+
+                {% if 'cid_ce' in features %}
+                    cid_ce += diff * diff;
+                {% endif %}
+
+                {% if 'energy_ratio' in features %}
+                    if (feature_idx >= {{ num_samples * 3/8 | ceil }} && feature_idx <= {{ num_samples * 5/8 | floor }}) {
+                        energy_ratio += xi2;
+                    }
+                {% endif %}
+
+                {% if 'range_count' in features %}
+                    if (xi >= global_min[k] && xi <= global_max[k]) {
+                        range_count += 1;
+                    }
+                {% endif %}
+
+                {% if 'prev2' in opt %}
+                    // lag-2 features
+                    if (i >= k + {{ 2 * num_features }}) {
+                        {% if 'c31' in features %}
+                            c31 += xi * xi_prev * xi_prev2;
+                        {% endif %}
+
+                        {% if 'mean_second_derivative_center' in features %}
+                            mean_second_derivative_center += diff - xi_prev + xi_prev2; // equivalent of xi - 2 * xi_prev + xi_prev2;
+                        {% endif %}
+
+                        {% if 'time_reversal_asymmetry_statistic1' in features %}
+                            time_reversal_asymmetry_statistic1 += (xi2 * x_prev) - (xi_prev * xi_prev2 * xi_prev2);
+                        {% endif %}
+
+                        {% if 'zero_crossings' in features %}
+                            if (diff * (xi_prev - xi_prev2) < 0) {
+                                zero_crossings += 1;
+                            }
+                        {% endif %}
+                    }
+                {% endif %}
+            }
+
+            {% if 'mean' in features %}
+                mean = sum * {{ 1 / num_samples }};
+            {% endif %}
+
+            {% if 'mean_abs_change' in features %}
+                mean_abs_change *= {{ 1 / num_samples }};
+            {% endif %}
+
+            {% if 'c31' in features %}
+                c31 *= {{ 1 / num_samples }};
+            {% endif %}
+
+            {% if 'abs_energy' in features %}
+                abs_energy *= {{ 1 / num_samples }};
+            {% endif %}
+
+            {% if 'mean_second_derivative_center' in features %}
+                mean_second_derivative_center *= {{ 1 / num_samples }};
+            {% endif %}
+
+            {% if 'time_reversal_asymmetry_statistic1' in features %}
+                time_reversal_asymmetry_statistic1 *= {{ 1 / num_samples }};
+            {% endif %}
+                        
+            {% if is_second_order %}
+                // second-order features
+                float xi_mean_prev = 0;
+
+                {% if 'autocorrelation1' in features %}
+                    float autocorrelation1 = 0;
+                {% endif %}
+
+                for (uint16_t i = k; i < {{ input_dim }}; i += {{ num_features }}) {
+                    float xi = source[i];
+                    float xi_mean = xi - mean;
+                    float var = (xi - xi_mean) * (xi - xi_mean);
+
+                    {% if 'autocorrelation1' in features %}
+                        float autocorrelation1 = 0;
+                        float xi_mean_prev = (i >= k + {{ num_features }}) ? xi_mean_prev : xi_mean;
+                    {% endif %}
+
+                    xi_mean_prev = xi_mean;
+                }
+            {% endif %}
+        }
+
+        return true;
+    }
+
+{% endblock %}
+
+{% block protected %}
+
+{% endblock %}

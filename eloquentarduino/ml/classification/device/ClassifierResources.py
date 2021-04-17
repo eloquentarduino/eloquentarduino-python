@@ -81,7 +81,7 @@ class ClassifierResources:
                 resources = tmp.get_resources()
 
             self.resources = {
-                'time': resources['time'],
+                'compile_time': resources['time'],
                 'flash': resources['flash'],
                 'rel_flash': resources['flash'] - baseline['flash'],
                 'flash_max': resources['flash_max'],

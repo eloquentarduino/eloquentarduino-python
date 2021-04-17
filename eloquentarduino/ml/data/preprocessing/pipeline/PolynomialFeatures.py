@@ -16,15 +16,14 @@ class PolynomialFeatures(BaseStep):
         """
         self.set_X(X)
         # nothing to fit
-        return self.transform(X), y
+        return self.transform(X, y)
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         """
-        Compute diff()
-        :return: ndarray
+        Transform
         """
         # skip initial 1
-        return Poly(2, interaction_only=self.interaction_only).fit_transform(X)[:, 1:]
+        return Poly(2, interaction_only=self.interaction_only).fit_transform(X)[:, 1:], y
 
     def get_template_data(self):
         """

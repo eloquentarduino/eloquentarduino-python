@@ -2,23 +2,9 @@
 {% set name = 'Step' %}
 
 {% block public %}
-
-    /**
-     * @param workArea shared buffer to store intermediate results
-     */
-    Step(float *workArea) : buffer(workArea) {
-
-    }
-
     /**
      * Step interface
      */
     virtual bool transform(float *source) = 0;
-
-{% endblock %}
-
-{% block protected %}
-
-    float *buffer;
 
 {% endblock %}

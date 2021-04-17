@@ -16,12 +16,13 @@ class TeensyCli:
     def run(self):
         """Run cli command and save output"""
         Mock = namedtuple('Mock', 'safe_output')
+        folder = 'eloquent/BoardsBenchmarks'
         try:
             md5 = hashlib.md5()
-            with open('/Users/simone/PycharmProjects/PG/benchmarks/sketches/tmp/tmp.ino') as sketch:
+            with open('/Users/simone/PycharmProjects/%s/sketches/tmp/tmp.ino' % folder) as sketch:
                 sketch = sketch.read()
                 if 'Classifier.h' in sketch:
-                    with open('/Users/simone/PycharmProjects/PG/benchmarks/sketches/tmp/Classifier.h') as file:
+                    with open('/Users/simone/PycharmProjects/%s/sketches/tmp/Classifier.h' % folder) as file:
                         md5.update(file.read().encode('utf-8'))
                 else:
                     md5.update(sketch.encode('utf-8'))
@@ -32,7 +33,7 @@ class TeensyCli:
             makedirs(build_dir, 0o777, exist_ok=True)
             makedirs(cache_dir, 0o777, exist_ok=True)
             cpu_speed = 816
-            cmd = '/Applications/Teensyduino.app/Contents/Java/arduino-builder -compile -logger=machine -hardware /Applications/Teensyduino.app/Contents/Java/hardware -hardware /Users/simone/Library/Arduino15/packages -hardware /Users/simone/Documents/Arduino/hardware -tools /Applications/Teensyduino.app/Contents/Java/tools-builder -tools /Applications/Teensyduino.app/Contents/Java/hardware/tools/avr -tools /Users/simone/Library/Arduino15/packages -built-in-libraries /Applications/Teensyduino.app/Contents/Java/libraries -libraries /Users/simone/Documents/Arduino/libraries -fqbn=teensy:avr:teensy40:usb=serial,speed=%d,opt=o3std,keys=en-us -ide-version=10813 -build-path %s -warnings=none -build-cache %s -verbose /Users/simone/PycharmProjects/PG/benchmarks/sketches/tmp/tmp.ino' % (cpu_speed, build_dir, cache_dir)
+            cmd = '/Applications/Teensyduino.app/Contents/Java/arduino-builder -compile -logger=machine -hardware /Applications/Teensyduino.app/Contents/Java/hardware -hardware /Users/simone/Library/Arduino15/packages -hardware /Users/simone/Documents/Arduino/hardware -tools /Applications/Teensyduino.app/Contents/Java/tools-builder -tools /Applications/Teensyduino.app/Contents/Java/hardware/tools/avr -tools /Users/simone/Library/Arduino15/packages -built-in-libraries /Applications/Teensyduino.app/Contents/Java/libraries -libraries /Users/simone/Documents/Arduino/libraries -fqbn=teensy:avr:teensy40:usb=serial,speed=%d,opt=o3std,keys=en-us -ide-version=10813 -build-path %s -warnings=none -build-cache %s -verbose /Users/simone/PycharmProjects/%s/sketches/tmp/tmp.ino' % (cpu_speed, build_dir, cache_dir, folder)
             segments = cmd.split(' ')
             res = check_output(segments).decode('utf-8')
             lines = res.split('\n')
