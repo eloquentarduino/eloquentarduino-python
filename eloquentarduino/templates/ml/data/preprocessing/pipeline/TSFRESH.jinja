@@ -86,7 +86,7 @@
                 for (uint16_t i = k; i < {{ input_dim }}; i += {{ num_features }}) {
                     float _xi = source[i];
                     float _xi_mean = _xi - mean;
-                    float var_i = _xi_mean * _xi_mean; // @only std var skew kurtosis
+                    float var_i = _xi_mean * _xi_mean;
 
                     // start of features
                     var += var_i;
@@ -111,7 +111,7 @@
                 skew = var > 1e-5 ? skew / pow(var, 1.5) : 0;
                 kurtosis = var > 1e-5 ? kurtosis / (var * var) : 0;
                 has_large_std = std > 0.25 * (maximum - minimum);
-                variation_coefficient = std / mean;
+                variation_coefficient = var / mean;
             {% endif %}
             
             buffer[idx++] = maximum;

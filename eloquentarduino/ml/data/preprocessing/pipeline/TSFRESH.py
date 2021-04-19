@@ -24,11 +24,11 @@ class TSFRESH(BaseStep):
         self.kbest = None
 
     @property
-    def feature_names(self):
+    def available_features(self):
         """
-        Get names of features used
+        Get names of available features
         """
-        names = [
+        return [
             'maximum',
             'minimum',
             'abs_maximum',
@@ -62,32 +62,51 @@ class TSFRESH(BaseStep):
             'variation_coefficient',
         ]
 
+    @property
+    def used_features(self):
+        """
+        Get names of used features
+        """
         if self.kbest is None:
-            return names
+            return self.available_features
 
-        return [names[k] for k in self.kbest[:len(self.kbest) // self.num_features]]
+        return [self.available_features[k] for k in self.kbest[:len(self.kbest) // self.num_features]]
 
     @property
     def buffer_size(self):
         """
         Get buffer size
         """
-        return self.num_features * len(self.feature_names)
+        return self.num_features * len(self.used_features)
 
     @property
     def dependencies(self):
+        """
+        Return features other features depends on
+        :return: list
+        """
+        if self.k == 0:
+            return []
+
         dependencies = {
-            'std': set('mean',),
-            'var': set('mean',),
-            'autocorrelation1': ['mean'],
+            'std': ['mean', 'var'],
+            'var': ['mean'],
             'count_above_mean': ['mean'],
             'count_below_mean': ['mean'],
             'first_position_of_max': ['maximum'],
             'first_position_of_min': ['minimum'],
             'has_duplicate_max': ['maximum'],
             'has_duplicate_min': ['minimum'],
+            'has_large_std': ['mean', 'var', 'std'],
+            'autocorrelation1': ['mean'],
+            'skew': ['mean', 'var'],
+            'kurtosis': ['mean', 'var'],
+            'zero_crossings': ['mean'],
+            'variation_coefficient': ['mean', 'var']
         }
-        # @todo
+        used_dependencies = [dep for feature_name, dep in dependencies.items() if feature_name in self.used_features]
+
+        return list(set([d for dep in used_dependencies for d in dep]))
 
     def get_config(self):
         """
@@ -174,7 +193,7 @@ class TSFRESH(BaseStep):
             skew = np.where(var < 1e-5, 0, ((ts - mean) ** 3) / (var ** 1.5)).sum(axis=1).reshape((-1, 1)) # really mean
             kurtosis = np.where(np.abs(var) < 1e-5, 0, ((ts - mean) ** 4) / (var ** 2)).sum(axis=1).reshape((-1, 1)) # really mean
             zero_crossings = ((ts[:, 1:-1] - ts[:, :-2]) * (ts[:, 2:] - ts[:, 1:-1]) < 0).sum(axis=1)
-            variation_coefficient = std / mean
+            variation_coefficient = var / mean # really std
 
             #changes = np.diff(ts, axis=1)
             #abs_sum_of_changes = np.abs(changes).mean(axis=1)
@@ -282,8 +301,9 @@ class TSFRESH(BaseStep):
                 idx = (-kbest.scores_).argsort()[:self.k]
                 best_features += idx.tolist()
 
+            # keep features that perform best across all the dimensions
             most_common = np.asarray([feature_idx for feature_idx, count in Counter(best_features).most_common(self.k)])
-            self.kbest = [x for i in range(self.num_features) for x in (most_common + i * num_derived_features).tolist()]
+            self.kbest = sorted([x for i in range(self.num_features) for x in (most_common + i * num_derived_features).tolist()])
 
         return X[:, self.kbest]
 
@@ -324,15 +344,34 @@ class TSFRESH(BaseStep):
             'num_features': self.num_features,
             'k': self.k,
             'buffer_size': self.buffer_size,
-            'features': self.feature_names,
             'constants': constants,
             'is_second_order': self._intersects(*second_order_features),
             'opt': set(optimizations),
             'num_samples': self.input_dim // self.num_features,
         }
 
+    def postprocess_port(self, ported):
+        """
+        Compute only K best features
+        """
+        features_to_keep = self.used_features + self.dependencies
+        features_to_discard = [feature for feature in self.available_features if feature not in features_to_keep]
+
+        # drop lines that compute un-needed features
+        for feature in sorted(features_to_discard, key=lambda feature: len(feature), reverse=True):
+            # comment variable declaration
+            ported = re.sub('[ \t]+float %s[_ ][^\n]+?\n' % feature, lambda m: '// %s' % m.group(0), ported)
+            # comment conditional assignments
+            ported = re.sub('[ \t]+if [^{]+\{ %s[_ ][^\n]+?\n' % feature, lambda m: '// %s' % m.group(0), ported)
+            # comment assignments
+            ported = re.sub('[ \t]+%s[_ ][^\n]+?\n' % feature, lambda m: '// %s' % m.group(0), ported)
+            # comment buffer assignment
+            ported = re.sub('[ \t]+buffer\[idx\+\+\] = %s;\n' % feature, lambda m: '// %s' % m.group(0), ported)
+
+        return ported
+
     def _intersects(self, *args):
         """
         Test intersection of given features with know features
         """
-        return len(set(args).intersection(self.feature_names)) > 0
+        return len(set(args).intersection(self.used_features)) > 0
