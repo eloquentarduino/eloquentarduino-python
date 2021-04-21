@@ -1,0 +1,45 @@
+#ifndef ML_H
+#define ML_H 1
+
+#include <EloquentArduino.h>
+#include <eloquentarduino/data_structures/LongShortTermVoting.h>
+#include "imu_AHRS.h"
+#define PERSIST_PREDICTION {{ persist }}
+
+extern uint8_t mlPredictionByte;
+
+{{ pipeline }}
+{{ clf }}
+
+
+class ML {
+  public:
+    uint8_t y;
+    Eloquent::ML::Data::Preprocessing::Pipeline::Ported::{{ pipeline_ns }}::Pipeline pipeline;
+    Eloquent::ML::Port::Classifier clf;
+    Eloquent::DataStructures::LongShortTermVoting<{{ voting['short'] }}, {{ voting['long'] }}> voting;
+
+    ML() :
+        y(0),
+        voting({{ voting['quorum'] }}, {{ voting['quorum'] }}) {
+
+        }
+
+    /**
+     * Add sample to queue for ML prediction.
+     */
+    void update() {
+      float features[] = {yaw, pitch, roll, Ax / aRes, Ay / aRes, Az / aRes};
+
+      if (pipeline.transform(features)) {
+        y = 1 + clf.predict(pipeline.X);
+      }
+      else if (!PERSIST_PREDICTION) {
+        y = 0;
+      }
+
+      mlPredictionByte = y;
+    }
+};
+
+#endif

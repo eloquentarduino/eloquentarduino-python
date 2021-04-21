@@ -1,4 +1,3 @@
-import numpy as np
 from sklearn.model_selection import KFold
 from eloquentarduino.ml.data import Dataset
 

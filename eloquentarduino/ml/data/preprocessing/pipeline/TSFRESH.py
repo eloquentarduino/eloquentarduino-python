@@ -190,8 +190,8 @@ class TSFRESH(BaseStep):
             has_duplicate_min = (ts < (minimum + np.abs(minimum) * 0.02)).sum(axis=1)
             has_large_std = (std > 0.25 * (maximum - minimum))
             autocorrelation1 = (ts_zero_mean[:, 1:] * ts_zero_mean[:, :-1]).sum(axis=1) + (ts_zero_mean[:, 0] ** 2) # really mean
-            skew = np.where(var < 1e-5, 0, ((ts - mean) ** 3) / (var ** 1.5)).sum(axis=1).reshape((-1, 1)) # really mean
-            kurtosis = np.where(np.abs(var) < 1e-5, 0, ((ts - mean) ** 4) / (var ** 2)).sum(axis=1).reshape((-1, 1)) # really mean
+            skew = np.where(var < 1e-3, 0, ((ts - mean) ** 3) / (var ** 1.5)).sum(axis=1).reshape((-1, 1)) # really mean
+            kurtosis = np.where(np.abs(var) < 1e-3, 0, ((ts - mean) ** 4) / (var ** 2)).sum(axis=1).reshape((-1, 1)) # really mean
             zero_crossings = ((ts[:, 1:-1] - ts[:, :-2]) * (ts[:, 2:] - ts[:, 1:-1]) < 0).sum(axis=1)
             variation_coefficient = var / mean # really std
 
