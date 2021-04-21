@@ -146,10 +146,12 @@ eloquentarduino/templates/on_device/tensorflow/InferenceTime.jinja
 eloquentarduino/templates/on_device/tensorflow/Resources.jinja
 eloquentarduino/templates/on_device/tensorflow/ResourcesBaseline.jinja
 eloquentarduino/templates/on_device/tensorflow/_Resources.jinja
+eloquentarduino/templates/third_party/snoopy/SnoopyStream.jinja
 eloquentarduino/templates/third_party/snoopy/snoopy.jinja
 eloquentarduino/third_party/Snoopy.py
 eloquentarduino/third_party/__init__.py
 eloquentarduino/third_party/snoopy/SnoopyGridSearch.py
+eloquentarduino/third_party/snoopy/SnoopyStream.py
 eloquentarduino/third_party/snoopy/Voting.py
 eloquentarduino/third_party/snoopy/__init__.py
 eloquentarduino/utils/__init__.py
