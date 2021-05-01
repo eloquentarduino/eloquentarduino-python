@@ -131,5 +131,7 @@ class SnoopyGridSearch:
             'avg time to prediction': {
                 'mean': times_to_prediction.mean(),
                 'std': times_to_prediction.std()
-            }
+            },
+            'y_true': np.asarray(cf_true, dtype=int),
+            'y_pred': np.asarray(cf_pred, dtype=int)
         }

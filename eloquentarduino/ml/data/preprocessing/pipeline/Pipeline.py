@@ -82,11 +82,15 @@ class Pipeline:
         :param X:
         :param y:
         """
+        return_X_y = y is not None
 
         for step in self.steps:
             X, y = step.transform(X, y)
 
-        return X, y if y is not None else X
+        if return_X_y:
+            return X, y
+
+        return X
 
     def score(self, clf, cv=3, return_average_accuracy=True, return_best_estimator=False):
         """

@@ -1,6 +1,7 @@
 from eloquentarduino.ml.data.preprocessing.pipeline.Pipeline import Pipeline
 
 from eloquentarduino.ml.data.preprocessing.pipeline.BoxCox import BoxCox
+from eloquentarduino.ml.data.preprocessing.pipeline.DFT import DFT
 from eloquentarduino.ml.data.preprocessing.pipeline.Diff import Diff
 from eloquentarduino.ml.data.preprocessing.pipeline.FFT import FFT
 from eloquentarduino.ml.data.preprocessing.pipeline.MinMaxScaler import MinMaxScaler

@@ -155,7 +155,9 @@ class Dataset:
         else:
             columns = None
 
-        return pd.DataFrame(np.hstack((self.X, self.y.reshape((-1, 1)))), columns=columns)
+        y = (self.y * np.abs(self.X.max() / 3)).reshape((-1, 1))
+
+        return pd.DataFrame(np.hstack((self.X, y)), columns=columns)
 
     @property
     def class_labels(self):

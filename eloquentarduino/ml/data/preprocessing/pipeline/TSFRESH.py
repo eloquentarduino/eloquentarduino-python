@@ -115,6 +115,7 @@ class TSFRESH(BaseStep):
         """
         return {
             'num_features': self.num_features,
+            'feature_names': self.used_features,
             'k': self.k
         }
 
