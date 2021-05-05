@@ -59,6 +59,7 @@ eloquentarduino/ml/data/preprocessing/PrincipalFFT.py
 eloquentarduino/ml/data/preprocessing/__init__.py
 eloquentarduino/ml/data/preprocessing/pipeline/BaseStep.py
 eloquentarduino/ml/data/preprocessing/pipeline/BoxCox.py
+eloquentarduino/ml/data/preprocessing/pipeline/CrossDiff.py
 eloquentarduino/ml/data/preprocessing/pipeline/DFT.py
 eloquentarduino/ml/data/preprocessing/pipeline/Diff.py
 eloquentarduino/ml/data/preprocessing/pipeline/FFT.py
@@ -152,6 +153,7 @@ eloquentarduino/templates/third_party/snoopy/SnoopyStream.jinja
 eloquentarduino/templates/third_party/snoopy/snoopy.jinja
 eloquentarduino/third_party/Snoopy.py
 eloquentarduino/third_party/__init__.py
+eloquentarduino/third_party/snoopy/SmoothVoting.py
 eloquentarduino/third_party/snoopy/SnoopyGridSearch.py
 eloquentarduino/third_party/snoopy/SnoopyStream.py
 eloquentarduino/third_party/snoopy/Voting.py
