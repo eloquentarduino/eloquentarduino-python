@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.covariance import EllipticEnvelope
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
+from sklearn.model_selection import train_test_split
 
 
 class DimensionalityReductionPlotter:
@@ -31,8 +32,15 @@ class DimensionalityReductionPlotter:
         :param sparsity: int
         :return: self
         """
-        self.X = self.X[::sparsity]
-        self.y = self.y[::sparsity]
+        return self.limit(len(self.X) // sparsity)
+
+    def limit(self, n):
+        """
+        Take only n samples
+        :param n: int how many samples to keep
+        :return: self
+        """
+        self.X, _, self.y, _ = train_test_split(self.X, self.y, train_size=n)
 
         return self
 
@@ -67,7 +75,7 @@ class DimensionalityReductionPlotter:
 
         return self
 
-    def plot(self):
+    def plot(self, **kwargs):
         """
         Plot
         """
@@ -79,7 +87,7 @@ class DimensionalityReductionPlotter:
             ax = plt.figure().add_subplot(111, projection='3d')
             ax.set_zlabel('PCA component #3')
 
-        scatter = ax.scatter(*self.X.T.tolist(), c=self.y)
+        scatter = ax.scatter(*self.X.T.tolist(), c=self.y, **kwargs)
         ax.legend(*scatter.legend_elements(), title="Classes")
         ax.set_xlabel('Component #1')
         ax.set_ylabel('Component #2')

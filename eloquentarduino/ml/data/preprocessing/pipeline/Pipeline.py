@@ -38,6 +38,16 @@ class Pipeline:
         """
         return str(self)
 
+    def __getitem__(self, item):
+        """
+        Get step by name
+        :param item: str
+        :return: Step|None
+        """
+        step = [step for step in self.steps if step.name == item]
+
+        return step[0] if len(step) == 1 else None
+
     @property
     def input_dim(self):
         """

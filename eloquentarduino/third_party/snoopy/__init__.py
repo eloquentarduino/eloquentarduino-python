@@ -1,3 +1,4 @@
 from eloquentarduino.third_party.snoopy.SnoopyGridSearch import SnoopyGridSearch
 from eloquentarduino.third_party.snoopy.SnoopyStream import SnoopyStream
+from eloquentarduino.third_party.snoopy.SmoothVoting import SmoothVoting
 from eloquentarduino.third_party.snoopy.Voting import Voting
