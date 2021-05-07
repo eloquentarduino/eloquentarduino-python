@@ -21,7 +21,6 @@ eloquentarduino/ml/Classifier.py
 eloquentarduino/ml/__init__.py
 eloquentarduino/ml/cascading/CascadingClassifier.py
 eloquentarduino/ml/cascading/__init__.py
-eloquentarduino/ml/classification/Classifier.py
 eloquentarduino/ml/classification/__init__.py
 eloquentarduino/ml/classification/abstract/Classifier.py
 eloquentarduino/ml/classification/abstract/GridSearch.py
@@ -77,6 +76,9 @@ eloquentarduino/ml/data/preprocessing/pipeline/TSFRESH.py
 eloquentarduino/ml/data/preprocessing/pipeline/Window.py
 eloquentarduino/ml/data/preprocessing/pipeline/YeoJohnson.py
 eloquentarduino/ml/data/preprocessing/pipeline/__init__.py
+eloquentarduino/ml/data/preprocessing/pipeline/classification/Classify.py
+eloquentarduino/ml/data/preprocessing/pipeline/classification/SmoothClassification.py
+eloquentarduino/ml/data/preprocessing/pipeline/classification/__init__.py
 eloquentarduino/ml/metrics/__init__.py
 eloquentarduino/ml/metrics/device/BenchmarkEndToEnd.py
 eloquentarduino/ml/metrics/device/BenchmarkPlotter.py
@@ -122,6 +124,7 @@ eloquentarduino/templates/metrics/Runtime.jinja
 eloquentarduino/templates/ml/classification/tensorflow/NeuralNetwork.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/AbstractStep.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/BoxCox.jinja
+eloquentarduino/templates/ml/data/preprocessing/pipeline/Classify.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/DFT.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/Diff.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/FFT.jinja
@@ -132,6 +135,7 @@ eloquentarduino/templates/ml/data/preprocessing/pipeline/PolynomialFeatures.jinj
 eloquentarduino/templates/ml/data/preprocessing/pipeline/RFE.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/RateLimit.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/SelectKBest.jinja
+eloquentarduino/templates/ml/data/preprocessing/pipeline/SmoothClassification.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/StandardScaler.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/StatMoments.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/TSFRESH.jinja
