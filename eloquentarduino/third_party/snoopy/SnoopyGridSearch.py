@@ -83,18 +83,18 @@ class SnoopyGridSearch:
 
         for result in results:
             for d in decay:
-                for v in vote_thresh:
+                for m in vote_thresh:
                     for r in var_thresh:
                         new_result = {
                             'pipeline': result['pipeline'],
                             'voting': {
                                 'decay': d,
-                                'vote_thresh': v,
+                                'mean_thresh': m,
                                 'var_thresh': r
                             }
                         }
                         new_result.update(self._apply_generic_voting(
-                            SmoothVoting(decay=d, vote_thresh=v, var_thresh=r),
+                            SmoothVoting(decay=d, vote_thresh=m, var_thresh=r),
                             result['y_true'],
                             result['y_pred']))
 

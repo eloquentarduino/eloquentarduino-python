@@ -1,6 +1,9 @@
 from eloquentarduino.ml.data import Dataset
 from eloquentarduino.utils import jinja
 from sklearn.model_selection import cross_validate
+from eloquentarduino.ml.classification.abstract.Classifier import Classifier
+from eloquentarduino.ml.data.preprocessing.pipeline.BaseStep import BaseStep
+from eloquentarduino.ml.data.preprocessing.pipeline.classification.Classify import Classify
 
 
 class Pipeline:
@@ -20,9 +23,10 @@ class Pipeline:
         self.name = name
         self.X = dataset.X.copy()
         self.y = dataset.y.copy()
-        self.steps = steps
+        self.steps = []
 
-        assert len([step.name for step in steps]) == len(set([step.name for step in steps])), 'steps names MUST be unique'
+        [self.add(step) for step in steps]
+        self._assert_unique_steps()
 
     def __str__(self):
         """
@@ -75,6 +79,18 @@ class Pipeline:
         Get list of included libraries
         """
         return [library for step in self.steps for library in step.includes]
+
+    def add(self, step):
+        """
+        Add step
+        :param step: BaseStep
+        """
+        if isinstance(step, Classifier):
+            step = Classify(clf=step)
+
+        assert isinstance(step, BaseStep), 'steps MUST extend BaseStep: %s found' % str(step.__class__)
+        self.steps.append(step)
+        self._assert_unique_steps()
 
     def fit(self):
         """
@@ -134,5 +150,13 @@ class Pipeline:
             'working_dim': max([1, self.working_dim]),
             'includes': self.includes
         }, pretty=True)
+
+    def _assert_unique_steps(self):
+        """
+        Be sure step names are unique
+        """
+        step_names = [step.name for step in self.steps]
+
+        assert len(step_names) == len(set(step_names)), 'steps names MUST be unique'
 
 

@@ -1,0 +1,40 @@
+{% extends './templates/Step.jinja' %}
+
+{% block public %}
+
+    /**
+     * @async
+     */
+    bool transform(float *source) {
+        float x = source[0];
+        float old_mean = mean;
+
+        k += 1;
+
+        if (k == 1) {
+            mean = x;
+            return false;
+        }
+
+        mean = decay * old_mean + (1 - decay) * x;
+        var = (var + (x - mean) * (x - old_mean)) / k;
+
+        if (abs(x - mean) > mean_thresh || var > var_thresh) {
+            return false;
+        }
+
+        source[0] = x;
+
+        return true;
+    }
+
+{% endblock %}
+
+{% block protected %}
+    float decay = {{ decay }};
+    float mean = 0;
+    float var = 0;
+    float mean_thresh = {{ mean_thresh }};
+    float var_thresh = {{ var_thresh }};
+    uint32_t k = 0;
+{% endblock %}
