@@ -13,6 +13,7 @@ class SmoothClassification(BaseStep):
         self.k = 0
         self.mean = 0
         self.var = 0
+        self.last = 0
         self.decay = decay
         self.mean_thresh = mean_thresh
         self.var_thresh = var_thresh
@@ -63,11 +64,15 @@ class SmoothClassification(BaseStep):
         Push new element
         """
         self.k += 1
-        mean = self.decay * self.mean + (1 - self.decay) * x
+        mean = self.decay * x + (1 - self.decay) * self.mean
 
         if self.k > 1:
+            # increase variance by 1 if new label is different from the last
+            # then explonetially weighten
+            self.var = self.decay * (1 if x != self.last else 0) + (1 - self.decay) * self.var
             # running variance
-            var = self.var + (x - self.mean) * (x - mean)
-            self.var = var / self.k
+            #var = self.var + (x - self.mean) * (x - mean)
+            #self.var = var / self.k
 
         self.mean = mean
+        self.last = x

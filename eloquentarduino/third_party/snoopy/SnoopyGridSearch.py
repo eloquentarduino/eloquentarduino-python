@@ -71,13 +71,13 @@ class SnoopyGridSearch:
             results = [self.score(self.pipeline, test=test)]
 
         if decay is None:
-            decay = [0.5, 0.7, 0.85]
+            decay = [0.7, 0.75, 0.8]
 
         if vote_thresh is None:
-            vote_thresh = [0.1, 0.2, 0.3]
+            vote_thresh = [0.005, 0.01, 0.02, 0.05, 0.1]
 
         if var_thresh is None:
-            var_thresh = [0.1, 0.2, 0.3]
+            var_thresh = [0.001, 0.005, 0.01, 0.02, 0.05, 0.1]
 
         voting_results = []
 

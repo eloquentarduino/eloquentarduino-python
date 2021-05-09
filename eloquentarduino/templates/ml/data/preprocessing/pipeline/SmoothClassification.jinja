@@ -7,17 +7,15 @@
      */
     bool transform(float *source) {
         float x = source[0];
-        float old_mean = mean;
 
-        k += 1;
+        mean = decay * x + (1 - decay) * mean;
+        var = (1 - decay) * var;
 
-        if (k == 1) {
-            mean = x;
-            return false;
+        if (x != last) {
+            var += decay;
         }
 
-        mean = decay * old_mean + (1 - decay) * x;
-        var = (var + (x - mean) * (x - old_mean)) / k;
+        last = x;
 
         if (abs(x - mean) > mean_thresh || var > var_thresh) {
             return false;
@@ -31,10 +29,10 @@
 {% endblock %}
 
 {% block protected %}
-    float decay = {{ decay }};
+    const float decay = {{ decay }};
+    const float mean_thresh = {{ mean_thresh }};
+    const float var_thresh = {{ var_thresh }};
     float mean = 0;
     float var = 0;
-    float mean_thresh = {{ mean_thresh }};
-    float var_thresh = {{ var_thresh }};
-    uint32_t k = 0;
+    float last = 0;
 {% endblock %}
