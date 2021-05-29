@@ -1,3 +1,4 @@
+import random
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -225,6 +226,31 @@ class Dataset:
 
         idx = np.random.permutation(self.length)[:size]
         return self.X[idx], self.y[idx]
+
+    def intermix(self, chunk_size):
+        """
+        Alternate samples in sizes of chunk_size based on the y values
+        :param chunk_size: int
+        """
+        X_chunks = []
+        y_chunks = []
+
+        for idx in range(self.num_classes):
+            class_mask = self.y == idx
+            class_samples = self.X[class_mask]
+            xi = np.array_split(class_samples, len(class_samples) // chunk_size)
+            yi = [np.ones(len(xij), dtype=np.uint8) * idx for xij in xi]
+            X_chunks += xi
+            y_chunks += yi
+
+        chunks = list(zip(X_chunks, y_chunks))
+        random.shuffle(chunks)
+        X_chunks, y_chunks = zip(*chunks)
+
+        X = np.vstack(X_chunks)
+        y = np.concatenate(y_chunks)
+
+        return Dataset(self.name, X, y)
 
     def take(self, size):
         """

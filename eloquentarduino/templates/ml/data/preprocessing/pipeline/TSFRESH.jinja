@@ -108,10 +108,10 @@
                 std = sqrt(var);
                 first_position_of_max = int((first_position_of_max - k) * {{ 1 / num_features }});
                 first_position_of_min = int((first_position_of_min - k) * {{ 1 / num_features }});
-                skew = var > 1e-5 ? skew / pow(var, 1.5) : 0;
-                kurtosis = var > 1e-5 ? kurtosis / (var * var) : 0;
+                skew = var > {{ eps }} ? skew / pow(var, 1.5) : 0;
+                kurtosis = var > {{ eps }} ? kurtosis / (var * var) : 0;
                 has_large_std = std > 0.25 * (maximum - minimum);
-                variation_coefficient = var / mean;
+                variation_coefficient = (mean > {{ eps }}) ? var / mean : 0;
             {% endif %}
             
             buffer[idx++] = maximum;

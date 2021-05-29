@@ -1,4 +1,5 @@
 from sklearn.model_selection import KFold
+from sklearn.metrics import f1_score
 from eloquentarduino.ml.data import Dataset
 
 
@@ -27,3 +28,22 @@ class Classifier:
             scores.append(clf.score(X_test, y_test))
 
         return sum(scores) / len(scores)
+
+    def f1_score(self, X, y):
+        """
+        Compute f1 score on dataset
+        :param X:
+        :param y:
+        :return: float
+        """
+        y_pred = self.predict(X)
+
+        if len(y.shape) > 1:
+            y = y.argmax(axis=0)
+
+        if len(y_pred.shape) > 1:
+            y_pred = y_pred.argmax(axis=0)
+
+        return f1_score(y, y_pred, average='weighted')
+
+

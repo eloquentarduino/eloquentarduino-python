@@ -7,7 +7,7 @@ class RFE(BaseStep):
     """
     Implementation of sklearn.feature_selection.RFE
     """
-    def __init__(self, estimator, k, name='SelectKBest'):
+    def __init__(self, estimator, k, name='RFE'):
         """
         Constructor
         :param estimator: classifier

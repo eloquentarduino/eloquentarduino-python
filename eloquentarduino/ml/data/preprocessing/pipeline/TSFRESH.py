@@ -153,6 +153,7 @@ class TSFRESH(BaseStep):
         assert (self.input_dim % self.num_features) == 0, 'num_features MUST be a divisor of X.shape[1]'
 
         FRESH = None
+        eps = 1e-5
 
         for k in range(self.num_features):
             ts = X[:, k::self.num_features]
@@ -191,10 +192,10 @@ class TSFRESH(BaseStep):
             has_duplicate_min = (ts < (minimum + np.abs(minimum) * 0.02)).sum(axis=1)
             has_large_std = (std > 0.25 * (maximum - minimum))
             autocorrelation1 = (ts_zero_mean[:, 1:] * ts_zero_mean[:, :-1]).sum(axis=1) + (ts_zero_mean[:, 0] ** 2) # really mean
-            skew = np.where(var < 1e-3, 0, ((ts - mean) ** 3) / (var ** 1.5)).sum(axis=1).reshape((-1, 1)) # really mean
-            kurtosis = np.where(np.abs(var) < 1e-3, 0, ((ts - mean) ** 4) / (var ** 2)).sum(axis=1).reshape((-1, 1)) # really mean
+            skew = np.where(var < eps, 0, ((ts - mean) ** 3) / (var ** 1.5)).sum(axis=1).reshape((-1, 1)) # really mean
+            kurtosis = np.where(np.abs(var) < eps, 0, ((ts - mean) ** 4) / (var ** 2)).sum(axis=1) # really mean
             zero_crossings = ((ts[:, 1:-1] - ts[:, :-2]) * (ts[:, 2:] - ts[:, 1:-1]) < 0).sum(axis=1)
-            variation_coefficient = var / mean # really std
+            variation_coefficient = np.where(mean < eps, 0, var / mean) # really std
 
             #changes = np.diff(ts, axis=1)
             #abs_sum_of_changes = np.abs(changes).mean(axis=1)
@@ -241,42 +242,8 @@ class TSFRESH(BaseStep):
                 zero_crossings,
                 variation_coefficient,
             ]
+
             fresh = np.hstack([feature.reshape((-1, 1)) for feature in fresh])
-            """
-            fresh = np.hstack([feature.reshape((-1, 1)) for feature in [
-                maximum,
-                minimum,
-                abs_maximum,
-                abs_minimum,
-                mean,
-                std,
-                var,
-                abs_energy,
-                #abs_sum_of_changes,
-                autocorrelation1,
-                c31,
-                cid_ce,
-                count_above_mean,
-                count_below_mean,
-                energy_ratio,
-                first_position_of_max,
-                first_position_of_min,
-                has_duplicate_max,
-                has_duplicate_min,
-                #mass_center,
-                kurtosis,
-                has_large_std,
-                mean_abs_change,
-                mean_second_derivative_center,
-                zero_crossings,
-                range_count,
-                #ratio_beyond_half_sigma,
-                #root_mean_square,
-                skew,
-                time_reversal_asymmetry_statistic1,
-                variation_coefficient
-            ]])
-            """
 
             if FRESH is None:
                 FRESH = fresh
@@ -349,6 +316,7 @@ class TSFRESH(BaseStep):
             'is_second_order': self._intersects(*second_order_features),
             'opt': set(optimizations),
             'num_samples': self.input_dim // self.num_features,
+            'eps': '1e-5'
         }
 
     def postprocess_port(self, ported):
