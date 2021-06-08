@@ -25,7 +25,10 @@ class Window(BaseStep):
         """
         Get config options
         """
-        return {'length': self.length, 'shift': self.shift}
+        return {
+            'length': self.length,
+            'shift': self.shift
+        }
 
     def fit(self, X, y):
         """

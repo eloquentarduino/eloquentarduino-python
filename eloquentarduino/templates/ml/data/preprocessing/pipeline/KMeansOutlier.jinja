@@ -1,0 +1,54 @@
+{% extends './templates/Step.jinja' %}
+
+{% block public %}
+
+    /**
+     *
+     */
+    bool transform(float *source) {
+        // compute distance from each centroid
+        // if it's shorter than threshold, it's an inlier
+        bool isOutlier = true;
+
+        for (uint16_t i = 0; i < {{ centroids | length }}; i++) {
+            if (euclidean(source, centroids[i]) <= thresholds[i]) {
+                isOutlier = false;
+                break;
+            }
+        }
+
+        {% if add_feature %}
+            source[{{ input_dim }}] = isOutlier;
+
+            return true;
+        {% elif predict %}
+            source[0] = isOutlier;
+
+            return true;
+        {% else %}
+            return isOutlier;
+        {% endif %}
+    }
+
+{% endblock %}
+
+{% block protected %}
+
+    float centroids[{{ centroids | shape }}] = {{ centroids | to_array }};
+    float thresholds[{{ thresholds | shape }}] = {{ (thresholds ** 2) | to_array }};
+
+
+    /**
+     * Euclidean distance
+     */
+    float euclidean(float *a, float *b) {
+        float dist = 0;
+
+        for (uint16_t i = 0; i < {{ centroids[0] | length }}; i++) {
+            dist += (a[i] - b[i]) * (a[i] - b[i]);
+        }
+
+        return dist;
+    }
+
+{% endblock %}

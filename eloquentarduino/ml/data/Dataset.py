@@ -216,6 +216,13 @@ class Dataset:
 
         return self
 
+    def mask(self, mask):
+        """
+        Mask X and y
+        """
+        self.X = self.X[mask]
+        self.y = self.y[mask]
+
     def random(self, size=0):
         """
         Get random samples

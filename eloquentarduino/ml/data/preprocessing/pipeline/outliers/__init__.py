@@ -1,1 +1,2 @@
 from eloquentarduino.ml.data.preprocessing.pipeline.outliers.EllipticEnvelope import EllipticEnvelope
+from eloquentarduino.ml.data.preprocessing.pipeline.outliers.KMeansOutlier import KMeansOutlier

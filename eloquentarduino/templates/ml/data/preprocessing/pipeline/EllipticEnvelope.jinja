@@ -6,8 +6,8 @@
      * @inplace
      */
     bool transform(float *source) {
-        float delta[{{ v | shape }}] = {{ -v | to_array }};
         float mahalanobis = {{ offset }};
+        float delta[{{ v | shape }}] = {{ -v | to_array }};
 
         for (uint16_t i = 0; i < {{ v | length }}; i++) {
             delta[i] += source[i];
@@ -18,7 +18,13 @@
             mahalanobis -= delta[i] * dot(delta, VI[i]);
         }
 
-        return mahalanobis >= 0;
+        {% if add_feature %}
+            source[{{ input_dim }}] = (mahalanobis < 0);
+        {% elif predict %}
+            source[0] = (mahalanobis < 0);
+        {% else %}
+            return mahalanobis >= 0;
+        {% endif %}
     }
 
 {% endblock %}
@@ -26,7 +32,7 @@
 {% block protected %}
 
     float v[{{ v | shape }}] = {{ v | to_array }};
-    float VI[{{ VI | shape }}] = {{ VI | to_array }};
+    {{ 'long' if approx else 'float' }} VI[{{ VI | shape }}] = {{ VI | to_array }};
 
 
     /**
