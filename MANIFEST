@@ -63,6 +63,7 @@ eloquentarduino/ml/data/preprocessing/pipeline/BoxCox.py
 eloquentarduino/ml/data/preprocessing/pipeline/CrossDiff.py
 eloquentarduino/ml/data/preprocessing/pipeline/DFT.py
 eloquentarduino/ml/data/preprocessing/pipeline/Diff.py
+eloquentarduino/ml/data/preprocessing/pipeline/DropFeatures.py
 eloquentarduino/ml/data/preprocessing/pipeline/FFT.py
 eloquentarduino/ml/data/preprocessing/pipeline/MinMaxScaler.py
 eloquentarduino/ml/data/preprocessing/pipeline/Norm.py
@@ -82,6 +83,7 @@ eloquentarduino/ml/data/preprocessing/pipeline/classification/Classify.py
 eloquentarduino/ml/data/preprocessing/pipeline/classification/SmoothClassification.py
 eloquentarduino/ml/data/preprocessing/pipeline/classification/__init__.py
 eloquentarduino/ml/data/preprocessing/pipeline/outliers/EllipticEnvelope.py
+eloquentarduino/ml/data/preprocessing/pipeline/outliers/KMeansOutlier.py
 eloquentarduino/ml/data/preprocessing/pipeline/outliers/__init__.py
 eloquentarduino/ml/metrics/__init__.py
 eloquentarduino/ml/metrics/device/BenchmarkEndToEnd.py
@@ -134,6 +136,7 @@ eloquentarduino/templates/ml/data/preprocessing/pipeline/DFT.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/Diff.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/EllipticEnvelope.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/FFT.jinja
+eloquentarduino/templates/ml/data/preprocessing/pipeline/KMeansOutlier.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/MinMaxScaler.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/Norm.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/Pipeline.jinja
