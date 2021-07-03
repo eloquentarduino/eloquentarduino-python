@@ -79,6 +79,7 @@ eloquentarduino/ml/data/preprocessing/pipeline/TSFRESH.py
 eloquentarduino/ml/data/preprocessing/pipeline/Window.py
 eloquentarduino/ml/data/preprocessing/pipeline/YeoJohnson.py
 eloquentarduino/ml/data/preprocessing/pipeline/__init__.py
+eloquentarduino/ml/data/preprocessing/pipeline/classification/Cascading.py
 eloquentarduino/ml/data/preprocessing/pipeline/classification/Classify.py
 eloquentarduino/ml/data/preprocessing/pipeline/classification/SmoothClassification.py
 eloquentarduino/ml/data/preprocessing/pipeline/classification/__init__.py
@@ -109,6 +110,7 @@ eloquentarduino/ml/plot/__init__.py
 eloquentarduino/plot/Bar.py
 eloquentarduino/plot/ConfusionMatrix.py
 eloquentarduino/plot/DimensionalityReductionPlotter.py
+eloquentarduino/plot/Line.py
 eloquentarduino/plot/PCAPlotter.py
 eloquentarduino/plot/RankMatrix.py
 eloquentarduino/plot/Scatter.py
@@ -131,6 +133,7 @@ eloquentarduino/templates/metrics/Runtime.jinja
 eloquentarduino/templates/ml/classification/tensorflow/NeuralNetwork.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/AbstractStep.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/BoxCox.jinja
+eloquentarduino/templates/ml/data/preprocessing/pipeline/Cascading.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/Classify.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/DFT.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/Diff.jinja
