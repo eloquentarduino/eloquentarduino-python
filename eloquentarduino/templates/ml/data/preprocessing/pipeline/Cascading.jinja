@@ -1,0 +1,43 @@
+{% extends './templates/Step.jinja' %}
+
+{% block preamble %}
+    {{ pipeline }}
+
+    {{ window }}
+
+    {{ simplex_clf }}
+
+    {{ complex_clf }}
+{% endblock %}
+
+{% block public %}
+
+    /**
+     * @inplace
+     */
+    bool transform(float *source) {
+        // feed input to simplex pipeline
+        if (!pipeline.transform(source)) {
+            return false;
+        }
+
+        float y_pred[{{ window_length }}] = {simplex_clf.predict(pipeline.X), 0};
+
+        // feed prediction to cascading window
+        if (!window.transform(y_pred)) {
+            return false;
+        }
+
+        source[0] = complex_clf.predict(y_pred);
+
+        return true;
+    }
+
+{% endblock %}
+
+{% block protected %}
+    Eloquent::ML::Data::Preprocessing::Pipeline::Ported::{{ simple_ns }}::SimplexPipeline pipeline;
+    Eloquent::ML::Data::Preprocessing::Pipeline::Ported::{{ simple_ns }}::CascadingWindow window(NULL);
+    Eloquent::ML::Port::SimplexClassifier simplex_clf;
+    Eloquent::ML::Port::ComplexClassifier complex_clf;
+{% endblock %}

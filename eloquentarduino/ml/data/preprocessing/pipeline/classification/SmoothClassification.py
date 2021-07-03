@@ -17,6 +17,7 @@ class SmoothClassification(BaseStep):
         self.decay = decay
         self.mean_thresh = mean_thresh
         self.var_thresh = var_thresh
+        self.support = 0
 
     def fit(self, X, y):
         """
@@ -38,16 +39,19 @@ class SmoothClassification(BaseStep):
         self.var = 0
 
         x_smooth = []
+        y_smooth = []
 
-        for x in X[:, 0]:
+        for x, yi in zip(X[:, 0], y):
             self._push(x)
 
             if self.k > 1 and abs(x - self.mean) < self.mean_thresh and self.var < self.var_thresh:
                 x_smooth.append(x)
+                y_smooth.append(yi)
 
         x_smooth = np.asarray(x_smooth, dtype=np.float32)
+        self.support = len(x_smooth) / max(len(X), 1)
 
-        return x_smooth.reshape((-1, 1)), x_smooth
+        return x_smooth.reshape((-1, 1)), np.asarray(y_smooth, dtype=np.int)
 
     def get_template_data(self):
         """

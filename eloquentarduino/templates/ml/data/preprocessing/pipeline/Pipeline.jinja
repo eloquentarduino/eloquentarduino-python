@@ -2,7 +2,9 @@
 
 {% block preamble %}
 
-    #pragma once
+    #ifndef __PIPELINE__{{ ns }}
+    #define __PIPELINE__{{ ns }}
+
     #include <cstring>
 
     {% for library in includes %}
@@ -28,10 +30,12 @@
             /**
              * Constructor
              */
-            {{ classname }}() {
+            {{ classname }}() :
                 {% for i, step in enumerate(steps) %}
-                    steps[{{ i }}] = new {{ step.name }}(buffer);
+                    {% if i > 0 %},{% endif %} step{{ i }}(buffer)
                 {% endfor %}
+            {
+
             }
 
             /**
@@ -41,21 +45,27 @@
                 memcpy(X, x, sizeof(float) * {{ input_dim }});
 
                 time_t start = micros();
-                bool transformed =
+                bool done =
                 {% for i, step in enumerate(steps) %}
                     // {{ step.name }}
-                    {% if i > 0 %} && {% endif %} steps[{{ i }}]->transform(X)
+                    {% if i > 0 %} && {% endif %} step{{ i }}.transform(X)
                 {% endfor %};
 
                 latency = micros() - start;
 
-                return transformed;
+                return done;
             }
 
         protected:
             // shared temporary memory for the steps
             float buffer[{{ working_dim }}] = {0};
-            Step *steps[{{ steps | length }}];
+            {% for i, step in enumerate(steps) %}
+                {{ step.name }} step{{ i }};
+            {% endfor %}
     };
 
+{% endblock %}
+
+{% block footer %}
+#endif
 {% endblock %}

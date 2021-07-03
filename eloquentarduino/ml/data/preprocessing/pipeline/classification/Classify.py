@@ -31,7 +31,7 @@ class Classify(BaseStep):
         """
         y_pred = self.clf.predict(X)
 
-        return y_pred.reshape((-1, 1)), y_pred
+        return y_pred.reshape((-1, 1)), y
 
     def get_template_data(self):
         """

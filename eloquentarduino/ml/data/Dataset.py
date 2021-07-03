@@ -59,13 +59,14 @@ class Dataset:
         return Dataset(name, X, y, columns=columns)
 
     @staticmethod
-    def read_folder(folder, file_pattern='*.csv', delimiter=',', skiprows=0):
+    def read_folder(folder, file_pattern='*.csv', delimiter=',', skiprows=0, slice=None):
         """
         Load all files from a folder
         :param folder: str
         :param file_pattern: str pattern for glob()
         :param delimiter: str
         :param skiprows: int
+        :param slice: tuple
         """
         X, y = None, None
         labels = []
@@ -73,8 +74,12 @@ class Dataset:
         for class_idx, filename in enumerate(sorted(glob("%s/%s" % (folder, file_pattern)))):
             label = splitext(basename(filename))[0]
             Xi = np.loadtxt(filename, dtype=np.float, delimiter=delimiter, skiprows=skiprows)
-            yi = np.ones(len(Xi)) * class_idx
 
+            if slice is not None:
+                start, end = slice
+                Xi = Xi[start:end]
+
+            yi = np.ones(len(Xi)) * class_idx
             labels.append((label, len(Xi)))
 
             if X is None:
@@ -151,14 +156,12 @@ class Dataset:
         """
         Convert dataset to pd.DataFrame
         """
-        if self.columns:
-            columns = self.columns + ['y']
-        else:
-            columns = None
+        columns = self.columns if self.columns else ['f%d' % i for i in range(self.X.shape[1])]
 
-        y = (self.y * np.abs(self.X.max() / 3)).reshape((-1, 1))
+        y = self.y.reshape((-1, 1))
+        y_scale = (self.y * np.abs(self.X.max() / 3)).reshape((-1, 1))
 
-        return pd.DataFrame(np.hstack((self.X, y)), columns=columns)
+        return pd.DataFrame(np.hstack((self.X, y, y_scale)), columns=columns + ['y', 'y_scale'])
 
     @property
     def class_labels(self):
@@ -287,7 +290,7 @@ class Dataset:
         :param shuffle: bool if dataset should be shuffled before splitting
         """
         assert test > 0 or validation > 0, 'either test or validation MUST be greater than 0'
-        assert test + validation < 1, 'test + validation MUST be less than 0'
+        assert test + validation < 1, 'test + validation MUST be less than 1'
         assert isinstance(return_empty, bool), 'return_empty MUST be a boolean'
         assert isinstance(shuffle, bool), 'shuffle MUST be a boolean'
 

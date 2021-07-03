@@ -1,5 +1,5 @@
+import numpy as np
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-from sklearn.metrics import plot_confusion_matrix
 
 
 class ConfusionMatrix:
@@ -7,8 +7,8 @@ class ConfusionMatrix:
     Plot confusion matrix
     """
     def __init__(self, y_true, y_pred, labels=None):
-        self.y_true = y_true
-        self.y_pred = y_pred
+        self.y_true = np.asarray(y_true, dtype=np.int)
+        self.y_pred = np.asarray(y_pred, dtype=np.int)
         self.labels = labels or [str(i) for i in range(min(self.y_true), max(self.y_true) + 1)]
 
     def show(self, title=None, normalize=None, cmap='viridis', xticks_rotation=70, **kwargs):

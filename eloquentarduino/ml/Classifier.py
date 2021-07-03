@@ -47,7 +47,15 @@ class Classifier:
         """
         Port classifier to C++
         """
-        return self.clf.port(**kwargs) if self.is_tf() else micromlgen.port(self.clf, **kwargs)
+        ported = self.clf.port(**kwargs) if self.is_tf() else micromlgen.port(self.clf, **kwargs)
+
+        # replace #pragma once with #ifndef
+        ported = ported.replace('#pragma once', '''
+        #ifndef __CLASSIFIER__%(id)d
+        #define __CLASSIFIER__%(id)d
+        ''' % {'id': id(self)})
+
+        return ported + '\n#endif'
 
     def benchmark_resources(self, X, project=eloquentarduino.project):
         """

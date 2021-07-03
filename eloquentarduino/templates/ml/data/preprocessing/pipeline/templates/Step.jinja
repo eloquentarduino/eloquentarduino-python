@@ -8,7 +8,7 @@
                 /**
                  * @param workArea shared buffer to store intermediate results
                  */
-                {{ name }}(float *workArea) : buffer(workArea) {
+                {{ name }}(float *workArea = NULL) : buffer(workArea) {
 
                 }
             {% endif %}

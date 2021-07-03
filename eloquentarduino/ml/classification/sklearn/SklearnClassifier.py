@@ -63,7 +63,15 @@ class SklearnClassifier(Classifier):
         :param classname: str name of the ported class
         :param classmap: dict classmap in the format {class_idx: class_name}
         """
-        return port(self, classname=classname, classmap=classmap, **kwargs)
+        ported = port(self, classname=classname, classmap=classmap, **kwargs)
+
+        # replace #pragma once with #ifndef
+        ported = ported.replace('#pragma once', '''
+                #ifndef __CLASSIFIER__%(id)d
+                #define __CLASSIFIER__%(id)d
+                ''' % {'id': id(self)})
+
+        return ported + '\n#endif'
 
     def on_device(self, project=None):
         """
