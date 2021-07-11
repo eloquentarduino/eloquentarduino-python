@@ -79,6 +79,7 @@ eloquentarduino/ml/data/preprocessing/pipeline/TSFRESH.py
 eloquentarduino/ml/data/preprocessing/pipeline/Window.py
 eloquentarduino/ml/data/preprocessing/pipeline/YeoJohnson.py
 eloquentarduino/ml/data/preprocessing/pipeline/__init__.py
+eloquentarduino/ml/data/preprocessing/pipeline/kFFT.py
 eloquentarduino/ml/data/preprocessing/pipeline/classification/Cascading.py
 eloquentarduino/ml/data/preprocessing/pipeline/classification/Classify.py
 eloquentarduino/ml/data/preprocessing/pipeline/classification/SmoothClassification.py
@@ -155,6 +156,7 @@ eloquentarduino/templates/ml/data/preprocessing/pipeline/TSFRESH_@only.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/TSFRESH_if.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/Window.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/YeoJohnson.jinja
+eloquentarduino/templates/ml/data/preprocessing/pipeline/kFFT.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/templates/Namespace.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/templates/Step.jinja
 eloquentarduino/templates/on_device/sklearn/InferenceTime.jinja
