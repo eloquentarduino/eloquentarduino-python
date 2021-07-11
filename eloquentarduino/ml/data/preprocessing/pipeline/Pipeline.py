@@ -1,3 +1,4 @@
+from copy import copy
 from eloquentarduino.ml.data import Dataset
 from eloquentarduino.utils import jinja
 from sklearn.model_selection import cross_validate
@@ -91,6 +92,26 @@ class Pipeline:
         assert isinstance(step, BaseStep), 'steps MUST extend BaseStep: %s found' % str(step.__class__)
         self.steps.append(step)
         self._assert_unique_steps()
+
+    def until(self, step_name, including=True, clone=True):
+        """
+        Return a pipeline up until the given step
+        :param step_name: str
+        :param including: bool if True, the given step will be included
+        :param clone: bool if True, steps will be cloned
+        """
+        idx = max([i if step.name == step_name else -1 for i, step in enumerate(self.steps)])
+        assert idx > -1, 'step %s not found' % step_name
+
+        if including:
+            idx += 1
+
+        steps = self.steps[:idx]
+
+        if clone:
+            steps = [copy(step) for step in steps]
+
+        return Pipeline(self.name, Dataset('Dataset', self.X, self.y), steps)
 
     def fit(self):
         """

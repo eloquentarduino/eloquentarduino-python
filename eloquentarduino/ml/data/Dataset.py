@@ -153,6 +153,13 @@ class Dataset:
         return len(np.unique(self.y)) if len(self.y.shape) == 1 else self.y.shape[1]
 
     @property
+    def shape(self):
+        """
+        Get X shape
+        """
+        return self.X.shape
+
+    @property
     def df(self):
         """
         Convert dataset to pd.DataFrame
@@ -160,9 +167,8 @@ class Dataset:
         columns = self.columns if self.columns else ['f%d' % i for i in range(self.X.shape[1])]
 
         y = self.y.reshape((-1, 1))
-        y_scale = (self.y * np.abs(self.X.max() / 3)).reshape((-1, 1))
 
-        return pd.DataFrame(np.hstack((self.X, y, y_scale)), columns=columns + ['y', 'y_scale'])
+        return pd.DataFrame(np.hstack((self.X, y)), columns=columns + ['y'])
 
     @property
     def class_labels(self):
@@ -217,6 +223,22 @@ class Dataset:
         :return: Dataset
         """
         self.X, self.y = shuffle(self.X, self.y, **kwargs)
+
+        return self
+
+    def merge(self, other, *args):
+        """
+        Merge datasets with the same structure
+        :param other: Dataset
+        """
+        assert isinstance(other, Dataset), 'you can only merge Datasets'
+        assert self.num_features == other.num_features, 'you can only merge Datasets with the same number of features'
+
+        self.X = np.vstack((self.X, other.X))
+        self.y = np.concatenate((self.y, other.y))
+
+        for other in args:
+            self.merge(other)
 
         return self
 
@@ -323,7 +345,7 @@ class Dataset:
         :param once_every: int limit the number of samples to draw
         """
         plt.figure()
-        plot_columns = [c for c in (columns or self.df.columns) if c not in ['y', 'y_scale']]
+        plot_columns = [c for c in (columns or self.df.columns) if c != 'y']
         df = pd.DataFrame(self.df[plot_columns].iloc[::once_every].to_numpy(), columns=columns or self.columns)
         length = len(df)
 

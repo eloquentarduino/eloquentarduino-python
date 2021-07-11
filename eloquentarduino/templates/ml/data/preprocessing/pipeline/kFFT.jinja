@@ -1,0 +1,36 @@
+{% extends './templates/Step.jinja' %}
+
+{% block public %}
+
+    /**
+     * @inplace
+     */
+    bool transform(float *source) {
+        // const uint16_t frequencies[{{ idx | length }}] = {{ idx | to_array }};
+        const float harmonics[{{ harmonics | length }}] = {{ harmonics | to_array }};
+
+        for (uint16_t j = 0; j < {{ num_features }}; j++) {
+            for (int i = 0, I = 0; i < {{ harmonics | length }}; i++, I += {{ num_features }}) {
+                const float harmonic = harmonics[i];
+                float harmonicN = 0;
+                float re = 0;
+                float im = 0;
+
+                for (int n = j; n < {{ input_dim  }}; n += {{ num_features }}) {
+                    float xn = source[n];
+
+                    re += source[n] * cos(harmonicN);
+                    im -= source[n] * sin(harmonicN);
+                    harmonicN += harmonic;
+                }
+
+                buffer[j + I] = sqrt(re * re + im * im);
+            }
+        }
+
+        memcpy(source, buffer, sizeof(float) * {{ output_dim }});
+
+        return true;
+    }
+
+{% endblock %}
