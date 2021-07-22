@@ -74,7 +74,10 @@ class Dataset:
 
         for class_idx, filename in enumerate(sorted(glob("%s/%s" % (folder, file_pattern)))):
             label = splitext(basename(filename))[0]
-            Xi = np.loadtxt(filename, dtype=np.float, delimiter=delimiter, skiprows=skiprows)
+            try:
+                Xi = np.loadtxt(filename, dtype=np.float, delimiter=delimiter, skiprows=skiprows)
+            except ValueError:
+                raise ValueError('Cannot read file %s' % filename)
 
             if slice is not None:
                 start, end = slice
@@ -333,7 +336,7 @@ class Dataset:
 
         return arrays
 
-    def plot(self, title='', columns=None, n_ticks=15, grid=True, fontsize=6, bg_alpha=0.2, once_every=1, palette=None, **kwargs):
+    def plot(self, title='', columns=None, n_ticks=15, grid=True, fontsize=6, bg_alpha=0.2, once_every=1, palette=None, y_pred=None, **kwargs):
         """
         Plot dataframe
         :param title: str title of plot
@@ -365,7 +368,19 @@ class Dataset:
             print('[WARN] too many classes for the current palette')
 
         for v, s, l in zip(run_values, run_starts, run_lengths):
-            plt.axvspan(s, s + l, color=palette[v], alpha=bg_alpha)
+            plt.axvspan(s, s + l, color=palette[v % len(palette)], alpha=bg_alpha)
+
+        # plot y_test markers
+        if y_pred is not None:
+            hop = len(self.y) // len(y_pred)
+            zero = self.X.min()
+            # markers = 'ovsP*+x1<p'
+
+            for i, yi in enumerate(set(y_pred)):
+                scale = 1 - i * 0.1 if zero > 0 else 1 + i * 0.1
+                xs = np.argwhere(y_pred == yi).flatten() * hop
+                ys = np.ones(len(xs)) * zero * scale
+                plt.scatter(xs, ys, marker='.', c=palette[i % len(palette)])
 
     def _get_label_id(self, label):
         """

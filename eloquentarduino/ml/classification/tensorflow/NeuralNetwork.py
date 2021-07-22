@@ -34,7 +34,7 @@ class NeuralNetwork(Classifier):
         self.fit_options = {
             'epochs': 20,
             'valid_size': 0.2,
-            'batch_size': 8
+            'batch_size': 32
         }
         self.compile_options.update(compile_options)
         self.fit_options.update(fit_options)
