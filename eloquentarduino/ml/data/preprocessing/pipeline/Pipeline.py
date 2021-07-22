@@ -18,7 +18,7 @@ class Pipeline:
         :param dataset: Dataset a dataset to train the pipeline on
         :param steps: list list of steps
         """
-        assert isinstance(dataset, Dataset), 'dataset MUST be an instance of eloquentarduino.ml.data.Dataset'
+        assert isinstance(dataset, Dataset), 'dataset MUST be an instance of eloquentarduino.ml.data.Dataset. %s found' % str(type(dataset))
         assert isinstance(steps, list), 'steps MUST be a list'
 
         self.name = name

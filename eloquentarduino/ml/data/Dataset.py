@@ -380,7 +380,7 @@ class Dataset:
                 scale = 1 - i * 0.1 if zero > 0 else 1 + i * 0.1
                 xs = np.argwhere(y_pred == yi).flatten() * hop
                 ys = np.ones(len(xs)) * zero * scale
-                plt.scatter(xs, ys, marker='.', c=palette[i % len(palette)])
+                plt.scatter(xs, ys, marker='.', c=palette[i % len(palette)], s=2)
 
     def _get_label_id(self, label):
         """
