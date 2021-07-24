@@ -5,6 +5,7 @@ from eloquentarduino.ml.data.preprocessing.pipeline.CrossDiff import CrossDiff
 from eloquentarduino.ml.data.preprocessing.pipeline.DFT import DFT
 from eloquentarduino.ml.data.preprocessing.pipeline.Diff import Diff
 from eloquentarduino.ml.data.preprocessing.pipeline.DropFeatures import DropFeatures
+from eloquentarduino.ml.data.preprocessing.pipeline.EWMA import EWMA
 from eloquentarduino.ml.data.preprocessing.pipeline.FFT import FFT
 from eloquentarduino.ml.data.preprocessing.pipeline.kFFT import kFFT
 from eloquentarduino.ml.data.preprocessing.pipeline.MinMaxScaler import MinMaxScaler

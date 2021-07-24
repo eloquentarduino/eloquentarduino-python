@@ -63,6 +63,16 @@ class SmoothClassification(BaseStep):
             'var_thresh': self.var_thresh
         }
 
+    def get_config(self):
+        """
+
+        """
+        return {
+            'decay': self.decay,
+            'mean_thresh': self.mean_thresh,
+            'var_thresh': self.var_thresh
+        }
+
     def _push(self, x):
         """
         Push new element

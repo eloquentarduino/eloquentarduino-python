@@ -377,8 +377,8 @@ class Dataset:
             # markers = 'ovsP*+x1<p'
 
             for i, yi in enumerate(set(y_pred)):
-                scale = 1 - i * 0.1 if zero > 0 else 1 + i * 0.1
-                xs = np.argwhere(y_pred == yi).flatten() * hop
+                scale = 1 - i * 0.025 if zero > 0 else 1 + i * 0.025
+                xs = np.argwhere(y_pred == yi).flatten() * hop + hop
                 ys = np.ones(len(xs)) * zero * scale
                 plt.scatter(xs, ys, marker='.', c=palette[i % len(palette)], s=2)
 

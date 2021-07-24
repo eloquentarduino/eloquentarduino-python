@@ -1,0 +1,22 @@
+{% extends './templates/Step.jinja' %}
+
+{% block public %}
+
+    /**
+     * @inplace
+     */
+    bool transform(float *source) {
+        for (uint16_t i = 0; i < {{ input_dim }}; i++) {
+            float next = prev[i] + {{ decay }} * (source[i] - prev[i]);
+
+            source[i] = prev[i] = next;
+        }
+
+        return true;
+    }
+
+{% endblock %}
+
+{% block protected %}
+    float prev[{{ input_dim }}] = {0};
+{% endblock %}
