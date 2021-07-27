@@ -64,6 +64,7 @@ eloquentarduino/ml/data/preprocessing/pipeline/CrossDiff.py
 eloquentarduino/ml/data/preprocessing/pipeline/DFT.py
 eloquentarduino/ml/data/preprocessing/pipeline/Diff.py
 eloquentarduino/ml/data/preprocessing/pipeline/DropFeatures.py
+eloquentarduino/ml/data/preprocessing/pipeline/EWMA.py
 eloquentarduino/ml/data/preprocessing/pipeline/FFT.py
 eloquentarduino/ml/data/preprocessing/pipeline/MinMaxScaler.py
 eloquentarduino/ml/data/preprocessing/pipeline/Norm.py
@@ -138,6 +139,7 @@ eloquentarduino/templates/ml/data/preprocessing/pipeline/Cascading.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/Classify.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/DFT.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/Diff.jinja
+eloquentarduino/templates/ml/data/preprocessing/pipeline/EWMA.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/EllipticEnvelope.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/FFT.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/KMeansOutlier.jinja
