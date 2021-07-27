@@ -168,6 +168,7 @@ class Dataset:
         Convert dataset to pd.DataFrame
         """
         columns = self.columns if self.columns else ['f%d' % i for i in range(self.X.shape[1])]
+        columns = [column for column in columns if columns != 'y']
 
         y = self.y.reshape((-1, 1))
 
@@ -206,7 +207,7 @@ class Dataset:
         for start, end in ranges:
             self.y[start:end] = label_id
 
-    def replace(self, X=None, y=None):
+    def replace(self, X=None, y=None, columns=None):
         """
         Replace X and y
         :param X:
@@ -218,7 +219,7 @@ class Dataset:
         if y is None:
             y = self.y
 
-        return Dataset(name=self.name, X=X.copy(), y=y.copy())
+        return Dataset(name=self.name, X=X.copy(), y=y.copy(), columns=columns)
 
     def shuffle(self, **kwargs):
         """
@@ -336,6 +337,75 @@ class Dataset:
 
         return arrays
 
+    def labels_distribution(self):
+        y = self.y.copy().astype(int)
+        loc_run_start = np.empty(len(y), dtype=bool)
+        loc_run_start[0] = True
+        np.not_equal(y[:-1], y[1:], out=loc_run_start[1:])
+        starts = np.nonzero(loc_run_start)[0]
+        lengths = np.diff(np.append(starts, len(y)))
+        values = y[loc_run_start]
+
+        return list(zip(values, starts, lengths))
+
+    def fill_holes(self, min_width, max_hop, direction='right', labels=None):
+        """
+        Fill holes in label column
+        """
+        distribution = self.labels_distribution()
+        values = [v for v, s, l in distribution]
+        starts = [s for v, s, l in distribution]
+        lengths = [l for v, s, l in distribution]
+        y = self.y.copy()
+
+        if direction == 'right':
+            for v_start, v_end, width, hop, start in zip(values[:-1], values[2:], lengths[:-1],
+                                                         lengths[1:], starts[:-1]):
+                if (
+                        labels is not None and v_start not in labels) or v_start != v_end or width < min_width or hop > max_hop:
+                    continue
+                y[start + width:start + width + hop] = v_start
+
+        elif direction == 'center':
+            for v_start, v_end, width1, hop, width2, start in zip(values[:-1], values[2:], lengths[:-1],
+                                                                  lengths[1:], lengths[2:], starts[:-1]):
+                if (
+                        labels is not None and v_start not in labels) or v_start != v_end or width1 + width2 < min_width or hop > max_hop:
+                    continue
+                y[start + width1:start + width1 + hop] = v_start
+
+        self.y = y
+
+    def expand_label(self, label, pad, min_width=0, direction='right'):
+        """
+        Expand given label to neighbor samples
+        """
+        distribution = self.labels_distribution()
+        values = [v for v, s, l in distribution]
+        starts = [s for v, s, l in distribution]
+        lengths = [l for v, s, l in distribution]
+        y = self.y.copy()
+
+        if direction == 'right':
+            for v, width, start in zip(values[:-1], lengths[:-1], starts[:-1]):
+                if v != label or width < min_width:
+                    continue
+                y[start + width: start + width + pad] = label
+
+        if direction == 'left':
+            for v, width, start in zip(values[1:], lengths[1:], starts[1:]):
+                if v != label or width < min_width:
+                    continue
+                y[start - pad: start] = label
+
+        elif direction == 'center':
+            for v, width, start in zip(values[:-1], lengths[:-1], starts[:-1]):
+                if v != label or width < min_width:
+                    continue
+                y[start - pad: start + width + pad] = label
+
+        self.y = y
+
     def plot(self, title='', columns=None, n_ticks=15, grid=True, fontsize=6, bg_alpha=0.2, once_every=1, palette=None, y_pred=None, **kwargs):
         """
         Plot dataframe
@@ -348,8 +418,8 @@ class Dataset:
         :param once_every: int limit the number of samples to draw
         """
         plt.figure()
-        plot_columns = [c for c in (columns or self.df.columns) if c != 'y']
-        df = pd.DataFrame(self.df[plot_columns].iloc[::once_every].to_numpy(), columns=columns or self.columns)
+        plot_columns = [c for c in (columns or list(self.df.columns)) if c != 'y']
+        df = pd.DataFrame(self.df[plot_columns].iloc[::once_every].to_numpy(), columns=plot_columns)
         length = len(df)
 
         df.plot(title=title, xticks=range(0, length, length // n_ticks), grid=grid, fontsize=fontsize, rot=70, **kwargs)
