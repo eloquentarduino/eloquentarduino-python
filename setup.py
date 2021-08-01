@@ -22,13 +22,13 @@ data = ["templates/on_device/sklearn/ResourcesBaseline.jinja", "templates/on_dev
 setup(
   name = 'eloquentarduino',
   packages = packages,
-  version = '0.0.63',
+  version = '0.0.64',
   license='MIT',
   description = 'A set of utilities to work with Arduino from Python and Jupyter Notebooks',
   author = 'Simone Salerno',
   author_email = 'eloquentarduino@gmail.com',
   url = 'https://github.com/eloquentarduino/eloquentarduino-python',
-  download_url = 'https://github.com/eloquentarduino/eloquentarduino-python/blob/master/dist/eloquentarduino-0.0.63.tar.gz?raw=true',
+  download_url = 'https://github.com/eloquentarduino/eloquentarduino-python/blob/master/dist/eloquentarduino-0.0.64.tar.gz?raw=true',
   keywords = [
     'ML',
     'Jupyter',
