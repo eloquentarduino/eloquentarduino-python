@@ -30,7 +30,7 @@ class Dataset:
         """
         X, y = load_digits(return_X_y=True)
 
-        return Dataset('MNIST Tf', np.expand_dims(X.reshape((-1, 8, 8)), -1), y)
+        return Dataset('MNIST Tf', np.expand_dims(X.reshape((-1, 8, 8)), -1), y, test_validity=False)
 
     @staticmethod
     def read_csv(filename, name=None, label_column=None, columns=None, **kwargs):
@@ -105,21 +105,28 @@ class Dataset:
 
         return dataset
 
-    def __init__(self, name, X, y, columns=None):
+    def __init__(self, name, X, y, columns=None, test_validity=True):
         """
         :param name:
         :param X:
         :param y:
         :param columns:
+        :param test_validity: bool
         """
         self.name = name
-        try:
-            valid_rows = ~np.isnan(X).any(axis=1)
-        except TypeError:
-            valid_rows = slice(0, 999999)
 
-        self.X = X[valid_rows]
-        self.y = np.asarray(y)[valid_rows].astype(np.int)
+        if test_validity:
+            try:
+                valid_rows = ~np.isnan(X).any(axis=1)
+            except TypeError:
+                valid_rows = slice(0, 999999)
+
+            self.X = X[valid_rows]
+            self.y = np.asarray(y)[valid_rows].astype(np.int)
+        else:
+            self.X = X
+            self.y = y
+
         self.columns = columns
         self.classmap = {-1: 'UNLABELLED'}
 

@@ -8,11 +8,11 @@ class XGBClassifier(SklearnClassifier, XGBImplementation):
     """
     xgboost.XGBClassifier wrapper
     """
-    def __init__(self, random_state=0, **kwargs):
+    def __init__(self, random_state=0, objective='multi:softprob', **kwargs):
         """
         Patch constructor
         """
-        super().__init__(random_state, **kwargs)
+        super().__init__(random_state=random_state, objective=objective, **kwargs)
 
     @property
     def sklearn_base(self):
@@ -20,6 +20,18 @@ class XGBClassifier(SklearnClassifier, XGBImplementation):
         Get xgboost implementation
         """
         return [base for base in self.__class__.__bases__ if base.__module__.startswith('xgboost.')][0]
+
+    def fit(self, X, y):
+        """
+        Fit
+        """
+        self.sklearn_base.set_params(self, num_class=len(set(y)))
+        self.sklearn_base.fit(self, X, y)
+        # keep track of X and y
+        self.X = X
+        self.y = y
+
+        return self
 
     def hyperparameters_grid(self, X=None):
         """

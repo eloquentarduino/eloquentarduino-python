@@ -173,11 +173,14 @@ class NeuralNetwork(Classifier):
         """
         self.fit_options['batch_size'] = batch_size
 
-    def set_compile_option(self, key, value):
+    def set_compile_option(self, key=None, value=None, **kwargs):
         """
         Set compile option
         """
-        self.compile_options[key] = value
+        if key is not None:
+            self.compile_options[key] = value
+
+        self.compile_options.update(kwargs)
 
     def set_fit_option(self, **kwargs):
         """

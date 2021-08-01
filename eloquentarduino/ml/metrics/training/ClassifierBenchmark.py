@@ -8,7 +8,8 @@ from sklearn.datasets import load_iris, load_wine, load_breast_cancer, load_digi
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import *
 from pandas import DataFrame
-from eloquentarduino.ml.metrics.plot import Barplot, ConfusionMatrix
+from eloquentarduino.plot import ConfusionMatrix
+from eloquentarduino.ml.metrics.plot import Barplot
 
 
 def benchmark_time(f):

@@ -116,18 +116,20 @@ class GridSearch(GridSearchBase):
             for key, val in self.compile_options.items():
                 nn.set_compile_option(key, val)
 
-            for key, val in self.fit_options.items():
-                nn.set_fit_option(key, val)
+            nn.set_fit_option(**self.fit_options)
 
-            nn.fit(X_train, y_train)
+            try:
+                nn.fit(X_train, y_train)
 
-            if X_test is None:
-                accuracy = max(nn.history.history['val_accuracy'])
-            else:
-                accuracy = nn.score(X_test, y_test)
+                if X_test is None:
+                    accuracy = max(nn.history.history['val_accuracy'])
+                else:
+                    accuracy = nn.score(X_test, y_test)
 
-            result = GridSearchResult(dataset=self.dataset, clf=nn, accuracy=accuracy)
-            self.append_result(result, project=project)
+                result = GridSearchResult(dataset=self.dataset, clf=nn, accuracy=accuracy)
+                self.append_result(result, project=project)
+            except ValueError:
+                continue
 
         self.results = sorted(self.results, key=lambda result: result.accuracy, reverse=True)
 
