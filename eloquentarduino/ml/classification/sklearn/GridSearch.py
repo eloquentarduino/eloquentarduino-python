@@ -77,9 +77,13 @@ class GridSearch(GridSearchBase):
             if accuracy > 0:
                 clf = result['estimator'][best_idx]
 
-                self.append_result(GridSearchResult(clf=clf, dataset=self.dataset, hyperparameters=combination, accuracy=accuracy), project=project)
+                result = GridSearchResult(clf=clf, dataset=self.dataset, hyperparameters=combination, accuracy=accuracy, passes=False)
+                result.passes, result.fail_reason = self.test_result(result, project=project)
+                self.results.append(result)
+            else:
+                raise ValueError('Error evaluating accuracy for %s' % str(combination))
 
-        self.results = sorted(self.results, key=lambda result: result.accuracy, reverse=True)
+        self.results = sorted(self.results, key=lambda result: result.accuracy + (1 if result.passes else 0), reverse=True)
 
         return self.results
 

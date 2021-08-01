@@ -127,7 +127,8 @@ class GridSearch(GridSearchBase):
                     accuracy = nn.score(X_test, y_test)
 
                 result = GridSearchResult(dataset=self.dataset, clf=nn, accuracy=accuracy)
-                self.append_result(result, project=project)
+                result.passes, result.fail_reason = self.test_result(result, project=project)
+                self.results.append(result)
             except ValueError:
                 continue
 
