@@ -83,6 +83,7 @@ eloquentarduino/ml/data/preprocessing/pipeline/__init__.py
 eloquentarduino/ml/data/preprocessing/pipeline/kFFT.py
 eloquentarduino/ml/data/preprocessing/pipeline/classification/Cascading.py
 eloquentarduino/ml/data/preprocessing/pipeline/classification/Classify.py
+eloquentarduino/ml/data/preprocessing/pipeline/classification/InRow.py
 eloquentarduino/ml/data/preprocessing/pipeline/classification/SmoothClassification.py
 eloquentarduino/ml/data/preprocessing/pipeline/classification/__init__.py
 eloquentarduino/ml/data/preprocessing/pipeline/outliers/EllipticEnvelope.py
