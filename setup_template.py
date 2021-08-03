@@ -45,9 +45,10 @@ setup(
     'pyserial',
     'pandas',
     'seaborn',
-    'micromlgen'
+    'micromlgen',
+    'imbalanced-learn'
   ],
-  package_data= {
+  package_data={
     'eloquentarduino': data
   },
   classifiers=[

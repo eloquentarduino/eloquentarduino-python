@@ -21,6 +21,9 @@ class XGBClassifier(SklearnClassifier, XGBImplementation):
         """
         return [base for base in self.__class__.__bases__ if base.__module__.startswith('xgboost.')][0]
 
+    def clone(self):
+        return XGBClassifier(**self.get_params())
+
     def fit(self, X, y):
         """
         Fit

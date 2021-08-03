@@ -10,6 +10,7 @@ from sklearn.utils import shuffle
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.datasets import load_iris, load_digits
 from sklearn.model_selection import train_test_split
+import imblearn.under_sampling
 
 
 class Dataset:
@@ -188,6 +189,13 @@ class Dataset:
         """
         return [label for idx, label in self.classmap.items() if idx >= 0]
 
+    @property
+    def class_distribution(self):
+        """
+        Get dict of {label: number of samples}
+        """
+        return {label: (self.y == label).sum() for label in sorted(list(set(self.y)))}
+
     def train_test_split(self, **kwargs):
         """
         Train/test split
@@ -271,7 +279,13 @@ class Dataset:
         idx = np.random.permutation(self.length)[:size]
         return self.X[idx], self.y[idx]
 
-    def intermix(self, chunk_size):
+    def intermix(self, chunk_size, *args, **kwargs):
+        """
+        @deprecated
+        """
+        return self.mix(chunk_size, *args, **kwargs)
+
+    def mix(self, chunk_size):
         """
         Alternate samples in sizes of chunk_size based on the y values
         :param chunk_size: int
@@ -344,7 +358,55 @@ class Dataset:
 
         return arrays
 
-    def labels_distribution(self):
+    def balance(self, ratio=1, chunk_size=None, kmeans=False, nearmiss=False, tomek=False, random_state=0, **kwargs):
+        """
+        Balance unbalanced classes
+        :param ratio: float ratio between majority classes and minority class
+        :param kmeans: bool if True, undersample using cluster centroids
+        """
+        undersampler = None
+
+        if kmeans:
+            undersampler = imblearn.under_sampling.ClusterCentroids(sampling_strategy=ratio, random_state=random_state, **kwargs)
+        elif nearmiss:
+            undersampler = imblearn.under_sampling.NearMiss(sampling_strategy=ratio, **kwargs)
+        elif tomek:
+            undersampler = imblearn.under_sampling.TomekLinks(**kwargs)
+
+        if undersampler is not None:
+            X, y = undersampler.fit_resample(self.X, self.y)
+        else:
+            # naive, "sequential" undersampling (keeps time series consistency)
+            class_distribution = self.class_distribution
+            minority_samples = min(class_distribution.values())
+            # here ratio is a multiplier of minority_samples
+            ratio = 1 / ratio
+            X = None
+            y = None
+
+            for label in set(self.y):
+                Xi = self.X[self.y == label]
+                yi = self.y[self.y == label]
+
+                if len(Xi) > minority_samples * ratio:
+                    # create a subset of the current samples
+                    chunk_size = chunk_size or minority_samples * ratio // 10
+                    num_chunks = int(len(Xi) // chunk_size)
+                    max_chunks = int(minority_samples * ratio // chunk_size)
+                    chunks = np.array_split(Xi, num_chunks)
+                    indices = np.arange(len(chunks))
+                    np.random.shuffle(indices)
+                    chunks = [chunks[i] for i in indices[:max_chunks]]
+                    Xi = np.vstack(chunks)
+                    yi = np.ones(len(Xi)) * label
+
+                # balanced samples, just append
+                X = Xi if X is None else np.vstack((X, Xi))
+                y = yi if y is None else np.concatenate((y, yi))
+
+        return Dataset(self.name, X, y)
+
+    def y_segments(self):
         y = self.y.copy().astype(int)
         loc_run_start = np.empty(len(y), dtype=bool)
         loc_run_start[0] = True
@@ -359,7 +421,7 @@ class Dataset:
         """
         Fill holes in label column
         """
-        distribution = self.labels_distribution()
+        distribution = self.y_segments()
         values = [v for v, s, l in distribution]
         starts = [s for v, s, l in distribution]
         lengths = [l for v, s, l in distribution]
@@ -387,7 +449,7 @@ class Dataset:
         """
         Expand given label to neighbor samples
         """
-        distribution = self.labels_distribution()
+        distribution = self.y_segments()
         values = [v for v, s, l in distribution]
         starts = [s for v, s, l in distribution]
         lengths = [l for v, s, l in distribution]

@@ -1,5 +1,5 @@
 from copy import copy
-from eloquentarduino.ml.data import Dataset
+from eloquentarduino.ml.data.Dataset import Dataset
 from eloquentarduino.utils import jinja
 from sklearn.model_selection import cross_validate
 from eloquentarduino.ml.classification.abstract.Classifier import Classifier
@@ -18,7 +18,7 @@ class Pipeline:
         :param dataset: Dataset a dataset to train the pipeline on
         :param steps: list list of steps
         """
-        assert isinstance(dataset, Dataset), 'dataset MUST be an instance of eloquentarduino.ml.data.Dataset. %s found' % str(type(dataset))
+        assert isinstance(dataset, Dataset), 'dataset MUST be an instance of eloquentarduino.ml.data.Dataset.Dataset, %s found' % str(type(dataset))
         assert isinstance(steps, list), 'steps MUST be a list'
 
         self.name = name
