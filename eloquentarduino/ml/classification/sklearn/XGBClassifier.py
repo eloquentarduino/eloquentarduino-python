@@ -8,11 +8,11 @@ class XGBClassifier(SklearnClassifier, XGBImplementation):
     """
     xgboost.XGBClassifier wrapper
     """
-    def __init__(self, random_state=0, objective='multi:softprob', **kwargs):
+    def __init__(self, random_state=0, objective='multi:softprob', missing=None, **kwargs):
         """
         Patch constructor
         """
-        super().__init__(random_state=random_state, objective=objective, **kwargs)
+        super().__init__(random_state=random_state, objective=objective, missing=missing, **kwargs)
 
     @property
     def sklearn_base(self):

@@ -358,53 +358,85 @@ class Dataset:
 
         return arrays
 
-    def balance(self, ratio=1, chunk_size=None, kmeans=False, nearmiss=False, tomek=False, random_state=0, **kwargs):
+    def balance(self, minority_ratio=1, chunk_size=None, kmeans=False, nearmiss=False, tomek=False, random_state=0, **kwargs):
         """
         Balance unbalanced classes
-        :param ratio: float ratio between majority classes and minority class
-        :param kmeans: bool if True, undersample using cluster centroids
+        :param minority_ratio: float ratio between majority classes and minority class
+        :param chunk_size: int
         """
         undersampler = None
 
         if kmeans:
-            undersampler = imblearn.under_sampling.ClusterCentroids(sampling_strategy=ratio, random_state=random_state, **kwargs)
+            undersampler = imblearn.under_sampling.ClusterCentroids(sampling_strategy=minority_ratio, random_state=random_state, **kwargs)
         elif nearmiss:
-            undersampler = imblearn.under_sampling.NearMiss(sampling_strategy=ratio, **kwargs)
+            undersampler = imblearn.under_sampling.NearMiss(sampling_strategy=minority_ratio, **kwargs)
         elif tomek:
             undersampler = imblearn.under_sampling.TomekLinks(**kwargs)
 
         if undersampler is not None:
             X, y = undersampler.fit_resample(self.X, self.y)
         else:
+            assert chunk_size > 1, 'chunk_size MUST be greater than 1'
+
             # naive, "sequential" undersampling (keeps time series consistency)
             class_distribution = self.class_distribution
             minority_samples = min(class_distribution.values())
             # here ratio is a multiplier of minority_samples
-            ratio = 1 / ratio
-            X = None
-            y = None
+            ratio = 1 / minority_ratio
+            class_chunks = self.chunk(chunk_size=chunk_size, shuffle=True)
+            max_chunks = int(minority_samples * ratio // chunk_size)
+            all_chunks = []
 
-            for label in set(self.y):
-                Xi = self.X[self.y == label]
-                yi = self.y[self.y == label]
+            for label, chunks in class_chunks.items():
+                all_chunks += [(label, chunk) for chunk in chunks[:max_chunks]]
 
-                if len(Xi) > minority_samples * ratio:
-                    # create a subset of the current samples
-                    chunk_size = chunk_size or minority_samples * ratio // 10
-                    num_chunks = int(len(Xi) // chunk_size)
-                    max_chunks = int(minority_samples * ratio // chunk_size)
-                    chunks = np.array_split(Xi, num_chunks)
-                    indices = np.arange(len(chunks))
-                    np.random.shuffle(indices)
-                    chunks = [chunks[i] for i in indices[:max_chunks]]
-                    Xi = np.vstack(chunks)
-                    yi = np.ones(len(Xi)) * label
-
-                # balanced samples, just append
-                X = Xi if X is None else np.vstack((X, Xi))
-                y = yi if y is None else np.concatenate((y, yi))
+            random.shuffle(all_chunks)
+            X = np.vstack([chunk for label, chunk in all_chunks])
+            y = np.concatenate([np.ones(len(chunk)) * label for label, chunk in all_chunks])
 
         return Dataset(self.name, X, y)
+
+    def chunk(self, chunk_size, shuffle=False):
+        """
+        Chunk each class samples
+        :param chunk_size: int
+        :param shuffle: bool
+        """
+        chunked = {}
+
+        for yi in sorted(set(self.y)):
+            mask = self.y == yi
+            Xi = self.X[mask]
+            num_chunks = int(len(Xi) // chunk_size)
+            chunks = np.array_split(Xi, num_chunks)
+
+            if shuffle:
+                indices = np.arange(len(chunks))
+                np.random.shuffle(indices)
+                chunks = [chunks[i] for i in indices]
+
+            chunked[int(yi)] = chunks
+
+        return chunked
+
+    def train_test_split_chunks(self, chunk_size, test_size=0.33):
+        """
+        Split data in train/test considering chunks of data
+        :param chunk_size: int
+        :param test_size: float
+        """
+        class_chunks = self.chunk(chunk_size, shuffle=True)
+        splits = [int(len(chunks) * (1 - test_size)) for chunks in class_chunks.values()]
+        train_chunks = [(label, chunk) for (label, chunks), split in zip(class_chunks.items(), splits) for chunk in chunks[:split]]
+        test_chunks = [(label, chunk) for (label, chunks), split in zip(class_chunks.items(), splits) for chunk in chunks[split:]]
+        random.shuffle(train_chunks)
+        random.shuffle(test_chunks)
+        X_train = np.vstack([chunk for label, chunk in train_chunks])
+        X_test = np.vstack([chunk for label, chunk in test_chunks])
+        y_train = np.concatenate([np.ones(len(chunk)) * label for label, chunk in train_chunks])
+        y_test = np.concatenate([np.ones(len(chunk)) * label for label, chunk in test_chunks])
+
+        return Dataset('%s train' % self.name, X_train, y_train), Dataset('%s test' % self.name, X_test, y_test)
 
     def y_segments(self):
         y = self.y.copy().astype(int)

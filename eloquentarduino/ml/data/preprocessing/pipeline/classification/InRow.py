@@ -24,24 +24,35 @@ class InRow(BaseStep):
         # nothing to fit
         return self.transform(X, y)
 
-    def transform(self, X, y=None):
+    def transform(self, X, y=None, holes=False):
         """
-
+        :param fill: if True, appends None to result when not in row
         """
         count = 0
         current = -1
         Xt = []
         yt = []
 
-        for xi, yi in zip(X, y or []):
+        for xi, yi in zip(X, y if y is not None else []):
             if xi[0] != current:
                 current = xi[0]
                 count = 0
 
             count += 1
 
-            if count == self.n:
+            if count >= self.n:
                 Xt.append(xi)
                 yt.append(yi)
+            elif holes:
+                Xt.append(np.nan)
+                yt.append(np.nan)
 
         return np.asarray(Xt), np.asarray(yt) if y is not None else None
+
+    def get_config(self):
+        """
+
+        """
+        return {
+            'n': self.n
+        }

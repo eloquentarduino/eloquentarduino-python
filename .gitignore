@@ -2,3 +2,4 @@
 venv
 publish
 setup_template.py
+*.pyc
