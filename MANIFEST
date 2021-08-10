@@ -36,6 +36,7 @@ eloquentarduino/ml/classification/sklearn/RandomForestClassifier.py
 eloquentarduino/ml/classification/sklearn/SVC.py
 eloquentarduino/ml/classification/sklearn/SklearnClassifier.py
 eloquentarduino/ml/classification/sklearn/XGBClassifier.py
+eloquentarduino/ml/classification/sklearn/XGBClassifier2.py
 eloquentarduino/ml/classification/sklearn/__init__.py
 eloquentarduino/ml/classification/sklearn/gridsearch/GridSearchResult.py
 eloquentarduino/ml/classification/sklearn/gridsearch/__init__.py
