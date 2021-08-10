@@ -1,5 +1,5 @@
 from math import ceil, sqrt
-from copy import deepcopy
+import numpy as np
 from xgboost import XGBClassifier as XGBImplementation
 from eloquentarduino.ml.classification.sklearn.SklearnClassifier import SklearnClassifier
 
@@ -25,7 +25,7 @@ class XGBClassifier(SklearnClassifier, XGBImplementation):
                  scale_pos_weight=None,
                  base_score=None,
                  random_state=None,
-                 missing=None,
+                 missing=np.nan,
                  num_parallel_tree=None,
                  monotone_constraints=None,
                  interaction_constraints=None,

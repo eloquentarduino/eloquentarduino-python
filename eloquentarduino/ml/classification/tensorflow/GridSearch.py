@@ -81,6 +81,21 @@ class GridSearch(GridSearchBase):
         self.compile_options = kwargs
         self.compile_options.update(loss=loss, optimizer=optimizer, metrics=metrics)
 
+    def possibilities(self):
+        """
+        Enumerate possible architectures
+        """
+        for combination in self.combinations:
+            nn = NeuralNetwork()
+
+            for layer in combination:
+                nn.add_layer(copy(layer))
+
+            nn.set_compile_option(**self.compile_options)
+            nn.set_fit_option(**self.fit_options)
+
+            yield nn
+
     def search(self, epochs=30, validation_size=0.2, test_size=0.2, show_progress=True, verbose=0, project=None, **kwargs):
         """
         Perform search
@@ -129,7 +144,8 @@ class GridSearch(GridSearchBase):
                 result = GridSearchResult(dataset=self.dataset, clf=nn, accuracy=accuracy)
                 result.passes, result.fail_reason = self.test_result(result, project=project)
                 self.results.append(result)
-            except ValueError:
+            except ValueError as ex:
+                print('ValueError', str(ex))
                 continue
 
         self.results = sorted(self.results, key=lambda result: result.accuracy, reverse=True)

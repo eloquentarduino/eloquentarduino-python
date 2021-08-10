@@ -4,5 +4,6 @@ from eloquentarduino.ml.classification.sklearn.LogisticRegression import Logisti
 from eloquentarduino.ml.classification.sklearn.RandomForestClassifier import RandomForestClassifier
 from eloquentarduino.ml.classification.sklearn.SVC import SVC
 from eloquentarduino.ml.classification.sklearn.XGBClassifier import XGBClassifier
+from eloquentarduino.ml.classification.sklearn.XGBClassifier2 import XGBClassifier2
 
 from eloquentarduino.ml.classification.sklearn.GridSearch import GridSearch
