@@ -106,12 +106,13 @@ class Dataset:
 
         return dataset
 
-    def __init__(self, name, X, y, columns=None, test_validity=True):
+    def __init__(self, name, X, y, columns=None, classmap=None, test_validity=True):
         """
         :param name:
         :param X:
         :param y:
-        :param columns:
+        :param columns: list
+        :param classmap: dict
         :param test_validity: bool
         """
         self.name = name
@@ -129,7 +130,7 @@ class Dataset:
             self.y = y
 
         self.columns = columns
-        self.classmap = {-1: 'UNLABELLED'}
+        self.classmap = classmap or {-1: 'UNLABELLED'}
 
     @property
     def y_categorical(self):
@@ -234,7 +235,7 @@ class Dataset:
         if y is None:
             y = self.y
 
-        return Dataset(name=self.name, X=X.copy(), y=y.copy(), columns=columns)
+        return Dataset(name=self.name, X=X.copy(), y=y.copy(), columns=columns, classmap=self.classmap)
 
     def shuffle(self, **kwargs):
         """

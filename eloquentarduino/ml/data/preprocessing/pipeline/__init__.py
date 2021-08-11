@@ -20,4 +20,4 @@ from eloquentarduino.ml.data.preprocessing.pipeline.TSFRESH import TSFRESH
 from eloquentarduino.ml.data.preprocessing.pipeline.Window import Window
 from eloquentarduino.ml.data.preprocessing.pipeline.YeoJohnson import YeoJohnson
 
-from eloquentarduino.ml.data.preprocessing.pipeline.PipelineGridSearch import PipelineGridSearch
+from eloquentarduino.ml.data.preprocessing.pipeline.DeprecatedPipelineGridSearch import PipelineGridSearch

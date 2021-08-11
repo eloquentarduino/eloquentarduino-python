@@ -21,6 +21,7 @@ from eloquentarduino.ml.data.preprocessing.pipeline.YeoJohnson import YeoJohnson
 class PipelineGridSearch:
     """
     Perform a naive grid search to find the best pipeline for the dataset
+    @deprecated
     """
     def __init__(self, dataset, is_time_series=False, duration=None, global_scaling=False, feature_selection=False):
         if is_time_series:
