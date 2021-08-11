@@ -63,14 +63,15 @@ eloquentarduino/ml/data/preprocessing/pipeline/BaseStep.py
 eloquentarduino/ml/data/preprocessing/pipeline/BoxCox.py
 eloquentarduino/ml/data/preprocessing/pipeline/CrossDiff.py
 eloquentarduino/ml/data/preprocessing/pipeline/DFT.py
+eloquentarduino/ml/data/preprocessing/pipeline/DeprecatedPipelineGridSearch.py
 eloquentarduino/ml/data/preprocessing/pipeline/Diff.py
 eloquentarduino/ml/data/preprocessing/pipeline/DropFeatures.py
 eloquentarduino/ml/data/preprocessing/pipeline/EWMA.py
 eloquentarduino/ml/data/preprocessing/pipeline/FFT.py
+eloquentarduino/ml/data/preprocessing/pipeline/GridSearch.py
 eloquentarduino/ml/data/preprocessing/pipeline/MinMaxScaler.py
 eloquentarduino/ml/data/preprocessing/pipeline/Norm.py
 eloquentarduino/ml/data/preprocessing/pipeline/Pipeline.py
-eloquentarduino/ml/data/preprocessing/pipeline/PipelineGridSearch.py
 eloquentarduino/ml/data/preprocessing/pipeline/PolynomialFeatures.py
 eloquentarduino/ml/data/preprocessing/pipeline/RFE.py
 eloquentarduino/ml/data/preprocessing/pipeline/RateLimit.py
