@@ -197,6 +197,14 @@ class Dataset:
         """
         return {label: (self.y == label).sum() for label in sorted(list(set(self.y)))}
 
+    @staticmethod
+    def loader():
+        """
+        Syntactic sugar to access a DatasetLoader
+        """
+        from eloquentarduino.ml.data.DatasetLoader import DatasetsLoader
+        return DatasetsLoader
+
     def train_test_split(self, **kwargs):
         """
         Train/test split

@@ -1,3 +1,4 @@
+import numpy as np
 from copy import copy
 from eloquentarduino.ml.data.Dataset import Dataset
 from eloquentarduino.utils import jinja
@@ -52,6 +53,15 @@ class Pipeline:
         step = [step for step in self.steps if step.name == item]
 
         return step[0] if len(step) == 1 else None
+
+    @property
+    def dataset(self):
+        """
+        Convert pipeline data to Dataset object
+        """
+        assert self.y is None or len(self.y.shape) == 1 or self.y.shape[1] == 1, 'y MUST be None or 1d'
+
+        return Dataset(name=self.name, X=self.X, y=np.flatten(self.y), test_validity=False)
 
     @property
     def input_dim(self):
