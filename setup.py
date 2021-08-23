@@ -46,7 +46,8 @@ setup(
     'pandas',
     'seaborn',
     'micromlgen',
-    'imbalanced-learn'
+    'imbalanced-learn',
+    'tqdm'
   ],
   package_data={
     'eloquentarduino': data

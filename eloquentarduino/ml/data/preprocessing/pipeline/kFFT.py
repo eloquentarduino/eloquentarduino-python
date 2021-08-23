@@ -6,7 +6,7 @@ from eloquentarduino.ml.data.preprocessing.pipeline.BaseStep import BaseStep
 
 
 class kFFT(BaseStep):
-    def __init__(self, k, num_features=1, name='kFFT'):
+    def __init__(self, k, num_features, name='kFFT'):
         """
         :param k: int number of components to keep
         :param num_features: int

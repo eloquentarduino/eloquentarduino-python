@@ -1,111 +1,21 @@
 import random
+from functools import reduce
+
+import imblearn.under_sampling
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
-from os.path import basename, splitext, sep
-from glob import glob
-from functools import reduce
-from sklearn.utils import shuffle
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.datasets import load_iris, load_digits
 from sklearn.model_selection import train_test_split
-import imblearn.under_sampling
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.utils import shuffle
+
+from eloquentarduino.ml.data.mixins.LoadsDatasetMixin import LoadsDatasetMixin
+from eloquentarduino.ml.data.mixins.PlotsItselfMixin import PlotsItselfMixin
 
 
-class Dataset:
+class Dataset(LoadsDatasetMixin, PlotsItselfMixin):
     """
     Abstraction of a dataset
     """
-    @staticmethod
-    def Iris():
-        """
-        Create the Iris dataset
-        """
-        return Dataset('Iris', *load_iris(return_X_y=True))
-
-    @staticmethod
-    def MNIST_Tensorflow():
-        """
-        Create the MNIST dataset formatted for Tensorflow
-        """
-        X, y = load_digits(return_X_y=True)
-
-        return Dataset('MNIST Tf', np.expand_dims(X.reshape((-1, 8, 8)), -1), y, test_validity=False)
-
-    @staticmethod
-    def read_csv(filename, name=None, label_column=None, columns=None, **kwargs):
-        """
-        Create dataset from csv file
-        """
-        if name is None:
-            name = splitext(basename(filename))[0]
-
-        assert len(name) > 0, 'dataset name CANNOT be empty'
-
-        df = pd.read_csv(filename, **kwargs)
-
-        # select given columns
-        if columns is not None:
-            df = df[columns]
-
-        # use label column or set y to -1
-        if label_column is None:
-            X = df.to_numpy()
-            y = -np.ones(len(df))
-        else:
-            columns = [column for column in df.columns if column != label_column]
-            X = df[columns].to_numpy()
-            y = df[label_column].to_numpy()
-
-        return Dataset(name, X, y, columns=columns)
-
-    @staticmethod
-    def read_folder(folder, file_pattern='*.csv', delimiter=',', skiprows=0, slice=None):
-        """
-        Load all files from a folder
-        :param folder: str
-        :param file_pattern: str pattern for glob()
-        :param delimiter: str
-        :param skiprows: int
-        :param slice: tuple
-        """
-        X, y = None, None
-        labels = []
-
-        for class_idx, filename in enumerate(sorted(glob("%s/%s" % (folder, file_pattern)))):
-            label = splitext(basename(filename))[0]
-            try:
-                Xi = np.loadtxt(filename, dtype=np.float, delimiter=delimiter, skiprows=skiprows)
-            except ValueError:
-                raise ValueError('Cannot read file %s' % filename)
-
-            if slice is not None:
-                start, end = slice
-                Xi = Xi[start:end]
-
-            yi = np.ones(len(Xi)) * class_idx
-            labels.append((label, len(Xi)))
-
-            if X is None:
-                X = Xi
-                y = yi
-            else:
-                X = np.vstack((X, Xi))
-                y = np.concatenate((y, yi))
-
-        assert X is not None, '%s is empty' % folder
-
-        name = [segment for segment in folder.split(sep) if len(segment)][-1]
-        dataset = Dataset(name, X, y)
-        offset = 0
-
-        for label, length in labels:
-            dataset.label_samples(label, (offset, offset + length))
-            offset += length
-
-        return dataset
-
     def __init__(self, name, X, y, columns=None, classmap=None, test_validity=True):
         """
         :param name:
@@ -131,6 +41,12 @@ class Dataset:
 
         self.columns = columns
         self.classmap = classmap or {-1: 'UNLABELLED'}
+
+    def __getitem__(self, item):
+        """
+        Access slice of data
+        """
+        return self.replace(X=self.X[item, :], y=self.y[item], columns=self.columns)
 
     @property
     def y_categorical(self):
@@ -197,39 +113,49 @@ class Dataset:
         """
         return {label: (self.y == label).sum() for label in sorted(list(set(self.y)))}
 
-    @staticmethod
-    def loader():
+    def update_classmap(self, classmap):
         """
-        Syntactic sugar to access a DatasetLoader
+        Update mapping from class id to class name
+        :param classmap: dict
+        :return: self
         """
-        from eloquentarduino.ml.data.DatasetLoader import DatasetsLoader
-        return DatasetsLoader
+        assert isinstance(classmap, dict), 'classmap MUST be a dict'
+        self.classmap.update(classmap)
+
+        return self
 
     def train_test_split(self, **kwargs):
         """
-        Train/test split
+        Random train/test split
+        :return: tuple (X_train, X_test, y_train, y_test)
         """
         return train_test_split(self.X, self.y, **kwargs)
 
     def drop_unlabelled(self):
         """
         Remove unlabelled samples
+        :return: self
         """
         idx = (self.y == -1)
         self.X = self.X[~idx]
         self.y = self.y[~idx]
+
+        return self
 
     def label_samples(self, label, *ranges):
         """
         Add a label to a subset of the dataset
         :param label: str name of the given samples
         :param ranges: list of (start, end) tuples
+        :return: self
         """
         label_id = self._get_label_id(label)
         self.classmap[label_id] = label
 
         for start, end in ranges:
             self.y[start:end] = label_id
+
+        return self
 
     def replace(self, X=None, y=None, columns=None):
         """
@@ -242,6 +168,9 @@ class Dataset:
 
         if y is None:
             y = self.y
+
+        if columns is None:
+            columns = self.columns
 
         return Dataset(name=self.name, X=X.copy(), y=y.copy(), columns=columns, classmap=self.classmap)
 
@@ -264,6 +193,10 @@ class Dataset:
 
         self.X = np.vstack((self.X, other.X))
         self.y = np.concatenate((self.y, other.y))
+
+        # merge classmaps
+        for k, v in other.classmap.items():
+            self.classmap.setdefault(k, v)
 
         for other in args:
             self.merge(other)
@@ -317,7 +250,7 @@ class Dataset:
         X = np.vstack(X_chunks)
         y = np.concatenate(y_chunks)
 
-        return Dataset(self.name, X, y)
+        return self.replace(X=X, y=y)
 
     def take(self, size):
         """
@@ -403,7 +336,7 @@ class Dataset:
             X = np.vstack([chunk for label, chunk in all_chunks])
             y = np.concatenate([np.ones(len(chunk)) * label for label, chunk in all_chunks])
 
-        return Dataset(self.name, X, y)
+        return self.replace(X=X, y=y)
 
     def chunk(self, chunk_size, shuffle=False):
         """
@@ -515,52 +448,6 @@ class Dataset:
                 y[start - pad: start + width + pad] = label
 
         self.y = y
-
-    def plot(self, title='', columns=None, n_ticks=15, grid=True, fontsize=6, bg_alpha=0.2, once_every=1, palette=None, y_pred=None, **kwargs):
-        """
-        Plot dataframe
-        :param title: str title of plot
-        :param columns: list columns to plot
-        :param n_ticks: int number of ticks on the x axis
-        :param grid: bool wether to display the grid
-        :param fontsize: int font size for the axis values
-        :param bg_alpha: float alpha of classes' background color
-        :param once_every: int limit the number of samples to draw
-        """
-        plt.figure()
-        plot_columns = [c for c in (columns or list(self.df.columns)) if c != 'y']
-        df = pd.DataFrame(self.df[plot_columns].iloc[::once_every].to_numpy(), columns=plot_columns)
-        length = len(df)
-
-        df.plot(title=title, xticks=range(0, length, length // n_ticks), grid=grid, fontsize=fontsize, rot=70, **kwargs)
-
-        # highlight labels
-        y = self.y[::once_every]
-        loc_run_start = np.empty(len(y), dtype=bool)
-        loc_run_start[0] = True
-        np.not_equal(y[:-1], y[1:], out=loc_run_start[1:])
-        run_starts = np.nonzero(loc_run_start)[0]
-        run_lengths = np.diff(np.append(run_starts, len(y)))
-        run_values = y[loc_run_start]
-        palette = [c for c in (palette or mcolors.TABLEAU_COLORS.values())]
-
-        if self.y.max() >= len(palette):
-            print('[WARN] too many classes for the current palette')
-
-        for v, s, l in zip(run_values, run_starts, run_lengths):
-            plt.axvspan(s, s + l, color=palette[v % len(palette)], alpha=bg_alpha)
-
-        # plot y_test markers
-        if y_pred is not None:
-            hop = len(self.y) // len(y_pred)
-            zero = self.X.min()
-            # markers = 'ovsP*+x1<p'
-
-            for i, yi in enumerate(set(y_pred)):
-                scale = 1 - i * 0.025 if zero > 0 else 1 + i * 0.025
-                xs = np.argwhere(y_pred == yi).flatten() * hop + hop
-                ys = np.ones(len(xs)) * zero * scale
-                plt.scatter(xs, ys, marker='.', c=palette[i % len(palette)], s=2)
 
     def _get_label_id(self, label):
         """

@@ -123,13 +123,20 @@ class Pipeline:
 
         return Pipeline(self.name, Dataset('Dataset', self.X, self.y), steps)
 
-    def fit(self):
+    def fit(self, catch_error=False):
         """
         Fit the steps
+        :param catch_error: bool if True, returns None on common errors due to steps incompatibility
         :return: self
         """
         for step in self.steps:
-            self.X, self.y = step.fit(self.X, self.y)
+            try:
+                self.X, self.y = step.fit(self.X, self.y)
+            except ValueError as err:
+                if catch_error:
+                    return None
+                else:
+                    raise err
 
         return self
 

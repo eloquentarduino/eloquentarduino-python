@@ -49,3 +49,11 @@ class Classify(BaseStep):
         ported = re.sub(r'(#pragma once[\s\S]+)#pragma once', lambda g: g.group(1), ported)
 
         return ported
+
+    def get_config(self):
+        """
+        Show details of classifier
+        """
+        return {
+            'clf': self.clf
+        }

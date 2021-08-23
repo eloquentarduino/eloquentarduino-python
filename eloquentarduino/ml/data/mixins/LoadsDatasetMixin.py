@@ -4,15 +4,15 @@ import numpy as np
 import pandas as pd
 from glob import glob
 from sklearn.datasets import *
-from eloquentarduino.ml.data import Dataset
 
 
-class DatasetsLoader:
+class LoadsDatasetMixin:
     """
-    Load datasets from files and folders using pandas' API
+    Mixin to load datasets from files and folders using pandas' API
+    Made to be used by Dataset
     """
-    @staticmethod
-    def read_file(filename, X_columns=None, y_column='y', **kwargs):
+    @classmethod
+    def read_csv(cls, filename, X_columns=None, y_column='y', **kwargs):
         """
         Read CSV file
         :param filename: str
@@ -36,10 +36,10 @@ class DatasetsLoader:
             # if no y column is provided, fill with empty
             y = -np.ones(len(X))
 
-        return Dataset(name=os.path.basename(filename), X=X, y=y, columns=X_columns)
+        return cls(name=os.path.basename(filename), X=X, y=y, columns=X_columns)
 
-    @staticmethod
-    def read_folder(folder, X_columns=None, pattern=None, recursive=False, dataset_name='Dataset', **kwargs):
+    @classmethod
+    def read_folder(cls, folder, X_columns=None, pattern=None, recursive=False, dataset_name='Dataset', **kwargs):
         """
         Read all files in a folder
         :param folder: str
@@ -67,7 +67,7 @@ class DatasetsLoader:
         assert len(filenames) > 0, 'no file found'
 
         for i, filename in enumerate(sorted(filenames)):
-            dataset = DatasetsLoader.read_file(filename, X_columns=X_columns, y_column=None, **kwargs)
+            dataset = cls.read_csv(filename, X_columns=X_columns, y_column=None, **kwargs)
             Xs.append(dataset.X)
             ys.append(np.ones(len(dataset.y)) * i)
             classmap[i] = os.path.splitext(os.path.basename(filename))[0]
@@ -76,4 +76,20 @@ class DatasetsLoader:
         X = np.vstack(Xs)
         y = np.concatenate(ys)
 
-        return Dataset(name=dataset_name, X=X, y=y, classmap=classmap, columns=columns)
+        return cls(name=dataset_name, X=X, y=y, classmap=classmap, columns=columns)
+
+    @classmethod
+    def Iris(cls):
+        """
+        Create the Iris dataset
+        """
+        return cls('Iris', *load_iris(return_X_y=True))
+
+    @staticmethod
+    def MNIST_Tensorflow(cls):
+        """
+        Create the MNIST dataset formatted for Tensorflow
+        """
+        X, y = load_digits(return_X_y=True)
+
+        return cls('MNIST Tf', np.expand_dims(X.reshape((-1, 8, 8)), -1), y, test_validity=False)
