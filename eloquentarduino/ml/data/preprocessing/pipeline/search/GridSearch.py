@@ -35,7 +35,7 @@ class GridSearch:
 
         """
         # initialize paths to be a list with an empty path
-        self.paths = [[]]
+        self.paths = [None]
 
     @property
     def possibilities(self):
@@ -47,27 +47,21 @@ class GridSearch:
     def then(self, steps):
         """
         Add more steps
+        :param steps: list
         """
-        if not isinstance(steps, list):
-            steps = [steps]
-
-        self.paths = [path + copy(steps) for path in self.paths]
+        self.paths = [self._copy(path) + self._copy(steps) for path in self.paths]
 
         return self
 
     def one_of(self, paths):
         """
         Add branch
+        :param paths: list
         """
         new_paths = []
 
         for path in paths:
-            if path is None:
-                path = []
-            if not isinstance(path, list):
-                path = [path]
-
-            new_paths += [copy(existing_path) + copy(path) for existing_path in self.paths]
+            new_paths += [self._copy(existing_path) + self._copy(path) for existing_path in self.paths]
 
         self.paths = new_paths
 
@@ -76,6 +70,7 @@ class GridSearch:
     def optionally_one_of(self, paths):
         """
         Optionally add the given paths
+        :param paths: list
         """
         return self.one_of([None] + paths)
 
@@ -93,3 +88,15 @@ class GridSearch:
             results = list(tqdm((_evaluate_pipeline(pipeline, test, metric) for pipeline in pipelines), total=len(self.possibilities)))
 
         return sorted([r for r in results if r is not None], key=lambda result: result["score"], reverse=True)
+
+    def _copy(self, path):
+        """
+        Copy path
+        :param path: list|any
+        """
+        if path is None:
+            path = []
+        elif not isinstance(path, list):
+            path = [path]
+
+        return [copy(step) for step in path]

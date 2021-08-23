@@ -12,41 +12,67 @@ class LoadsDatasetMixin:
     Made to be used by Dataset
     """
     @classmethod
-    def read_csv(cls, filename, X_columns=None, y_column='y', **kwargs):
+    def read_csv(
+            cls,
+            filename,
+            data_columns=None,
+            label_column='y',
+            skiprows=0,
+            slice=None,
+            **kwargs):
         """
         Read CSV file
         :param filename: str
-        :param X_columns: list|str list of columns to use as features
-        :param y_column: str|None column to use as label
+        :param data_columns: list|str list of columns to use as features
+        :param label_column: str|None column to use as label
+        :param skiprows: int how many rows to skip (@deprecated, ignored)
+        :param slice: tuple (start, end) custom slicing of rows from each file
         """
         df = pd.read_csv(filename, **kwargs).select_dtypes(include=['number'])
 
-        if X_columns is None:
+        if data_columns is None:
             # if X_columns is None, use all columns but y_column
-            X_columns = [column for column in df.columns if column != y_column]
-        elif isinstance(X_columns, str):
+            data_columns = df.columns
+        elif isinstance(data_columns, str):
             # if X_columns is a string, split on ","
-            X_columns = [column.strip() for column in X_columns.split(',')]
+            data_columns = [column.strip() for column in data_columns.split(',')]
 
-        X = df[X_columns].to_numpy()
+        # remove label column from data columns
+        data_columns = [column for column in data_columns if column != label_column]
+        X = df[data_columns].to_numpy()
 
-        if y_column is not None:
-            y = df[y_column].to_numpy().flatten()
+        if slice is not None:
+            start, end = slice
+            X = X[start:end]
+
+        if label_column is not None:
+            y = df[label_column].to_numpy().flatten()
         else:
             # if no y column is provided, fill with empty
             y = -np.ones(len(X))
 
-        return cls(name=os.path.basename(filename), X=X, y=y, columns=X_columns)
+        return cls(name=os.path.basename(filename), X=X, y=y, columns=data_columns)
 
     @classmethod
-    def read_folder(cls, folder, X_columns=None, pattern=None, recursive=False, dataset_name='Dataset', **kwargs):
+    def read_folder(
+            cls,
+            folder,
+            data_columns=None,
+            pattern=None,
+            recursive=False,
+            dataset_name='Dataset',
+            skiprows=0,
+            slice=None,
+            **kwargs):
         """
         Read all files in a folder
         :param folder: str
-        :param X_columns: list|str list of columns to use as features
+        :param data_columns: list|str list of columns to use as features
         :param pattern: str regex to test files to be included
         :param recursive: bool if True, loads folder recursively
         :param dataset_name: str name of the dataset
+        :param skiprows: int how many rows to skip (default=0)
+        :param slice: tuple (start, end) custom slicing of rows from each file
         """
         if not folder.endswith('/'):
             folder += '/'
@@ -67,7 +93,7 @@ class LoadsDatasetMixin:
         assert len(filenames) > 0, 'no file found'
 
         for i, filename in enumerate(sorted(filenames)):
-            dataset = cls.read_csv(filename, X_columns=X_columns, y_column=None, **kwargs)
+            dataset = cls.read_csv(filename, data_columns=data_columns, label_column=None, skiprows=skiprows, slice=slice, **kwargs)
             Xs.append(dataset.X)
             ys.append(np.ones(len(dataset.y)) * i)
             classmap[i] = os.path.splitext(os.path.basename(filename))[0]

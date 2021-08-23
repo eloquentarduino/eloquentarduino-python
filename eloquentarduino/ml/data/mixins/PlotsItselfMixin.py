@@ -19,7 +19,7 @@ class PlotsItselfMixin:
         """
         cls.is_plot_disabled = disabled
 
-    def plot(self, title='', columns=None, n_ticks=15, grid=True, fontsize=6, bg_alpha=0.2, once_every=1, palette=None, y_pred=None, **kwargs):
+    def plot(self, title='', columns=None, n_ticks=15, grid=True, fontsize=6, bg_alpha=0.2, once_every=1, palette=None, y_pred=None, force=False, **kwargs):
         """
         Plot dataframe
         :param title: str title of plot
@@ -29,8 +29,10 @@ class PlotsItselfMixin:
         :param fontsize: int font size for the axis values
         :param bg_alpha: float alpha of classes' background color
         :param once_every: int limit the number of samples to draw
+        :param y_pred: np.array draw predictions markers on top of plot
+        :param force: bool if True, always draw the plot, no matter disable_plot() calls
         """
-        if self.__class__.is_plot_disabled:
+        if not self._should_plot(force):
             print('Dataset plotting is disabled, skipping...')
             return
 
@@ -68,3 +70,28 @@ class PlotsItselfMixin:
                 xs = np.argwhere(y_pred == yi).flatten() * hop + hop
                 ys = np.ones(len(xs)) * zero * scale
                 plt.scatter(xs, ys, marker='.', c=palette[i % len(palette)], s=2)
+
+    def plot_class_distribution(self):
+        """
+        Plot histogram of classes' samples
+        """
+        fig, ax = plt.subplots()
+        x = self.class_distribution.keys()
+        height = self.class_distribution.values()
+        bar = plt.bar(x, height)
+
+        if len(self.class_labels):
+            ax.set_xticks(np.arange(len(x)))
+            ax.set_xticklabels(self.class_labels, rotation=70)
+
+        return fig, ax, bar
+
+    def _should_plot(self, force=False):
+        """
+        Test if plotting is enabled
+        """
+        if force:
+            return True
+        if self.__class__.is_plot_disabled:
+            return False
+        return True
