@@ -50,14 +50,12 @@ eloquentarduino/ml/classification/tensorflow/gridsearch/GridSearchResult.py
 eloquentarduino/ml/classification/tensorflow/gridsearch/__init__.py
 eloquentarduino/ml/data/CheckpointFile.py
 eloquentarduino/ml/data/Dataset.py
-eloquentarduino/ml/data/DatasetLoader.py
 eloquentarduino/ml/data/PandasDataset.py
-eloquentarduino/ml/data/RollingWindow.py
 eloquentarduino/ml/data/__init__.py
-eloquentarduino/ml/data/loaders/DatasetsLoader.py
-eloquentarduino/ml/data/loaders/__init__.py
+eloquentarduino/ml/data/mixins/LoadsDatasetMixin.py
+eloquentarduino/ml/data/mixins/PlotsItselfMixin.py
+eloquentarduino/ml/data/mixins/__init__.py
 eloquentarduino/ml/data/preprocessing/BaseStep.py
-eloquentarduino/ml/data/preprocessing/PrincipalFFT.py
 eloquentarduino/ml/data/preprocessing/__init__.py
 eloquentarduino/ml/data/preprocessing/pipeline/BaseStep.py
 eloquentarduino/ml/data/preprocessing/pipeline/BoxCox.py
@@ -68,7 +66,6 @@ eloquentarduino/ml/data/preprocessing/pipeline/Diff.py
 eloquentarduino/ml/data/preprocessing/pipeline/DropFeatures.py
 eloquentarduino/ml/data/preprocessing/pipeline/EWMA.py
 eloquentarduino/ml/data/preprocessing/pipeline/FFT.py
-eloquentarduino/ml/data/preprocessing/pipeline/GridSearch.py
 eloquentarduino/ml/data/preprocessing/pipeline/MinMaxScaler.py
 eloquentarduino/ml/data/preprocessing/pipeline/Norm.py
 eloquentarduino/ml/data/preprocessing/pipeline/Pipeline.py
@@ -91,6 +88,9 @@ eloquentarduino/ml/data/preprocessing/pipeline/classification/__init__.py
 eloquentarduino/ml/data/preprocessing/pipeline/outliers/EllipticEnvelope.py
 eloquentarduino/ml/data/preprocessing/pipeline/outliers/KMeansOutlier.py
 eloquentarduino/ml/data/preprocessing/pipeline/outliers/__init__.py
+eloquentarduino/ml/data/preprocessing/pipeline/search/GridSearch.py
+eloquentarduino/ml/data/preprocessing/pipeline/search/__init__.py
+eloquentarduino/ml/data/preprocessing/pipeline/search/metrics.py
 eloquentarduino/ml/metrics/__init__.py
 eloquentarduino/ml/metrics/device/BenchmarkEndToEnd.py
 eloquentarduino/ml/metrics/device/BenchmarkPlotter.py
@@ -123,7 +123,6 @@ eloquentarduino/plot/TSNEPlotter.py
 eloquentarduino/plot/__init__.py
 eloquentarduino/plot/dynamic/Bar.py
 eloquentarduino/plot/dynamic/__init__.py
-eloquentarduino/templates/Pipeline/PrincipalFFT.jinja
 eloquentarduino/templates/benchmarks/Baseline.jinja
 eloquentarduino/templates/benchmarks/sklearn/Resources.jinja
 eloquentarduino/templates/benchmarks/sklearn/Runtime.jinja
@@ -145,6 +144,7 @@ eloquentarduino/templates/ml/data/preprocessing/pipeline/Diff.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/EWMA.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/EllipticEnvelope.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/FFT.jinja
+eloquentarduino/templates/ml/data/preprocessing/pipeline/InRow.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/KMeansOutlier.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/MinMaxScaler.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/Norm.jinja
