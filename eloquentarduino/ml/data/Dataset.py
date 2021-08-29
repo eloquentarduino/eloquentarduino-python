@@ -145,10 +145,15 @@ class Dataset(LoadsDatasetMixin, PlotsItselfMixin):
     def label_where(self, label, mask_or_callable, label_name=None):
         """
         Set label where mask or the callable is True
-        :param label: int idx of label
+        :param label: int|str idx of label
         :param mask_or_callable: numpy.ndarray|callable mask or callable that returns a mask
         :param label_name: str|None add label name to classmap
         """
+        # if label is a string, convert it to idx
+        if isinstance(label, str):
+            label_name = label
+            label = self._get_label_id(label)
+
         if callable(mask_or_callable):
             mask_or_callable = mask_or_callable(self.df)
 
@@ -205,7 +210,7 @@ class Dataset(LoadsDatasetMixin, PlotsItselfMixin):
         Merge datasets with the same structure
         :param other: Dataset
         """
-        assert isinstance(other, Dataset), 'you can only merge Datasets'
+        assert isinstance(other, Dataset), 'you can only merge Datasets (%s given)' % str(type(other))
         assert self.num_features == other.num_features, 'you can only merge Datasets with the same number of features'
 
         self.X = np.vstack((self.X, other.X))

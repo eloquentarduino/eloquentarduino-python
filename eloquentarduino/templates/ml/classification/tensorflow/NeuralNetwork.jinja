@@ -7,66 +7,71 @@
 
 namespace Eloquent {
     namespace ML {
-        namespace Classification {
-            namespace Tensorflow {
-                namespace Ported {
-                    class {{ classname }} {
-                        public:
-                            static const uint16_t NUM_INPUTS = {{ num_inputs }};
-                            static const uint16_t NUM_OUTPUTS = {{ num_outputs }};
+        namespace Port {
+            class {{ classname }} {
+                public:
+                    static const uint16_t NUM_INPUTS = {{ num_inputs }};
+                    static const uint16_t NUM_OUTPUTS = {{ num_outputs }};
 
-                            float proba[{{ num_outputs }}] = {0};
-                            Eloquent::TinyML::TfLite<{{ num_inputs }}, {{ num_outputs }}, {{ arena_size }}> nn;
+                    float proba[{{ num_outputs }}] = {0};
+                    Eloquent::TinyML::TfLite<{{ num_inputs }}, {{ num_outputs }}, {{ arena_size }}> nn;
 
-                            /**
-                             * Init model
-                             */
-                             bool begin() {
-                                return nn.begin({{ model_name }});
+                    /**
+                     * Init model
+                     */
+                     bool begin() {
+                        inited = true;
+
+                        return nn.begin({{ model_name }});
+                     }
+
+                     /**
+                      * Predict class probabilities
+                      */
+                     void predictProba(float *x) {
+                        if (!inited) {
+                            begin();
+                        }
+
+                        nn.predict(x, proba);
+                     }
+
+                    /**
+                     * Predict most probable class
+                     */
+                     uint8_t predict(float *x) {
+                        predictProba(x);
+
+                        return nn.probaToClass(proba);
+                     }
+
+                     {% if classmap is not none %}
+                        /**
+                         * Get most probable class name
+                         */
+                         const char* predictLabel(float *x) {
+                            return idxToLabel(predictClass(x));
+                         }
+
+                         /**
+                          * Convert class idx to readable name
+                          */
+                         const char* idxToLabel(uint8_t classIdx) {
+                             switch (classIdx) {
+                                 {% for idx, name in classmap.items() %}
+                                     case {{ idx }}:
+                                         return "{{ name }}";
+                                 {% endfor %}
+                                 default:
+                                     return "Houston we have a problem";
                              }
+                         }
 
-                             /**
-                              * Predict class probabilities
-                              */
-                             void predictProba(float *x) {
-                                nn.predict(x, proba);
-                             }
+                     {% endif %}
 
-                            /**
-                             * Predict most probable class
-                             */
-                             uint8_t predict(float *x) {
-                                predictProba(x);
-
-                                return nn.probaToClass(proba);
-                             }
-
-                             {% if classmap is not none %}
-                                /**
-                                 * Get most probable class name
-                                 */
-                                 const char* predictLabel(float *x) {
-                                    return idxToLabel(predictClass(x));
-                                 }
-
-                                 /**
-                                  * Convert class idx to readable name
-                                  */
-                                 const char* idxToLabel(uint8_t classIdx) {
-                                     switch (classIdx) {
-                                         {% for idx, name in classmap.items() %}
-                                             case {{ idx }}:
-                                                 return "{{ name }}";
-                                         {% endfor %}
-                                         default:
-                                             return "Houston we have a problem";
-                                     }
-                                 }
-
-                             {% endif %}
-                    };
-                }
-            }
+                protected:
+                    bool inited = false;
+            };
         }
     }
 }
