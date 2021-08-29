@@ -1,0 +1,32 @@
+{% extends './templates/Step.jinja' %}
+
+{% block public %}
+    /**
+     * @inplace
+     */
+    bool transform(float *source) {
+        if (source[0] != currentY) {
+            currentY = source[0];
+            count = 0;
+        }
+
+        // prevent overflow
+        if (count < 255) {
+            count += 1;
+        }
+
+        if (count < {{ n }}) {
+            return false;
+        }
+
+        return true;
+    }
+
+{% endblock %}
+
+{% block protected %}
+
+    uint8_t currentY = 0;
+    uint8_t count = 0;
+
+{% endblock %}

@@ -10,6 +10,8 @@ class InRow(BaseStep):
         """
         :param n: int number of predictions to agree
         """
+        assert n <= 255, 'n MUST be <= 255'
+
         super().__init__(name)
         self.n = n
 
