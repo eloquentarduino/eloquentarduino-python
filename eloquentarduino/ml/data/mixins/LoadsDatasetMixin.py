@@ -15,6 +15,7 @@ class LoadsDatasetMixin:
     def read_csv(
             cls,
             filename,
+            columns=None,
             data_columns=None,
             label_column='y',
             skiprows=0,
@@ -23,12 +24,17 @@ class LoadsDatasetMixin:
         """
         Read CSV file
         :param filename: str
+        :param columns: list|str @deprecated, use data_columns
         :param data_columns: list|str list of columns to use as features
         :param label_column: str|None column to use as label
         :param skiprows: int how many rows to skip (@deprecated, ignored)
         :param slice: tuple (start, end) custom slicing of rows from each file
         """
         df = pd.read_csv(filename, **kwargs).select_dtypes(include=['number'])
+
+        # keep compatibility
+        if columns is not None:
+            data_columns = data_columns or columns
 
         if data_columns is None:
             # if X_columns is None, use all columns but y_column

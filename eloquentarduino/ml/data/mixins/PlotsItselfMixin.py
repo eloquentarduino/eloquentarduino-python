@@ -19,7 +19,7 @@ class PlotsItselfMixin:
         """
         cls.is_plot_disabled = disabled
 
-    def plot(self, title='', columns=None, n_ticks=15, grid=True, fontsize=6, bg_alpha=0.2, once_every=1, palette=None, y_pred=None, force=False, **kwargs):
+    def plot(self, title='', columns=None, n_ticks=15, grid=True, fontsize=6, bg_alpha=0.2, once_every=1, max_samples=None, palette=None, y_pred=None, force=False, **kwargs):
         """
         Plot dataframe
         :param title: str title of plot
@@ -29,6 +29,7 @@ class PlotsItselfMixin:
         :param fontsize: int font size for the axis values
         :param bg_alpha: float alpha of classes' background color
         :param once_every: int limit the number of samples to draw
+        :param max_samples: int if set, limit the number of plotted samples (same as once_every=num_samples/max_samples)
         :param y_pred: np.array draw predictions markers on top of plot
         :param force: bool if True, always draw the plot, no matter disable_plot() calls
         """
@@ -38,6 +39,13 @@ class PlotsItselfMixin:
 
         plt.figure()
         plot_columns = [c for c in (columns or list(self.df.columns)) if c != 'y']
+
+        if max_samples is not None and once_every == 1:
+            assert max_samples > 0, 'max_samples MUST be > 0'
+            once_every = round(max(1, len(self.X) / max_samples))
+
+        assert once_every >= 1, 'once_every MUST be >= 1'
+
         df = pd.DataFrame(self.df[plot_columns].iloc[::once_every].to_numpy(), columns=plot_columns)
         length = len(df)
 

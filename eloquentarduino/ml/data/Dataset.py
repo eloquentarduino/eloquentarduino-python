@@ -142,6 +142,23 @@ class Dataset(LoadsDatasetMixin, PlotsItselfMixin):
 
         return self
 
+    def label_where(self, label, mask_or_callable, label_name=None):
+        """
+        Set label where mask or the callable is True
+        :param label: int idx of label
+        :param mask_or_callable: numpy.ndarray|callable mask or callable that returns a mask
+        :param label_name: str|None add label name to classmap
+        """
+        if callable(mask_or_callable):
+            mask_or_callable = mask_or_callable(self.df)
+
+        self.y = np.where(mask_or_callable, label, self.y)
+
+        if label_name is not None:
+            self.update_classmap({label: label_name})
+
+        return self
+
     def label_samples(self, label, *ranges):
         """
         Add a label to a subset of the dataset
