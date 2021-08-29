@@ -1,4 +1,5 @@
 import re
+import numpy as np
 from eloquentarduino.ml.data.preprocessing.pipeline.BaseStep import BaseStep
 from eloquentarduino.ml.classification.abstract.Classifier import Classifier
 
@@ -30,6 +31,10 @@ class Classify(BaseStep):
         Transform
         """
         y_pred = self.clf.predict(X)
+
+        # reshape NN predictions (N x M) to 1d array
+        if len(y_pred.shape) > 1 and y_pred.shape[1] > 1:
+            y_pred = np.argmax(y_pred, axis=1)
 
         return y_pred.reshape((-1, 1)), y
 

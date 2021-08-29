@@ -46,7 +46,7 @@ class NeuralNetwork(Classifier):
         """
         Get string representation
         """
-        return self.name or str(self.describe())
+        return '%s (%s)' % (self.name or 'NeuralNetwork', str(self.describe()))
 
     def __repr__(self):
         """
