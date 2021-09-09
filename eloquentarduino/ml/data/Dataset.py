@@ -179,7 +179,7 @@ class Dataset(LoadsDatasetMixin, PlotsItselfMixin):
 
         return self
 
-    def replace(self, X=None, y=None, columns=None):
+    def replace(self, X=None, y=None, columns=None, name=None):
         """
         Replace X and y
         :param X:
@@ -194,7 +194,10 @@ class Dataset(LoadsDatasetMixin, PlotsItselfMixin):
         if columns is None:
             columns = self.columns
 
-        return Dataset(name=self.name, X=X.copy(), y=y.copy(), columns=columns, classmap=self.classmap)
+        if name is None:
+            name = self.name
+
+        return Dataset(name=name, X=X.copy(), y=y.copy(), columns=columns, classmap=self.classmap)
 
     def shuffle(self, **kwargs):
         """
@@ -277,8 +280,11 @@ class Dataset(LoadsDatasetMixin, PlotsItselfMixin):
     def take(self, size):
         """
         Take a subset of the dataset
+        :param size: int number of samples to keep
         """
-        return Dataset(self.name, *self.random(size))
+        X, y = self.random(size)
+
+        return self.replace(X=X, y=y)
 
     def keep_gaussian(self, multiplier=3):
         """

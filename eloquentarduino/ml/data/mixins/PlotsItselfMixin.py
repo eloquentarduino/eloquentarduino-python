@@ -2,6 +2,12 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import pandas as pd
 import numpy as np
+import seaborn as sns
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE, Isomap, LocallyLinearEmbedding
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from umap import UMAP
+from sklearn.model_selection import train_test_split
 
 
 class PlotsItselfMixin:
@@ -79,10 +85,15 @@ class PlotsItselfMixin:
                 ys = np.ones(len(xs)) * zero * scale
                 plt.scatter(xs, ys, marker='.', c=palette[i % len(palette)], s=2)
 
-    def plot_class_distribution(self):
+    def plot_class_distribution(self, force=False):
         """
         Plot histogram of classes' samples
+        :param force: bool if True, always draw the plot, no matter disable_plot() calls
         """
+        if not self._should_plot(force):
+            print('Dataset plotting is disabled, skipping...')
+            return
+
         fig, ax = plt.subplots()
         x = self.class_distribution.keys()
         height = self.class_distribution.values()
@@ -93,6 +104,97 @@ class PlotsItselfMixin:
             ax.set_xticklabels(self.class_labels, rotation=70)
 
         return fig, ax, bar
+
+    def plot_class_durations(self, classes=None, force=False, **kwargs):
+        """
+        Plot freq histogram of each class durations
+        :param classes: list list of classes to plot (default to None)
+        :param force: bool if True, always draw the plot, no matter disable_plot() calls
+        """
+        if not self._should_plot(force):
+            print('Dataset plotting is disabled, skipping...')
+            return
+
+        y_segments = self.y_segments()
+
+        for class_idx in set(self.y):
+            if classes is not None and class_idx not in classes:
+                continue
+
+            durations = [duration for label, start, duration in y_segments if label == class_idx]
+
+            if len(durations) == 0:
+                continue
+
+            class_name = self.classmap.get(class_idx, str(class_idx))
+
+            plt.figure()
+            plt.hist(durations, **kwargs)
+            plt.xlabel('Durations of class %s' % class_name)
+            plt.ylabel('Count')
+
+    def plot_pairplot(self, max_samples=500, force=False, palette=None, **kwargs):
+        """
+        Draw pairplot of features, optionally applying feature rediction
+        :param max_samples: int max number of points to plot
+        :param force: bool if True, always draw the plot, no matter disable_plot() calls
+        :param palette: list|dict|None palette for sns.pairplot()
+        :param kwargs: dict passed to seaborn.pairplot()
+        """
+        if not self._should_plot(force):
+            print('Dataset plotting is disabled, skipping...')
+            return
+
+        if self.length > max_samples:
+            X, _0, y, _1 = train_test_split(self.X, self.y, train_size=max_samples)
+            df = self.replace(X=X, y=y).df
+        else:
+            df = self.df
+
+        if palette is None and self.num_classes < 10:
+            palette = sns.color_palette("tab10")[:self.num_classes]
+
+        sns.pairplot(df.astype({'y': 'int'}), hue='y', palette=palette, **kwargs)
+
+    def dim_reduction(self, pca=0, tsne=0, umap=0, isomap=0, lle=0, lda=False, **kwargs):
+        """
+        Apply dimensionality reduction
+        :param pca: int number of PCA components
+        :param tsne: int number of tSNE components
+        :param umap: int number of UMap components
+        :param isomap: int number of Isomap components
+        :param lle: int number of LocallyLinearEmbedding components
+        :param lda: bool if True, apply LDA
+        :param kwargs: dict arguments for the reducer
+        :return: Dataset
+        """
+        assert pca + tsne + umap + isomap + lle + lda > 0, 'one of pca, tsne, umap, isomap, lda MUST be > 0'
+
+        if pca > 0:
+            n_components = pca
+            reducer = PCA(n_components=n_components, svd_solver='randomized', **kwargs)
+        elif tsne > 0:
+            n_components = tsne
+            reducer = TSNE(n_components=n_components, n_iter_without_progress=50, random_state=0)
+        elif umap > 0:
+            n_components = umap
+            reducer = UMAP(n_components=n_components, **kwargs)
+        elif umap > 0:
+            n_components = umap
+            reducer = UMAP(n_components=n_components, **kwargs)
+        elif isomap > 0:
+            n_components = isomap
+            reducer = Isomap(n_components=n_components, **kwargs)
+        elif lle > 0:
+            n_components = lle
+            reducer = LocallyLinearEmbedding(n_components=n_components, **kwargs)
+        elif lda:
+            n_components = min(self.num_classes - 1, self.num_features)
+            reducer = LinearDiscriminantAnalysis(n_components=n_components, **kwargs)
+
+        X = reducer.fit_transform(self.X, self.y)
+
+        return self.replace(name='%s (%d dim)' % (self.name, n_components), X=X)
 
     def _should_plot(self, force=False):
         """

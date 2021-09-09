@@ -47,7 +47,8 @@ setup(
     'seaborn',
     'micromlgen',
     'imbalanced-learn',
-    'tqdm'
+    'tqdm',
+    'umap-learn'
   ],
   package_data={
     'eloquentarduino': data
