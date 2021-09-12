@@ -23,14 +23,14 @@ class Snoopy:
     def set_dataset(self, dataset):
         """
         Set dataset for training
-        :param dataset: PandasDataset
+        :param dataset: Dataset
         """
         self.dataset = dataset
 
     def set_test_dataset(self, dataset):
         """
         Set dataset for testing
-        :param dataset: PandasDataset
+        :param dataset: Dataset
         """
         self.test_dataset = dataset
 

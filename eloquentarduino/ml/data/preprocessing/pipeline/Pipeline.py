@@ -175,13 +175,17 @@ class Pipeline:
 
         return scores
 
-    def port(self, classname='Pipeline'):
+    def port(self, classname='Pipeline', instance_name=None):
         """
         Port to C++
+        :param classname: str class name of the generated class
+        :param instance_name: str|None if not None, creates an instance of the class with the given name
+        :return: str the generated C++ code
         """
         return jinja('ml/data/preprocessing/pipeline/Pipeline.jinja', {
             'ns': self.name,
             'classname': classname,
+            'instance_name': instance_name,
             'steps': self.steps,
             'input_dim': self.input_dim,
             'output_dim': max([self.output_dim, self.working_dim]),

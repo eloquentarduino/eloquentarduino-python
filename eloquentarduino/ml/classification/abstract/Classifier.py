@@ -45,5 +45,3 @@ class Classifier:
             y_pred = y_pred.argmax(axis=0)
 
         return f1_score(y, y_pred, average='weighted')
-
-

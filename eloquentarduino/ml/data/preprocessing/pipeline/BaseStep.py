@@ -45,7 +45,7 @@ class BaseStep:
         """
     Fit step to input
         """
-        raise NotImplemented
+        raise NotImplementedError('%s::fit' % type(self))
 
     def transform(self, X, y=None):
         """
@@ -60,7 +60,7 @@ class BaseStep:
         Get data for jinja template
         :return: dict
         """
-        raise NotImplemented('get_template_data')
+        raise NotImplementedError('%s::get_template_data' % type(self))
 
     def include_c_library(self, library):
         """

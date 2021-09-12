@@ -117,7 +117,7 @@ class GridSearch:
         :param key: callable custom sorter
         :return: list of sorted results
         """
-        return sorted(self.results, key=lambda result: key(result["y_true"], result["y_pred"]))
+        return sorted(self.results, key=lambda result: key(result["y_true"], result["y_pred"]), reverse=True)
 
     def _copy(self, path):
         """

@@ -105,11 +105,14 @@ class PlotsItselfMixin:
 
         return fig, ax, bar
 
-    def plot_class_durations(self, classes=None, force=False, **kwargs):
+    def plot_class_durations(self, classes=None, bins=20, cumsum=False, force=False, **kwargs):
         """
         Plot freq histogram of each class durations
         :param classes: list list of classes to plot (default to None)
+        :param bins: int number of bins for histogram (default to 20)
+        :param cumsum: bool if True, plots cumsum of distribution (default to False)
         :param force: bool if True, always draw the plot, no matter disable_plot() calls
+        :return: tuple (histogram, edges)
         """
         if not self._should_plot(force):
             print('Dataset plotting is disabled, skipping...')
@@ -122,16 +125,27 @@ class PlotsItselfMixin:
                 continue
 
             durations = [duration for label, start, duration in y_segments if label == class_idx]
+            class_name = self.classmap.get(class_idx, str(class_idx))
 
             if len(durations) == 0:
                 continue
 
-            class_name = self.classmap.get(class_idx, str(class_idx))
-
             plt.figure()
-            plt.hist(durations, **kwargs)
             plt.xlabel('Durations of class %s' % class_name)
-            plt.ylabel('Count')
+
+            if cumsum:
+                hist, xs = np.histogram(durations, bins=bins)
+                plt.plot(xs[:-1], np.cumsum(hist))
+                plt.ylabel('Cumsum(Count)')
+            else:
+                plt.hist(durations, bins=bins, **kwargs)
+                plt.ylabel('Count')
+
+            plt.ylim(ymin=0)
+
+            hist, edges = np.histogram(durations, bins=bins)
+
+            return np.cumsum(hist), edges[:-1]
 
     def plot_pairplot(self, max_samples=500, force=False, palette=None, **kwargs):
         """

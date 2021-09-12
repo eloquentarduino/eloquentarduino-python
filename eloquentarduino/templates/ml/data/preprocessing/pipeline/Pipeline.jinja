@@ -66,6 +66,13 @@
 
 {% endblock %}
 
+
 {% block footer %}
+
+{% if instance_name %}
+static Eloquent::ML::Data::Preprocessing::Pipeline::Ported::{{ ns }}::{{ classname }} {{ instance_name }};
+{% endif %}
+
+
 #endif
 {% endblock %}

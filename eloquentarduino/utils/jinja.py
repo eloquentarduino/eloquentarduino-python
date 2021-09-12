@@ -102,6 +102,9 @@ def prettify(code):
     pretty = re.sub(r'\}\n\n(\s*?)\}', lambda m: '}\n%s}' % m.groups(), pretty)
     # remove ',' before '}'
     pretty = re.sub(r',\s*\}', '}', pretty)
+    # add newline before comment line
+    pretty = re.sub(r'([^}])\n(\s*)//', lambda m: '%s\n\n%s//' % m.groups(), pretty)
+
     return pretty
 
 

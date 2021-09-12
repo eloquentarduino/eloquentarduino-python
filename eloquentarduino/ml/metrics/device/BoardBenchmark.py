@@ -7,9 +7,9 @@ from sklearn.model_selection import cross_validate
 from eloquentarduino.jupyter import Project
 from eloquentarduino.jupyter.project import BoardConfiguration
 from eloquentarduino.jupyter.project.Errors import BadBoardResponseError, BoardBenchmarkAlreadyExists
-from eloquentarduino.ml import Classifier
 from eloquentarduino.ml.data import CheckpointFile
 from eloquentarduino.ml.data import Dataset
+from eloquentarduino.ml.classification.abstract.Classifier import Classifier
 from eloquentarduino.utils import jinja
 
 
