@@ -17,7 +17,6 @@ eloquentarduino/jupyter/project/SerialMonitor.py
 eloquentarduino/jupyter/project/SketchFiles.py
 eloquentarduino/jupyter/project/TeensyCli.py
 eloquentarduino/jupyter/project/__init__.py
-eloquentarduino/ml/Classifier.py
 eloquentarduino/ml/__init__.py
 eloquentarduino/ml/cascading/CascadingClassifier.py
 eloquentarduino/ml/cascading/__init__.py
@@ -50,12 +49,10 @@ eloquentarduino/ml/classification/tensorflow/gridsearch/GridSearchResult.py
 eloquentarduino/ml/classification/tensorflow/gridsearch/__init__.py
 eloquentarduino/ml/data/CheckpointFile.py
 eloquentarduino/ml/data/Dataset.py
-eloquentarduino/ml/data/PandasDataset.py
 eloquentarduino/ml/data/__init__.py
 eloquentarduino/ml/data/mixins/LoadsDatasetMixin.py
 eloquentarduino/ml/data/mixins/PlotsItselfMixin.py
 eloquentarduino/ml/data/mixins/__init__.py
-eloquentarduino/ml/data/preprocessing/BaseStep.py
 eloquentarduino/ml/data/preprocessing/__init__.py
 eloquentarduino/ml/data/preprocessing/pipeline/BaseStep.py
 eloquentarduino/ml/data/preprocessing/pipeline/BoxCox.py
