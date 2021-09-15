@@ -146,6 +146,11 @@ class Pipeline:
         :param X:
         :param y:
         """
+        # if X is a dataset, extract X and y
+        if hasattr(X, 'X') and hasattr(X, 'y'):
+            y = y or X.y
+            X = X.X
+
         return_X_y = y is not None
 
         for step in self.steps:

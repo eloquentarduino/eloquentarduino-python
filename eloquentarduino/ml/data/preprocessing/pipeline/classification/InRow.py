@@ -6,16 +6,16 @@ class InRow(BaseStep):
     """
     Only output a prediction when N predictions in a row agree
     """
-    def __init__(self, n, unkown_class=None, name='InRow'):
+    def __init__(self, n, unsure_class=None, name='InRow'):
         """
         :param n: int number of predictions to agree
-        :param unkown_class: int|None if int, this step will also output "uncertain" class
+        :param unsure_class: int|None if int, this step will also output "uncertain" class
         """
         assert n <= 255, 'n MUST be <= 255'
 
         super().__init__(name)
         self.n = n
-        self.unknown_class = unkown_class
+        self.unsure_class = unsure_class
 
     def fit(self, X, y):
         """
@@ -49,11 +49,11 @@ class InRow(BaseStep):
             if count >= self.n:
                 Xt.append(xi)
                 yt.append(yi)
-            elif self.unknown_class:
-                Xt.append(self.unknown_class)
+            elif self.unsure_class:
+                Xt.append([self.unsure_class])
                 yt.append(yi)
             elif holes:
-                Xt.append(np.nan)
+                Xt.append([np.nan])
                 yt.append(yi)
 
         return np.asarray(Xt), np.asarray(yt) if y is not None else None
