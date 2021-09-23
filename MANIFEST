@@ -82,6 +82,8 @@ eloquentarduino/ml/data/preprocessing/pipeline/classification/Classify.py
 eloquentarduino/ml/data/preprocessing/pipeline/classification/InRow.py
 eloquentarduino/ml/data/preprocessing/pipeline/classification/SmoothClassification.py
 eloquentarduino/ml/data/preprocessing/pipeline/classification/__init__.py
+eloquentarduino/ml/data/preprocessing/pipeline/device/PipelineDeviceResources.py
+eloquentarduino/ml/data/preprocessing/pipeline/device/__init__.py
 eloquentarduino/ml/data/preprocessing/pipeline/outliers/EllipticEnvelope.py
 eloquentarduino/ml/data/preprocessing/pipeline/outliers/KMeansOutlier.py
 eloquentarduino/ml/data/preprocessing/pipeline/outliers/__init__.py
@@ -161,6 +163,7 @@ eloquentarduino/templates/ml/data/preprocessing/pipeline/YeoJohnson.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/kFFT.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/templates/Namespace.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/templates/Step.jinja
+eloquentarduino/templates/on_device/pipeline/Benchmark.ino.jinja
 eloquentarduino/templates/on_device/sklearn/InferenceTime.jinja
 eloquentarduino/templates/on_device/sklearn/Resources.jinja
 eloquentarduino/templates/on_device/sklearn/ResourcesBaseline.jinja
