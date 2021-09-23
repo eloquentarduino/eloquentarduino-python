@@ -195,7 +195,8 @@ class Project:
         memory, memory_max = [int(g) for g in memory_match.groups()] if memory_match is not None else [0, 1]
 
         return {
-            'time': compile_time,
+            'time': compile_time, # @deprecated
+            'compile_time': compile_time,
             'flash': flash,
             'flash_max': flash_max,
             'flash_percent': float(flash) / flash_max,

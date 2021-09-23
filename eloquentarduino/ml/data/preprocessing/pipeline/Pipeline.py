@@ -1,11 +1,14 @@
 import numpy as np
+import pickle
 from copy import copy
+from cached_property import cached_property
 from eloquentarduino.ml.data.Dataset import Dataset
 from eloquentarduino.utils import jinja
 from sklearn.model_selection import cross_validate
 from eloquentarduino.ml.classification.abstract.Classifier import Classifier
 from eloquentarduino.ml.data.preprocessing.pipeline.BaseStep import BaseStep
 from eloquentarduino.ml.data.preprocessing.pipeline.classification.Classify import Classify
+from eloquentarduino.ml.data.preprocessing.pipeline.device.PipelineDeviceResources import PipelineDeviceResources
 
 
 class Pipeline:
@@ -90,6 +93,10 @@ class Pipeline:
         Get list of included libraries
         """
         return [library for step in self.steps for library in step.includes]
+
+    @cached_property
+    def resources(self):
+        return PipelineDeviceResources(self)
 
     def add(self, step):
         """
@@ -197,6 +204,24 @@ class Pipeline:
             'working_dim': max([1, self.working_dim]),
             'includes': self.includes
         }, pretty=True)
+
+    def serialize(self, filename):
+        """
+        Serialize pipeline to pickle file
+        :param filename: str
+        """
+        with open(filename, 'wb') as file:
+            pickle.dump(self, file)
+
+    @staticmethod
+    def deserialize(filename):
+        """
+        Deserialize pipeline to pickle file
+        :param filename: str
+        :return: Pipeline
+        """
+        with open(filename, 'rb') as file:
+            return pickle.load(file)
 
     def _assert_unique_steps(self):
         """

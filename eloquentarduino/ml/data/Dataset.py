@@ -136,9 +136,9 @@ class Dataset(LoadsDatasetMixin, PlotsItselfMixin):
         Remove unlabelled samples
         :return: self
         """
-        idx = (self.y == -1)
-        self.X = self.X[~idx]
-        self.y = self.y[~idx]
+        keep = (self.y >= 0)
+        self.X = self.X[keep]
+        self.y = self.y[keep]
 
         return self
 

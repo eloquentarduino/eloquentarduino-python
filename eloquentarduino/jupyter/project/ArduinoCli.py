@@ -16,6 +16,7 @@ class ArduinoCli:
         self.cwd = os.path.abspath(cwd) if cwd is not None else None
         self.output = None
         self.error = None
+
         if autorun:
             self.run()
 

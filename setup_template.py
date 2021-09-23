@@ -47,7 +47,9 @@ setup(
     'seaborn',
     'micromlgen',
     'imbalanced-learn',
-    'tqdm'
+    'tqdm',
+    'cached-property',
+    'pickle'
   ],
   package_data={
     'eloquentarduino': data

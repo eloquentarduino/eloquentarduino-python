@@ -1,3 +1,4 @@
+import re
 from serial import Serial
 from time import time, sleep
 
@@ -72,6 +73,25 @@ class SerialMonitor:
                 except UnicodeDecodeError:
                     pass
         return buffer
+
+    def read_number(self, search_string='', timeout=5):
+        """
+        Read serial monitor until you find a `search_string = number` pattern
+        :param search_string: str string to look for
+        :param timeout: int
+        :return float
+        """
+        pattern = re.compile(('%s = (-?[0-9.]+)' % search_string).strip())
+        buffer = ''
+
+        for i in range(0, timeout):
+            buffer += self.read(timeout=1)
+            match = pattern.search(buffer)
+
+            if match is not None:
+                return float(match.group(1))
+
+        return 0
 
     def capture_samples(self, dest, samples, append=True, dump=True, interval=0, **kwargs):
         """

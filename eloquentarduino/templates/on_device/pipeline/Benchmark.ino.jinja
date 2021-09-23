@@ -1,0 +1,32 @@
+#include "Pipeline.h"
+
+#define REPEAT 1000
+
+
+uint32_t uselessCounter = 0;
+float x[] = {{ x | to_array }};
+
+
+void setup() {
+    Serial.begin(115200);
+    delay(3000);
+}
+
+void loop() {
+    uint32_t benchmark_start = micros();
+
+    for (uint16_t k = 0; k < REPEAT; k++) {
+        uselessCounter += pipeline.transform(x);
+    }
+
+    float processing_time = micros() - benchmark_start;
+
+    Serial.print("Avg. processing time = ");
+    Serial.print(processing_time / REPEAT);
+    Serial.println(" micros");
+    Serial.print("Userless counter = ");
+    Serial.println(uselessCounter);
+    Serial.println("============");
+
+    delay(1000);
+}

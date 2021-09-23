@@ -181,7 +181,6 @@ class Board:
         """
         Compile sketch
         """
-        #return TeensyCli().run()
         self._assert(port=False)
         return self.cli(['compile', '--verify', '--fqbn', self.fqbn])
 
