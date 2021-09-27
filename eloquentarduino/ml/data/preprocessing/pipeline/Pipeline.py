@@ -223,6 +223,35 @@ class Pipeline:
         with open(filename, 'rb') as file:
             return pickle.load(file)
 
+    def plot_pairplot(self, dataset, num_features=6, **kwargs):
+        """
+        Plot pairplot of extracted features
+        :param dataset: Dataset
+        :param num_features: int number of features to plot
+        """
+        preprocessing_pipeline = self.until("Classify", including=False) if self["Classify"] is not None else self
+        X_pre, y_pre = preprocessing_pipeline.transform(dataset.X, dataset.y)
+        Dataset('Preprocessed', X_pre, y_pre).dim_reduction(umap=num_features).plot_pairplot(**kwargs)
+
+    def plot_lineplot(self, dataset, unknown_value=None, **kwargs):
+        """
+        Plot line plot of dataset with predicted labels at the bottom
+        :param dataset: Dataset
+        :param unknown_value: int|None value to use when InRow didn't produced an output
+        """
+        # when using InRow, we must fill the uncertain predictions
+        if self["InRow"] is not None:
+            pipeline_before_inrow = self.until("InRow", including=False)
+            X_tmp, y_tmp = pipeline_before_inrow.transform(dataset.X, dataset.y)
+            _, y_pred_with_holes = self["InRow"].transform(X_tmp, y_tmp, holes=True)
+            # default to 2 * max(y) + 1 when no prediction
+            unknown_value = unknown_value or max(dataset.y) * 2 + 1
+            y_pred = np.where(np.isnan(y_pred_with_holes), unknown_value, y_pred_with_holes)
+        else:
+            y_pred, y_true = self.transform(dataset.X, dataset.y)
+
+        dataset.plot(y_pred=y_pred.flatten(), **kwargs)
+
     def _assert_unique_steps(self):
         """
         Be sure step names are unique

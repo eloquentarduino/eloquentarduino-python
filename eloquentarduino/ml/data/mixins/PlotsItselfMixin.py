@@ -25,7 +25,7 @@ class PlotsItselfMixin:
         """
         cls.is_plot_disabled = disabled
 
-    def plot(self, title='', columns=None, n_ticks=15, grid=True, fontsize=6, bg_alpha=0.2, once_every=1, max_samples=None, palette=None, y_pred=None, force=False, **kwargs):
+    def plot(self, title='', columns=None, n_ticks=15, grid=True, fontsize=6, bg_alpha=0.2, once_every=1, max_samples=None, palette=None, y_pred=None, force=False, linewidth=1, **kwargs):
         """
         Plot dataframe
         :param title: str title of plot
@@ -38,6 +38,7 @@ class PlotsItselfMixin:
         :param max_samples: int if set, limit the number of plotted samples (same as once_every=num_samples/max_samples)
         :param y_pred: np.array draw predictions markers on top of plot
         :param force: bool if True, always draw the plot, no matter disable_plot() calls
+        :param linewidth: int line width for pandas.plot()
         """
         if not self._should_plot(force):
             print('Dataset plotting is disabled, skipping...')
@@ -55,7 +56,7 @@ class PlotsItselfMixin:
         df = pd.DataFrame(self.df[plot_columns].iloc[::once_every].to_numpy(), columns=plot_columns)
         length = len(df)
 
-        df.plot(title=title, xticks=range(0, length, length // n_ticks), grid=grid, fontsize=fontsize, rot=70, **kwargs)
+        df.plot(title=title, xticks=range(0, length, length // n_ticks), grid=grid, fontsize=fontsize, rot=70, linewidth=linewidth, **kwargs)
 
         # highlight labels
         y = self.y[::once_every]

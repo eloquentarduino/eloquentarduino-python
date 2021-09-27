@@ -48,6 +48,13 @@ class Dataset(LoadsDatasetMixin, PlotsItselfMixin):
         """
         return self.replace(X=self.X[item, :], y=self.y[item], columns=self.columns)
 
+    def __len__(self):
+        """
+        Get length of dataset
+        :return: int
+        """
+        return self.length
+
     @property
     def y_categorical(self):
         """
@@ -198,6 +205,16 @@ class Dataset(LoadsDatasetMixin, PlotsItselfMixin):
             name = self.name
 
         return Dataset(name=name, X=X.copy(), y=y.copy(), columns=columns, classmap=self.classmap)
+
+    def select_columns(self, columns):
+        """
+        Only keep given columns
+        :return: Dataset
+        """
+        column_indices = [i for i, column in enumerate(self.columns) if column in columns]
+        X = self.X[:, column_indices]
+
+        return self.replace(X=X, columns=columns)
 
     def shuffle(self, **kwargs):
         """
