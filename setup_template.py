@@ -50,7 +50,8 @@ setup(
     'tqdm',
     'cached-property',
     'pickle',
-    'umap-learn'
+    'umap-learn',
+    'xgboost'
   ],
   package_data={
     'eloquentarduino': data

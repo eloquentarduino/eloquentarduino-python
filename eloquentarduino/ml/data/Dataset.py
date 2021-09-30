@@ -494,6 +494,16 @@ class Dataset(LoadsDatasetMixin, PlotsItselfMixin):
 
         self.y = y
 
+    def sort_by_class(self):
+        """
+        Sort samples by class.
+        Useful if you have mixed samples and want to "compact" the samples from the same class.
+        This will lose the "transient" dynamics, but should help improve the precision
+        """
+        indices = np.argsort(self.y)
+
+        return self.replace(X=self.X[indices], y=self.y[indices])
+
     def _get_label_id(self, label):
         """
         Get id for a label
