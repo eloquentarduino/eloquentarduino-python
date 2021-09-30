@@ -223,7 +223,7 @@ class Pipeline:
         with open(filename, 'rb') as file:
             return pickle.load(file)
 
-    def plot_pairplot(self, dataset, num_features=6, **kwargs):
+    def plot_pairplot(self, dataset, num_features=0, **kwargs):
         """
         Plot pairplot of extracted features
         :param dataset: Dataset
@@ -231,7 +231,7 @@ class Pipeline:
         """
         preprocessing_pipeline = self.until("Classify", including=False) if self["Classify"] is not None else self
         X_pre, y_pre = preprocessing_pipeline.transform(dataset.X, dataset.y)
-        Dataset('Preprocessed', X_pre, y_pre).dim_reduction(umap=num_features).plot_pairplot(**kwargs)
+        Dataset('Preprocessed', X_pre, y_pre).dim_reduction(umap=num_features, lda=num_features == 0).plot_pairplot(**kwargs)
 
     def plot_lineplot(self, dataset, unknown_value=None, **kwargs):
         """

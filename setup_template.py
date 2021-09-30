@@ -49,7 +49,8 @@ setup(
     'imbalanced-learn',
     'tqdm',
     'cached-property',
-    'pickle'
+    'pickle',
+    'umap-learn'
   ],
   package_data={
     'eloquentarduino': data
