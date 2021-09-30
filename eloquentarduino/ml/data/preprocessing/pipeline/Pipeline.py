@@ -243,7 +243,7 @@ class Pipeline:
         if self["InRow"] is not None:
             pipeline_before_inrow = self.until("InRow", including=False)
             X_tmp, y_tmp = pipeline_before_inrow.transform(dataset.X, dataset.y)
-            _, y_pred_with_holes = self["InRow"].transform(X_tmp, y_tmp, holes=True)
+            y_pred_with_holes, _ = self["InRow"].transform(X_tmp, y_tmp, holes=True)
             # default to 2 * max(y) + 1 when no prediction
             unknown_value = unknown_value or max(dataset.y) * 2 + 1
             y_pred = np.where(np.isnan(y_pred_with_holes), unknown_value, y_pred_with_holes)

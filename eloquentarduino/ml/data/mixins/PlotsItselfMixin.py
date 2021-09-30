@@ -44,22 +44,16 @@ class PlotsItselfMixin:
             print('Dataset plotting is disabled, skipping...')
             return
 
-        plt.figure()
         plot_columns = [c for c in (columns or list(self.df.columns)) if c != 'y']
-
-        if max_samples is not None and once_every == 1:
-            assert max_samples > 0, 'max_samples MUST be > 0'
-            once_every = round(max(1, len(self.X) / max_samples))
-
-        assert once_every >= 1, 'once_every MUST be >= 1'
-
-        df = pd.DataFrame(self.df[plot_columns].iloc[::once_every].to_numpy(), columns=plot_columns)
+        idx = self._subsample_idx(self.y, max_samples)
+        df = pd.DataFrame(self.df[plot_columns].iloc[idx].to_numpy(), columns=plot_columns)
         length = len(df)
 
+        plt.figure()
         df.plot(title=title, xticks=range(0, length, length // n_ticks), grid=grid, fontsize=fontsize, rot=70, linewidth=linewidth, **kwargs)
 
         # highlight labels
-        y = self.y[::once_every]
+        y = self.y[idx]
         loc_run_start = np.empty(len(y), dtype=bool)
         loc_run_start[0] = True
         np.not_equal(y[:-1], y[1:], out=loc_run_start[1:])
@@ -76,14 +70,19 @@ class PlotsItselfMixin:
 
         # plot y_test markers
         if y_pred is not None:
-            hop = len(self.y) // len(y_pred)
+            hop = max(1, length / len(y_pred))
             zero = self.X.min()
             # markers = 'ovsP*+x1<p'
 
+            if len(y_pred) > length:
+                idx = self._subsample_idx(y_pred, length)
+                y_pred = y_pred[idx]
+
             for i, yi in enumerate(set(y_pred)):
                 scale = 1 - i * 0.025 if zero > 0 else 1 + i * 0.025
-                xs = np.argwhere(y_pred == yi).flatten() * hop + hop
+                xs = np.argwhere(y_pred == yi).flatten().astype(float) * hop + hop
                 ys = np.ones(len(xs)) * zero * scale
+
                 plt.scatter(xs, ys, marker='.', c=palette[i % len(palette)], s=2)
 
     def plot_class_distribution(self, force=False):
@@ -220,3 +219,19 @@ class PlotsItselfMixin:
         if self.__class__.is_plot_disabled:
             return False
         return True
+
+    def _subsample_idx(self, array, max_length):
+        """
+        Resize array to a given length at (almost) equally spaced intervals
+        :param array: np.ndarray
+        :param max_length: int
+        :return: np.ndarray
+        """
+        max_length = max_length or 0
+
+        if max_length > 0 and len(array) > max_length:
+            idx = (np.arange(max_length, dtype=float) * len(array) / max_length)
+            idx = np.unique(idx.astype(int))
+
+            return idx
+        return np.arange(len(array))
