@@ -22,13 +22,13 @@ data = ["templates/on_device/pipeline/Benchmark.ino.jinja", "templates/on_device
 setup(
   name = 'eloquentarduino',
   packages = packages,
-  version = '0.1.5',
+  version = '0.1.6',
   license='MIT',
   description = 'A set of utilities to work with Arduino from Python and Jupyter Notebooks',
   author = 'Simone Salerno',
   author_email = 'eloquentarduino@gmail.com',
   url = 'https://github.com/eloquentarduino/eloquentarduino-python',
-  download_url = 'https://github.com/eloquentarduino/eloquentarduino-python/blob/master/dist/eloquentarduino-0.1.5.tar.gz?raw=true',
+  download_url = 'https://github.com/eloquentarduino/eloquentarduino-python/blob/master/dist/eloquentarduino-0.1.6.tar.gz?raw=true',
   keywords = [
     'ML',
     'Jupyter',
@@ -49,7 +49,9 @@ setup(
     'imbalanced-learn',
     'tqdm',
     'cached-property',
-    'pickle'
+    'pickle',
+    'umap-learn',
+    'xgboost'
   ],
   package_data={
     'eloquentarduino': data

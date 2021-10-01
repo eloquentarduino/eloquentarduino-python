@@ -234,4 +234,5 @@ class PlotsItselfMixin:
             idx = np.unique(idx.astype(int))
 
             return idx
+
         return np.arange(len(array))
