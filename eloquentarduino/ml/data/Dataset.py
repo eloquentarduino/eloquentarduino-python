@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.utils import shuffle
 
+from eloquentarduino.utils.jinja import jinja
 from eloquentarduino.ml.data.mixins.LoadsDatasetMixin import LoadsDatasetMixin
 from eloquentarduino.ml.data.mixins.PlotsItselfMixin import PlotsItselfMixin
 
@@ -205,6 +206,13 @@ class Dataset(LoadsDatasetMixin, PlotsItselfMixin):
             name = self.name
 
         return Dataset(name=name, X=X.copy(), y=y.copy(), columns=columns, classmap=self.classmap)
+
+    def clone(self):
+        """
+        Clone dataset
+        :return: Dataset
+        """
+        return self.replace()
 
     def select_columns(self, columns):
         """
@@ -503,6 +511,13 @@ class Dataset(LoadsDatasetMixin, PlotsItselfMixin):
         indices = np.argsort(self.y)
 
         return self.replace(X=self.X[indices], y=self.y[indices])
+
+    def port_classmap(self):
+        """
+        Return C code to translate class id to class label
+        :return: str C code
+        """
+        return jinja('ml/utils/classmap.jinja', {'classmap': {k: v for k, v in self.classmap.items() if k >= 0}})
 
     def _get_label_id(self, label):
         """

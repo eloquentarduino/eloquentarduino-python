@@ -25,6 +25,7 @@ class SketchMagicMixin(MagicMixin):
         filepath = self.path_to(self.arguments.filename)
         self.log('Saving code to %s' % filepath)
         code = jinja_string(code, local_ns, pretty=True)
+
         with open(filepath, 'w', encoding='utf-8') as file:
             file.write(code)
 
