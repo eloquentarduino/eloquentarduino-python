@@ -163,6 +163,7 @@ eloquentarduino/templates/ml/data/preprocessing/pipeline/YeoJohnson.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/kFFT.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/templates/Namespace.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/templates/Step.jinja
+eloquentarduino/templates/ml/utils/classmap.jinja
 eloquentarduino/templates/on_device/pipeline/Benchmark.ino.jinja
 eloquentarduino/templates/on_device/sklearn/InferenceTime.jinja
 eloquentarduino/templates/on_device/sklearn/Resources.jinja
