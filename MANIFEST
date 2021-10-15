@@ -50,6 +50,7 @@ eloquentarduino/ml/classification/tensorflow/gridsearch/__init__.py
 eloquentarduino/ml/data/CheckpointFile.py
 eloquentarduino/ml/data/Dataset.py
 eloquentarduino/ml/data/__init__.py
+eloquentarduino/ml/data/mixins/DropsTimeSeriesOutliersMixin.py
 eloquentarduino/ml/data/mixins/LoadsDatasetMixin.py
 eloquentarduino/ml/data/mixins/PlotsItselfMixin.py
 eloquentarduino/ml/data/mixins/__init__.py
