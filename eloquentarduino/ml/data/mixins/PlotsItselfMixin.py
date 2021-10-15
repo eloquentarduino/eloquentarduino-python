@@ -85,6 +85,13 @@ class PlotsItselfMixin:
 
                 plt.scatter(xs, ys, marker='.', c=palette[i % len(palette)], s=2)
 
+    def plot_each_class(self, **kwargs):
+        """Plot each class on its own"""
+        for yi in sorted(list(set(self.y))):
+            mask = self.y == yi
+            title = self.classmap.get(yi, "Class #%d" % yi)
+            self.replace().mask(mask).plot(title=title, **kwargs)
+
     def plot_class_distribution(self, force=False):
         """
         Plot histogram of classes' samples

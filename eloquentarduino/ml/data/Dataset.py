@@ -11,9 +11,10 @@ from sklearn.utils import shuffle
 from eloquentarduino.utils.jinja import jinja
 from eloquentarduino.ml.data.mixins.LoadsDatasetMixin import LoadsDatasetMixin
 from eloquentarduino.ml.data.mixins.PlotsItselfMixin import PlotsItselfMixin
+from eloquentarduino.ml.data.mixins.DropsTimeSeriesOutliersMixin import DropsTimeSeriesOutliersMixin
 
 
-class Dataset(LoadsDatasetMixin, PlotsItselfMixin):
+class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin):
     """
     Abstraction of a dataset
     """
@@ -259,6 +260,8 @@ class Dataset(LoadsDatasetMixin, PlotsItselfMixin):
         """
         self.X = self.X[mask]
         self.y = self.y[mask]
+
+        return self
 
     def random(self, size=0):
         """
