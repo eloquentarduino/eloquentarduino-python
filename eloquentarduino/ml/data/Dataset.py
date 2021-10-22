@@ -417,6 +417,60 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
 
         return chunked
 
+    def in_sequential_order(self):
+        """
+        Rearrange data so that all the samples for each class
+        are on the same "block"
+        :return: Dataset
+        """
+        X = None
+        y = None
+
+        for class_idx in sorted(list(set(self.y))):
+            Xi = self.X[self.y == class_idx]
+            yi = np.ones(len(Xi)) * class_idx
+
+            if X is None:
+                X = Xi
+                y = yi
+            else:
+                X = np.vstack((X, Xi))
+                y = np.concatenate((y, yi))
+
+        return self.replace(X=X, y=y)
+
+    def train_test_split_sequential(self, test_size=0.33):
+        """
+        Split data into train/test keeping the time sequence from original data
+        :param test_size: float in range 0-1
+        :return: Dataset
+        """
+        X_train, X_test, y_train, y_test = None, None, None, None
+
+        for class_idx in sorted(list(set(self.y))):
+            Xi = self.X[self.y == class_idx]
+            test_split = int(len(Xi) * test_size)
+            Xi_train = Xi[:-test_split]
+            Xi_test = Xi[-test_split:]
+            yi_train = np.ones(len(Xi_train)) * class_idx
+            yi_test = np.ones(len(Xi_test)) * class_idx
+
+            if X_train is None:
+                X_train = Xi_train
+                X_test = Xi_test
+                y_train = yi_train
+                y_test = yi_test
+            else:
+                X_train = np.vstack((X_train, Xi_train))
+                X_test = np.vstack((X_test, Xi_test))
+                y_train = np.concatenate((y_train, yi_train))
+                y_test = np.concatenate((y_test, yi_test))
+
+        assert len(X_train) == len(y_train), 'something went wrong in training dataset'
+        assert len(X_test) == len(y_test), 'something went wrong in testing dataset'
+
+        return self.replace(X=X_train, y=y_train), self.replace(X=X_test, y=y_test)
+
     def train_test_split_chunks(self, chunk_size, test_size=0.33):
         """
         Split data in train/test considering chunks of data
@@ -503,7 +557,7 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
                     continue
                 y[start - pad: start + width + pad] = label
 
-        self.y = y
+        return self.replace(y=y)
 
     def sort_by_class(self):
         """

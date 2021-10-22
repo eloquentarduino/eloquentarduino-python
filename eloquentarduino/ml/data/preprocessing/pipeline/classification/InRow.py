@@ -16,6 +16,7 @@ class InRow(BaseStep):
         super().__init__(name)
         self.n = n
         self.unsure_class = unsure_class
+        self.missing_rate = 0
 
     def fit(self, X, y):
         """
@@ -36,6 +37,7 @@ class InRow(BaseStep):
         """
         count = 0
         current = -1
+        predictions = 0
         Xt = []
         yt = []
 
@@ -47,6 +49,8 @@ class InRow(BaseStep):
             count += 1
 
             if count >= self.n:
+                predictions += 1
+
                 Xt.append(xi)
                 yt.append(yi)
             elif self.unsure_class:
@@ -55,6 +59,9 @@ class InRow(BaseStep):
             elif holes:
                 Xt.append([np.nan])
                 yt.append(yi)
+
+        # keep track of missing rate
+        self.missing_rate = 1 - predictions / max(1, len(X))
 
         return np.asarray(Xt), np.asarray(yt) if y is not None else None
 

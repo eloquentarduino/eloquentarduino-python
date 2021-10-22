@@ -6,6 +6,8 @@ from sklearn.metrics import accuracy_score
 from tqdm import tqdm
 
 from eloquentarduino.ml.data.preprocessing.pipeline import Pipeline
+from eloquentarduino.ml.data.preprocessing.pipeline.search.GridSearchResult import GridSearchResult
+from eloquentarduino.ml.data.preprocessing.pipeline.search.GridSearchResultCollection import GridSearchResultCollection
 
 
 def _evaluate_pipeline(pipeline, test, metric):
@@ -18,12 +20,12 @@ def _evaluate_pipeline(pipeline, test, metric):
     except ValueError:
         return None
 
-    return {
+    return GridSearchResult({
         "pipeline": pipeline,
         "score": metric(y_true, y_pred),
         "y_true": y_true,
         "y_pred": y_pred
-    }
+    })
 
 
 class GridSearch:
@@ -109,7 +111,7 @@ class GridSearch:
 
         self.results = sorted([r for r in results if r is not None], key=lambda result: result["score"], reverse=True)
 
-        return self.results
+        return GridSearchResultCollection(self.results)
 
     def sort_by(self, key):
         """
