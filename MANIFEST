@@ -89,6 +89,8 @@ eloquentarduino/ml/data/preprocessing/pipeline/outliers/EllipticEnvelope.py
 eloquentarduino/ml/data/preprocessing/pipeline/outliers/KMeansOutlier.py
 eloquentarduino/ml/data/preprocessing/pipeline/outliers/__init__.py
 eloquentarduino/ml/data/preprocessing/pipeline/search/GridSearch.py
+eloquentarduino/ml/data/preprocessing/pipeline/search/GridSearchResult.py
+eloquentarduino/ml/data/preprocessing/pipeline/search/GridSearchResultCollection.py
 eloquentarduino/ml/data/preprocessing/pipeline/search/__init__.py
 eloquentarduino/ml/data/preprocessing/pipeline/search/metrics.py
 eloquentarduino/ml/metrics/__init__.py
