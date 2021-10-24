@@ -126,6 +126,7 @@ class PlotsItselfMixin:
             return
 
         y_segments = self.y_segments()
+        results = []
 
         for class_idx in set(self.y):
             if classes is not None and class_idx not in classes:
@@ -152,7 +153,13 @@ class PlotsItselfMixin:
 
             hist, edges = np.histogram(durations, bins=bins)
 
-            return np.cumsum(hist), edges[:-1]
+            results.append({
+                "class": class_idx,
+                "cumsum": np.cumsum(hist),
+                "edges": edges[:-1]
+            })
+
+        return results
 
     def plot_pairplot(self, max_samples=500, force=False, palette=None, **kwargs):
         """
