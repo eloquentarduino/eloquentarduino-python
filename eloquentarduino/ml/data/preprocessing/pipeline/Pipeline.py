@@ -26,6 +26,7 @@ class Pipeline:
         assert isinstance(steps, list), 'steps MUST be a list'
 
         self.name = name
+        self.source_dataset = dataset
         self.X = dataset.X.copy()
         self.y = dataset.y.copy()
         self.steps = []
@@ -49,13 +50,39 @@ class Pipeline:
 
     def __getitem__(self, item):
         """
-        Get step by name
-        :param item: str
-        :return: Step|None
+        Get a single item (by index or name) or a slice of the pipeline
+        :param item: int|str|slice
+        :return: step|Pipeline
         """
-        step = [step for step in self.steps if step.name == item]
+        # get by index
+        if isinstance(item, int):
+            return self.steps[item]
 
-        return step[0] if len(step) == 1 else None
+        # get by name
+        elif isinstance(item, str):
+            return [step for step in self.steps if step.name == item][0]
+
+        # get by slice
+        elif isinstance(item, slice):
+            # start
+            if isinstance(item.start, int):
+                start = item.start
+            elif isinstance(item.start, str):
+                start = [i for i, step in enumerate(self.steps) if step.name == item.start][0]
+            else:
+                start = 0
+
+            # end
+            if isinstance(item.stop, int):
+                stop = item.stop
+            elif isinstance(item.stop, str):
+                stop = [i for i, step in enumerate(self.steps) if step.name == item.stop][0] + 1
+            else:
+                stop = len(self.steps)
+
+            return Pipeline("SliceOf%s" % self.name, self.source_dataset, [copy(step) for step in self.steps[start:stop]])
+        else:
+            raise AssertionError("item MUST be either an int, a string or a slice: %s given" % str(type(item)))
 
     @property
     def dataset(self):
@@ -113,6 +140,7 @@ class Pipeline:
     def until(self, step_name, including=True, clone=True):
         """
         Return a pipeline up until the given step
+        @deprecated 0.1.11
         :param step_name: str
         :param including: bool if True, the given step will be included
         :param clone: bool if True, steps will be cloned

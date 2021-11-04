@@ -48,7 +48,7 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
         """
         Access slice of data
         """
-        return self.replace(X=self.X[item, :], y=self.y[item], columns=self.columns)
+        return self.replace(X=self.X[item, :], y=self.y[item])
 
     def __len__(self):
         """
@@ -68,7 +68,15 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
     @property
     def length(self):
         """
-        Get dataset length
+        Get number of samples
+        """
+        return self.num_samples
+
+    @property
+    def num_samples(self):
+        """
+        Get number of samples
+        :return: int
         """
         return len(self.X)
 
@@ -136,20 +144,20 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
     def train_test_split(self, **kwargs):
         """
         Random train/test split
+        @breaking-change 0.1.11 return datasets instead of raw arrays
         :return: tuple (X_train, X_test, y_train, y_test)
         """
-        return train_test_split(self.X, self.y, **kwargs)
+        X_train, X_test, y_train, y_test = train_test_split(self.X, self.y, **kwargs)
+
+        return self.replace(X=X_train, y=y_train, name='%s train' % self.name), self.replace(X=X_test, y=y_test, name='%s test' % self.name)
 
     def drop_unlabelled(self):
         """
         Remove unlabelled samples
-        :return: self
+        @breaking-change 0.1.11 return a new Dataset instead of modifying in-place
+        :return: Dataset
         """
-        keep = (self.y >= 0)
-        self.X = self.X[keep]
-        self.y = self.y[keep]
-
-        return self
+        return self.mask(self.y >= 0)
 
     def label_where(self, label, mask_or_callable, label_name=None):
         """
@@ -173,22 +181,29 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
 
         return self
 
-    def label_samples(self, label, *ranges):
+    def label_samples(self, label, *ranges, **kwargs):
         """
         Add a label to a subset of the dataset
-        :param label: str name of the given samples
+        :param label: str or int name of the given samples
         :param ranges: list of (start, end) tuples
         :return: self
         """
-        label_id = self._get_label_id(label)
-        self.classmap[label_id] = label
+        if isinstance(label, str):
+            label_id = self._get_label_id(label)
+            self.classmap[label_id] = label
+        else:
+            label_id = label
+            label_name = kwargs.get('label_name')
+
+            if label_name:
+                self.classmap[label_id] = label_name
 
         for start, end in ranges:
             self.y[start:end] = label_id
 
         return self
 
-    def replace(self, X=None, y=None, columns=None, name=None):
+    def replace(self, X=None, y=None, columns=None, name=None, classmap=None):
         """
         Replace X and y
         :param X:
@@ -206,7 +221,10 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
         if name is None:
             name = self.name
 
-        return Dataset(name=name, X=X.copy(), y=y.copy(), columns=columns, classmap=self.classmap)
+        if classmap is None:
+            classmap = self.classmap
+
+        return Dataset(name=name, X=X.copy(), y=y.copy(), columns=columns, classmap=classmap)
 
     def clone(self):
         """
@@ -218,23 +236,26 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
     def select_columns(self, columns):
         """
         Only keep given columns
+        :param columns: list of int or list of str
         :return: Dataset
         """
-        column_indices = [i for i, column in enumerate(self.columns) if column in columns]
+        column_indices = [i for i, column in enumerate(self.columns) if column in columns or i in columns]
+        column_names = [column for i, column in enumerate(self.columns) if column in columns or i in columns]
         X = self.X[:, column_indices]
 
-        return self.replace(X=X, columns=columns)
+        return self.replace(X=X, columns=column_names)
 
     def shuffle(self, **kwargs):
         """
         Shuffle X and y
+        @breaking-change 0.1.11 return new copy of self instead of in-place
         :return: Dataset
         """
-        self.X, self.y = shuffle(self.X, self.y, **kwargs)
+        X, y = shuffle(self.X, self.y, **kwargs)
 
-        return self
+        return self.replace(X=X, y=y)
 
-    def merge(self, other, *args):
+    def merge(self, other, *others):
         """
         Merge datasets with the same structure
         :param other: Dataset
@@ -242,41 +263,44 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
         assert isinstance(other, Dataset), 'you can only merge Datasets (%s given)' % str(type(other))
         assert self.num_features == other.num_features, 'you can only merge Datasets with the same number of features'
 
-        self.X = np.vstack((self.X, other.X))
-        self.y = np.concatenate((self.y, other.y))
+        X = np.vstack((self.X, other.X))
+        y = np.concatenate((self.y, other.y))
+        classmap = {**other.classmap, **self.classmap}
+        merged = self.replace(X=X, y=y, classmap=classmap)
 
-        # merge classmaps
-        for k, v in other.classmap.items():
-            self.classmap.setdefault(k, v)
+        for other in others:
+            merged = merged.merge(other)
 
-        for other in args:
-            self.merge(other)
+        return merged
 
-        return self
-
-    def mask(self, mask):
+    def mask(self, mask_or_callable):
         """
         Mask X and y
+        @breaking-chage 0.1.11 return new dataset instead of in-place
+        :param mask_or_callable: numpy.ndarray or callable
+        :returns: Dataset
         """
-        self.X = self.X[mask]
-        self.y = self.y[mask]
+        if callable(mask_or_callable):
+            mask = mask_or_callable(self.df)
 
-        return self
+        return self.replace(X=self.X[mask], y=self.y[mask])
 
     def random(self, size=0):
         """
         Get random samples
         :param size: int number of samples to return
+        :returns: Dataset
         """
         if size == 0:
             size = self.length
 
         idx = np.random.permutation(self.length)[:size]
-        return self.X[idx], self.y[idx]
+
+        return self.replace(X=self.X[idx], y=self.y[idx])
 
     def intermix(self, chunk_size, *args, **kwargs):
         """
-        @deprecated
+        @deprecated 0.1.11
         """
         return self.mix(chunk_size, *args, **kwargs)
 
@@ -308,6 +332,7 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
     def take(self, size):
         """
         Take a subset of the dataset
+        @deprecated 0.1.11
         :param size: int number of samples to keep
         """
         X, y = self.random(size)
@@ -317,6 +342,10 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
     def keep_gaussian(self, multiplier=3):
         """
         Discard outliers based on variance
+        @experimental
+        @breaking-change 0.1.11 return new instance instead of in-place
+        :param multiplier: float how many std to keep
+        :returns: self
         """
         mean = self.X.mean(axis=0)
         std = self.X.std(axis=0)
@@ -324,12 +353,12 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
         upper = mean + multiplier * std
         keep = np.all((self.X >= lower) & (self.X <= upper), axis=1)
 
-        self.X = self.X[keep]
-        self.y = self.y[keep]
+        return self.mask(keep)
 
     def split(self, test=0, validation=0, return_empty=True, shuffle=True):
         """
         Split array into train, validation, test
+        @deprecated 0.1.11
         :param test: float test size percent
         :param validation: float validation size percent
         :param return_empty: bool if empty splits should be returned
@@ -397,6 +426,7 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
     def chunk(self, chunk_size, shuffle=False):
         """
         Chunk each class samples
+        @deprecated 0.1.11
         :param chunk_size: int
         :param shuffle: bool
         """
@@ -421,6 +451,7 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
         """
         Rearrange data so that all the samples for each class
         are on the same "block"
+        @deprecated 0.1.11 same as sort_by_class()
         :return: Dataset
         """
         X = None
@@ -504,6 +535,12 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
     def fill_holes(self, min_width, max_hop, direction='right', labels=None):
         """
         Fill holes in label column
+        @breaking-change 0.1.11 return new instance instead of in-place
+        :param min_width: int
+        :param max_hop: int
+        :param direction: str
+        :param labels: list
+        :returns: Dataset
         """
         distribution = self.y_segments()
         values = [v for v, s, l in distribution]
@@ -527,17 +564,25 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
                     continue
                 y[start + width1:start + width1 + hop] = v_start
 
-        self.y = y
+        return self.replace(y=y)
 
     def expand_label(self, label, pad, min_width=0, direction='right'):
         """
         Expand given label to neighbor samples
+        :param label: int or str
+        :param pad: int
+        :param min_width: int
+        :param direction: str
+        :returns: Dataset
         """
         distribution = self.y_segments()
         values = [v for v, s, l in distribution]
         starts = [s for v, s, l in distribution]
         lengths = [l for v, s, l in distribution]
         y = self.y.copy()
+
+        if isinstance(label, str):
+            label = self._get_label_id(label)
 
         if direction == 'right':
             for v, width, start in zip(values[:-1], lengths[:-1], starts[:-1]):
@@ -581,6 +626,9 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
         Get id for a label
         :param label: str
         """
+        if isinstance(label, int):
+            return label
+
         for lid, lab in self.classmap.items():
             if label == lab:
                 return lid
