@@ -18,6 +18,7 @@ eloquentarduino/jupyter/project/SketchFiles.py
 eloquentarduino/jupyter/project/TeensyCli.py
 eloquentarduino/jupyter/project/__init__.py
 eloquentarduino/ml/__init__.py
+eloquentarduino/ml/commons.py
 eloquentarduino/ml/cascading/CascadingClassifier.py
 eloquentarduino/ml/cascading/__init__.py
 eloquentarduino/ml/classification/__init__.py
