@@ -54,31 +54,19 @@ class Pipeline:
         :param item: int|str|slice
         :return: step|Pipeline
         """
-        # get by index
-        if isinstance(item, int):
-            return self.steps[item]
+        # get by index or name
+        if isinstance(item, int) or isinstance(item, str):
+            i, step = self._find_step(item)
 
-        # get by name
-        elif isinstance(item, str):
-            return [step for step in self.steps if step.name == item][0]
+            return step
 
         # get by slice
         elif isinstance(item, slice):
-            # start
-            if isinstance(item.start, int):
-                start = item.start
-            elif isinstance(item.start, str):
-                start = [i for i, step in enumerate(self.steps) if step.name == item.start][0]
-            else:
-                start = 0
+            start, _ = self._find_step(item.start)
+            start = max(start, 0)
 
-            # end
-            if isinstance(item.stop, int):
-                stop = item.stop
-            elif isinstance(item.stop, str):
-                stop = [i for i, step in enumerate(self.steps) if step.name == item.stop][0] + 1
-            else:
-                stop = len(self.steps)
+            stop, _ = self._find_step(item.stop)
+            stop = stop + 1 if stop > -1 else len(self.steps)
 
             return Pipeline("SliceOf%s" % self.name, self.source_dataset, [copy(step) for step in self.steps[start:stop]])
         else:
@@ -287,5 +275,22 @@ class Pipeline:
         step_names = [step.name for step in self.steps]
 
         assert len(step_names) == len(set(step_names)), 'steps names MUST be unique'
+
+    def _find_step(self, index_or_name):
+        """
+        Get step by index or name
+        :param index_or_name: int or str
+        :return: index, step
+        """
+        if isinstance(index_or_name, int):
+            if index_or_name >= len(self.steps):
+                return -1, None
+            return index_or_name, self.steps[index_or_name]
+
+        if isinstance(index_or_name, str):
+            match = [(i, step) for i, step in enumerate(self.steps) if step.name == index_or_name]
+            return match[0] if len(match) else -1, None
+
+        raise ValueError("Invalid index_or_name: %s" % str(index_or_name))
 
 

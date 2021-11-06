@@ -22,5 +22,3 @@ from eloquentarduino.ml.data.preprocessing.pipeline.YeoJohnson import YeoJohnson
 
 from eloquentarduino.ml.data.preprocessing.pipeline.classification import *
 from eloquentarduino.ml.data.preprocessing.pipeline.outliers import *
-
-from eloquentarduino.ml.data.preprocessing.pipeline.DeprecatedPipelineGridSearch import PipelineGridSearch

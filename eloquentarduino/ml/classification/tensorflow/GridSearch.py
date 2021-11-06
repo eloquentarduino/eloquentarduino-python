@@ -88,19 +88,21 @@ class GridSearch(GridSearchBase):
         :param branches: list
         """
         for layer in branches:
-            assert layer is None or isinstance(layer, Layer), 'all branches MUST be instantiated via GridSearch.layers factory'
+            assert layer is None or isinstance(layer, Layer) or isinstance(layer, list), 'all branches MUST be instantiated via GridSearch.layers factory'
 
         new_combinations = []
 
-        for layer in branches:
+        for branch in branches:
             branch_combinations = []
 
-            if layer is None:
+            if branch is None:
                 branch_combinations = [copy(combination) for combination in self.combinations]
             else:
-                for hyper_layer in layer.enumerate():
-                    branch_combinations += [copy(combination) + [copy(hyper_layer)] for combination in
-                                            self.combinations]
+                if not isinstance(branch, list):
+                    branch = [branch]
+
+                branch_combinations += [copy(combination) + [copy(layer) for layer in branch] for combination in
+                                        self.combinations]
 
             new_combinations += branch_combinations
 

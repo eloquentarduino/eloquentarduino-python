@@ -282,6 +282,8 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
         """
         if callable(mask_or_callable):
             mask = mask_or_callable(self.df)
+        else:
+            mask = mask_or_callable
 
         return self.replace(X=self.X[mask], y=self.y[mask])
 
