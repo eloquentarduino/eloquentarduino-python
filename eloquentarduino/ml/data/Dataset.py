@@ -179,6 +179,16 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
         """
         return self.mask(self.y >= 0)
 
+    def drop_class(self, class_idx):
+        """
+        Drop all samples from a given class
+        :param class_idx: int|str
+        :return: Dataset
+        """
+        class_idx = self._get_label_id(class_idx)
+
+        return self.mask(self.y != class_idx)
+
     def drop_out_of_classmap(self):
         """
         Delete samples where labels are not in classmap
