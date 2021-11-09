@@ -55,12 +55,12 @@ eloquentarduino/ml/data/mixins/DropsTimeSeriesOutliersMixin.py
 eloquentarduino/ml/data/mixins/LoadsDatasetMixin.py
 eloquentarduino/ml/data/mixins/PlotsItselfMixin.py
 eloquentarduino/ml/data/mixins/__init__.py
+eloquentarduino/ml/data/mixins/dtwnumba.py
 eloquentarduino/ml/data/preprocessing/__init__.py
 eloquentarduino/ml/data/preprocessing/pipeline/BaseStep.py
 eloquentarduino/ml/data/preprocessing/pipeline/BoxCox.py
 eloquentarduino/ml/data/preprocessing/pipeline/CrossDiff.py
 eloquentarduino/ml/data/preprocessing/pipeline/DFT.py
-eloquentarduino/ml/data/preprocessing/pipeline/DeprecatedPipelineGridSearch.py
 eloquentarduino/ml/data/preprocessing/pipeline/Diff.py
 eloquentarduino/ml/data/preprocessing/pipeline/DropFeatures.py
 eloquentarduino/ml/data/preprocessing/pipeline/EWMA.py
