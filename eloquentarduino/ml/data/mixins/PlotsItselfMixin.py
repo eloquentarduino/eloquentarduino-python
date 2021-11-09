@@ -102,7 +102,7 @@ class PlotsItselfMixin:
             return
 
         fig, ax = plt.subplots()
-        x = self.class_distribution.keys()
+        x = range(self.num_classes)
         height = self.class_distribution.values()
         bar = plt.bar(x, height)
 

@@ -89,13 +89,24 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
         return reduce(lambda x, prod: x * prod, self.X.shape[1:], 1)
 
     @property
+    def labels(self):
+        """
+        Get labels
+
+        Returns
+        -------
+            list of ints
+        """
+        return sorted(list(set(self.y.astype(np.int))))
+
+    @property
     def num_classes(self):
         """
         Get number of classes
         :return: int
         """
         # account for one-hot encoding
-        return len(np.unique(self.y)) if len(self.y.shape) == 1 else self.y.shape[1]
+        return len(self.labels) if len(self.y.shape) == 1 else self.y.shape[1]
 
     @property
     def shape(self):
@@ -103,6 +114,14 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
         Get X shape
         """
         return self.X.shape
+
+    @property
+    def classes(self):
+        """
+        Get list of classes, sorted
+        :return: list
+        """
+        return sorted(list(set(self.y)))
 
     @property
     def df(self):
@@ -121,7 +140,8 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
         """
         Get labels of classes
         """
-        return [label for idx, label in self.classmap.items() if idx >= 0]
+        labels = self.labels
+        return [label for idx, label in self.classmap.items() if idx >= 0 and idx in labels]
 
     @property
     def class_distribution(self):
@@ -158,6 +178,14 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
         :return: Dataset
         """
         return self.mask(self.y >= 0)
+
+    def drop_out_of_classmap(self):
+        """
+        Delete samples where labels are not in classmap
+        """
+        mask = np.isin(self.y, list(self.classmap.keys()))
+
+        return self.mask(mask)
 
     def label_where(self, label, mask_or_callable, label_name=None):
         """
@@ -615,6 +643,40 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
         indices = np.argsort(self.y)
 
         return self.replace(X=self.X[indices], y=self.y[indices])
+
+    def merge_classes(self, *args):
+        """
+        Merge multiple classes into one
+
+        Returns
+        -------
+            Dataset with merged classes
+        """
+        common_class = self._get_label_id(args[0])
+        clone = self.replace()
+
+        for other_class in args[1:]:
+            other_class_id = self._get_label_id(other_class)
+
+            assert other_class_id < self.num_classes, "class '%s' not found, classmap is %s" % (other_class, str(self.classmap))
+
+            clone.y[clone.y == other_class_id] = common_class
+
+            # @todo
+            #if other_class_id in self.classmap:
+            #    del clone.classmap[other_class_id]
+
+        return clone
+
+    def iterate_classes(self):
+        """
+        Iterate over classes
+        :return: iterator over yi, Xi
+        """
+        for yi in self.classes:
+            Xi = self.X[self.y == yi]
+
+            yield yi, Xi
 
     def port_classmap(self):
         """
