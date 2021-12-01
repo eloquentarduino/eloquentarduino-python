@@ -198,7 +198,10 @@ class PlotsItselfMixin:
         """
         assert pca + tsne + umap + isomap + lle + lda > 0, 'one of pca, tsne, umap, isomap, lda MUST be > 0'
 
-        if pca > 0:
+        if lda:
+            n_components = min(self.num_classes - 1, self.num_features)
+            reducer = LinearDiscriminantAnalysis(n_components=n_components, **kwargs)
+        elif pca > 0:
             n_components = pca
             reducer = PCA(n_components=n_components, svd_solver='randomized', **kwargs)
         elif tsne > 0:
@@ -216,9 +219,6 @@ class PlotsItselfMixin:
         elif lle > 0:
             n_components = lle
             reducer = LocallyLinearEmbedding(n_components=n_components, **kwargs)
-        elif lda:
-            n_components = min(self.num_classes - 1, self.num_features)
-            reducer = LinearDiscriminantAnalysis(n_components=n_components, **kwargs)
 
         X = reducer.fit_transform(self.X, self.y)
 

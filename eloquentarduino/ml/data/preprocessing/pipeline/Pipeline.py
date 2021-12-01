@@ -247,7 +247,10 @@ class Pipeline:
         """
         preprocessing_pipeline = self.until("Classify", including=False) if self["Classify"] is not None else self
         X_pre, y_pre = preprocessing_pipeline.transform(dataset.X, dataset.y)
-        Dataset('Preprocessed', X_pre, y_pre).dim_reduction(umap=num_features, lda=num_features == 0).plot_pairplot(**kwargs)
+
+        return Dataset('Preprocessed', X_pre, y_pre)\
+            .dim_reduction(umap=num_features, lda=(num_features == 0))\
+            .plot_pairplot(**kwargs)
 
     def plot_lineplot(self, dataset, unknown_value=None, **kwargs):
         """

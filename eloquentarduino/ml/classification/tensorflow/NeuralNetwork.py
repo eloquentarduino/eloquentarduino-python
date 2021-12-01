@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from copy import copy
-from tensorflow.keras.utils import to_categorical
+from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
 from tinymlgen import port
 from functools import reduce
@@ -60,6 +60,7 @@ class NeuralNetwork(Classifier):
 
     @property
     def num_classes(self):
+        print('nn num_classes', self.y.shape)
         return self.y.shape[1]
 
     @property
@@ -314,6 +315,6 @@ class NeuralNetwork(Classifier):
         :param y:
         """
         if len(y.shape) == 1 or y.shape[1] == 1:
-            return to_categorical(y.astype(np.int).flatten())
+            return OneHotEncoder(handle_unknown='ignore').fit_transform(y.reshape(-1, 1)).toarray()
 
         return y

@@ -17,7 +17,10 @@ def _evaluate_pipeline(pipeline, test, metric):
     try:
         y_pred, y_true = pipeline.fit().transform(test.X, test.y)
         y_pred = y_pred.flatten()
-    except ValueError:
+    except ValueError as ex:
+        print("Pipeline error")
+        print("Pipeline", pipeline)
+        print("Error", ex)
         return None
 
     return GridSearchResult({
