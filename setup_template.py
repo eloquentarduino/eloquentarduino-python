@@ -49,7 +49,6 @@ setup(
     'imbalanced-learn',
     'tqdm',
     'cached-property',
-    'pickle',
     'umap-learn',
     'xgboost'
   ],

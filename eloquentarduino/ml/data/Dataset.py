@@ -161,6 +161,17 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
 
         return self
 
+    def set_classmap(self, classmap):
+        """
+        Update mapping from class id to class name
+        :param classmap: dict
+        :return: self
+        """
+        assert isinstance(classmap, dict), 'classmap MUST be a dict'
+        self.classmap = classmap
+
+        return self
+
     def train_test_split(self, **kwargs):
         """
         Random train/test split
@@ -186,14 +197,20 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
         :return: Dataset
         """
         class_idx = self._get_label_id(class_idx)
+        mask = (self.y != class_idx)
+        print('drop_class', class_idx)
+        print('dropping...', (~mask).sum())
 
-        return self.mask(self.y != class_idx)
+        return self.mask(mask)
 
     def drop_out_of_classmap(self):
         """
         Delete samples where labels are not in classmap
         """
-        mask = np.isin(self.y, list(self.classmap.keys()))
+        mask = np.zeros(len(self), dtype=np.bool)
+
+        for idx in self.classmap.keys():
+            mask = np.logical_or(mask, self.y == idx)
 
         return self.mask(mask)
 
