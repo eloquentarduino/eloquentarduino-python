@@ -204,11 +204,13 @@ class NeuralNetwork(Classifier):
         for i, layer_definition in enumerate(self.layer_definitions):
             kwargs = layer_definition.kwargs
 
+            # @todo is this correct?
+            # elif i == 0 and 'input_shape' not in kwargs:
+            if i == 0:
+                kwargs['input_shape'] = X.shape[1:]
+
             if kwargs.get('units', 0) == 'num_classes':
                 kwargs['units'] = y.shape[1]
-
-            if i == 0 and 'input_shape' not in kwargs:
-                kwargs['input_shape'] = X.shape[1:]
 
             self.sequential.add(layer_definition.instantiate())
 
