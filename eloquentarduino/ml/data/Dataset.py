@@ -1,4 +1,5 @@
 import random
+from deprecation import deprecated
 from functools import reduce
 
 import imblearn.under_sampling
@@ -12,6 +13,12 @@ from eloquentarduino.utils.jinja import jinja
 from eloquentarduino.ml.data.mixins.LoadsDatasetMixin import LoadsDatasetMixin
 from eloquentarduino.ml.data.mixins.PlotsItselfMixin import PlotsItselfMixin
 from eloquentarduino.ml.data.mixins.DropsTimeSeriesOutliersMixin import DropsTimeSeriesOutliersMixin
+
+
+"""
+@todo add_column()
+@todo drop_column()
+"""
 
 
 class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin):
@@ -150,6 +157,12 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
         """
         return {label: (self.y == label).sum() for label in sorted(list(set(self.y)))}
 
+    def describe(self):
+        """
+        Describe dataset
+        """
+        return self.df.describe()
+
     def update_classmap(self, classmap):
         """
         Update mapping from class id to class name
@@ -236,6 +249,38 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
 
         return self
 
+    def label_at(self, label, *intervals):
+        """
+        Set label at given intervals.
+        Replaces label_samples()
+        :param label: str name of the label
+        :param intervals: list of tuples (start, end)
+        :return: Dataset
+        """
+        new_y = np.copy(self.y)
+        new_classmap = {k: v for k, v in self.classmap.items()}
+
+        if label in self.classmap.keys():
+            label_id = label
+        elif label in self.classmap.values():
+            label_id = self.classmap
+        elif isinstance(label, int):
+            label_id = label
+            label_name = 'unknown'
+            new_classmap.update({label_id: label_name})
+        elif isinstance(label, str):
+            label_id = max(self.classmap.keys()) + 1
+            label_name = label
+            new_classmap.update({label_id: label_name})
+        else:
+            raise AssertionError('unknown type of argument: %s' % str(label))
+
+        for start, end in intervals:
+            new_y[start:end] = label_id
+
+        return self.replace(y=new_y, classmap=new_classmap)
+
+    @deprecated(deprecated_in="0.1.18", details="Use label_at() instead")
     def label_samples(self, label, *ranges, **kwargs):
         """
         Add a label to a subset of the dataset
@@ -258,11 +303,15 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
 
         return self
 
-    def replace(self, X=None, y=None, columns=None, name=None, classmap=None):
+    def replace(self, X=None, y=None, columns=None, name=None, classmap=None, shallow=True):
         """
-        Replace X and y
+        Replace attributes of Dataset
         :param X:
         :param y:
+        :param columns: list
+        :param name: str
+        :param classmap: dict
+        :param shallow: bool
         """
         if X is None:
             X = self.X
@@ -279,14 +328,19 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
         if classmap is None:
             classmap = self.classmap
 
-        return Dataset(name=name, X=X.copy(), y=y.copy(), columns=columns, classmap=classmap)
+        if not shallow:
+            X = X.copy()
+            y = y.copy()
 
-    def clone(self):
+        return Dataset(name=name, X=X, y=y, columns=columns, classmap=classmap)
+
+    def clone(self, shallow=True):
         """
         Clone dataset
+        :param shallow: bool if False, makes a copy of the data
         :return: Dataset
         """
-        return self.replace()
+        return self.replace(shallow=shallow)
 
     def select_columns(self, columns):
         """
@@ -299,6 +353,77 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
         X = self.X[:, column_indices]
 
         return self.replace(X=X, columns=column_names)
+
+    def drop_columns(self, *columns):
+        """
+        Drop given columns, either by name of index
+        :param columns: list
+        :return: Dataset
+        """
+        new_columns = [column for i, column in enumerate(self.columns) if i not in columns and column not in columns]
+
+        return self.select_columns(new_columns)
+
+    def add_column(self, name, values):
+        """
+        Add new column to dataset
+        :param name: str name of the column
+        :param values: np.ndarray
+        :return: Dataset
+        """
+        assert len(values) == len(self), 'values count MUST match (expected %d, got %d)' % (len(self), len(values))
+        columns = self.columns + [name]
+        X = np.hstack((self.X, np.asarray(values).reshape((-1, 1))))
+
+        return self.replace(X=X, columns=columns)
+
+    def rename_column(self, old_name, new_name):
+        """
+        Rename given column
+        :param old_name: str
+        :param new_name: str
+        :return: Dataset
+        """
+        assert isinstance(old_name, int) or isinstance(old_name, str), 'old_name MUST be a string or an int'
+        assert isinstance(new_name, str), 'new_name MUST be a string'
+
+        if isinstance(old_name, str):
+            assert old_name in self.columns, 'column "%s" not found' % old_name
+            column_idx = self.columns.index(old_name)
+        else:
+            column_idx = old_name
+            assert column_idx < len(self.columns), 'column "%d" out of range' % column_idx
+
+        new_columns = [column for column in self.columns]
+        new_columns[column_idx] = new_name
+
+        return self.replace(columns=new_columns)
+
+    def rename_columns(self, mapping):
+        """
+        Rename and delete multiple columns at once
+        :param mapping: dict
+        :return: Dataset
+        """
+        assert isinstance(mapping, dict), 'mapping MUST be a dict'
+
+        new_instance = self.clone()
+
+        # first rename columns
+        for old_name, new_name in mapping.items():
+            if new_name is not None:
+                # if overwriting an existing column, first drop the existing one
+                if new_name in self.columns:
+                    new_instance = new_instance.drop_columns(new_name)
+
+                new_instance = new_instance.rename_column(old_name, new_name)
+
+        # then drop
+        for old_name, new_name in mapping.items():
+            if new_name is None:
+                new_instance = new_instance.drop_columns(old_name)
+
+        return new_instance
 
     def shuffle(self, **kwargs):
         """
@@ -355,9 +480,10 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
 
         return self.replace(X=self.X[idx], y=self.y[idx])
 
+    @deprecated(deprecated_in="0.1.11", details="Use mix() instead")
     def intermix(self, chunk_size, *args, **kwargs):
         """
-        @deprecated 0.1.11
+        @see mix
         """
         return self.mix(chunk_size, *args, **kwargs)
 
@@ -386,10 +512,10 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
 
         return self.replace(X=X, y=y)
 
+    @deprecated(deprecated_in="0.1.11", details="No replacement")
     def take(self, size):
         """
         Take a subset of the dataset
-        @deprecated 0.1.11
         :param size: int number of samples to keep
         """
         X, y = self.random(size)
@@ -412,10 +538,10 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
 
         return self.mask(keep)
 
+    @deprecated(deprecated_in="0.1.11", details="No replacement")
     def split(self, test=0, validation=0, return_empty=True, shuffle=True):
         """
         Split array into train, validation, test
-        @deprecated 0.1.11
         :param test: float test size percent
         :param validation: float validation size percent
         :param return_empty: bool if empty splits should be returned
@@ -480,10 +606,10 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
 
         return self.replace(X=X, y=y)
 
+    @deprecated(deprecated_in="0.1.11", details="No replacement")
     def chunk(self, chunk_size, shuffle=False):
         """
         Chunk each class samples
-        @deprecated 0.1.11
         :param chunk_size: int
         :param shuffle: bool
         """
@@ -504,28 +630,12 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
 
         return chunked
 
+    @deprecated(deprecated_in="0.1.11", details="Use sort_by_class() instead")
     def in_sequential_order(self):
         """
-        Rearrange data so that all the samples for each class
-        are on the same "block"
-        @deprecated 0.1.11 same as sort_by_class()
-        :return: Dataset
+        @see sort_by_class()
         """
-        X = None
-        y = None
-
-        for class_idx in sorted(list(set(self.y))):
-            Xi = self.X[self.y == class_idx]
-            yi = np.ones(len(Xi)) * class_idx
-
-            if X is None:
-                X = Xi
-                y = yi
-            else:
-                X = np.vstack((X, Xi))
-                y = np.concatenate((y, yi))
-
-        return self.replace(X=X, y=y)
+        return self.sort_by_class()
 
     def train_test_split_sequential(self, test_size=0.33):
         """

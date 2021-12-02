@@ -54,19 +54,36 @@ class Pipeline:
         :param item: int|str|slice
         :return: step|Pipeline
         """
-        # get by index or name
-        if isinstance(item, int) or isinstance(item, str):
-            i, step = self._find_step(item)
+        # return step by index
+        if isinstance(item, int):
+            return self.steps[item] if item < len(self.steps) else None
 
-            return step
+        # return step by name
+        if isinstance(item, str):
+            return self.get_step_by_name(item)
 
         # get by slice
         elif isinstance(item, slice):
-            start, _ = self._find_step(item.start)
+            if item.start is None:
+                start = 0
+            elif isinstance(item.start, int):
+                start = item.start
+            elif isinstance(item.start, str):
+                start = self.get_step_position_by_name(item.start)
+            else:
+                raise AssertionError('unknown slice start type: %s' % str(item.start))
             start = max(start, 0)
 
-            stop, _ = self._find_step(item.stop)
-            stop = stop + 1 if stop > -1 else len(self.steps)
+            if item.stop is None:
+                stop = len(self.steps)
+            elif isinstance(item.stop, int):
+                stop = item.stop
+            elif isinstance(item.stop, str):
+                stop = self.get_step_position_by_name(item.stop)
+            else:
+                raise AssertionError('unknown slice start type: %s' % str(item.stop))
+
+            stop = min(stop + 1, len(self.steps))
 
             return Pipeline("SliceOf%s" % self.name, self.source_dataset, [copy(step) for step in self.steps[start:stop]])
         else:
@@ -112,6 +129,26 @@ class Pipeline:
     @cached_property
     def resources(self):
         return PipelineDeviceResources(self)
+
+    def get_step_by_name(self, name):
+        """
+        Get pipeline step by name
+        :param name: str
+        :return: Step or None
+        """
+        matches = [step for step in self.steps if step.name == name]
+
+        return matches[0] if len(matches) > 0 else None
+
+    def get_step_position_by_name(self, name):
+        """
+        Get pipeline step position by name
+        :param name: str
+        :return: int or None
+        """
+        matches = [i for i, step in enumerate(self.steps) if step.name == name]
+
+        return matches[0] if len(matches) > 0 else None
 
     def add(self, step):
         """
@@ -286,12 +323,17 @@ class Pipeline:
         :return: index, step
         """
         if isinstance(index_or_name, int):
-            if index_or_name >= len(self.steps):
+            index = index_or_name
+
+            if index >= len(self.steps):
                 return -1, None
-            return index_or_name, self.steps[index_or_name]
+
+            return index, self.steps[index]
 
         if isinstance(index_or_name, str):
-            match = [(i, step) for i, step in enumerate(self.steps) if step.name == index_or_name]
+            name = index_or_name
+            match = [(i, step) for i, step in enumerate(self.steps) if step.name == name]
+
             return match[0] if len(match) else -1, None
 
         raise ValueError("Invalid index_or_name: %s" % str(index_or_name))
