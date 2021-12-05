@@ -72,6 +72,7 @@ eloquentarduino/ml/data/preprocessing/pipeline/PolynomialFeatures.py
 eloquentarduino/ml/data/preprocessing/pipeline/RFE.py
 eloquentarduino/ml/data/preprocessing/pipeline/RateLimit.py
 eloquentarduino/ml/data/preprocessing/pipeline/SelectKBest.py
+eloquentarduino/ml/data/preprocessing/pipeline/SortByClass.py
 eloquentarduino/ml/data/preprocessing/pipeline/StandardScaler.py
 eloquentarduino/ml/data/preprocessing/pipeline/StatMoments.py
 eloquentarduino/ml/data/preprocessing/pipeline/TSFRESH.py
@@ -157,6 +158,7 @@ eloquentarduino/templates/ml/data/preprocessing/pipeline/RFE.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/RateLimit.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/SelectKBest.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/SmoothClassification.jinja
+eloquentarduino/templates/ml/data/preprocessing/pipeline/SortByClass.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/StandardScaler.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/StatMoments.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/TSFRESH.jinja
@@ -177,10 +179,12 @@ eloquentarduino/templates/on_device/tensorflow/InferenceTime.jinja
 eloquentarduino/templates/on_device/tensorflow/Resources.jinja
 eloquentarduino/templates/on_device/tensorflow/ResourcesBaseline.jinja
 eloquentarduino/templates/on_device/tensorflow/_Resources.jinja
+eloquentarduino/templates/third_party/snoopy/ImuClassifier.jinja
 eloquentarduino/templates/third_party/snoopy/SnoopyStream.jinja
 eloquentarduino/templates/third_party/snoopy/snoopy.jinja
 eloquentarduino/third_party/Snoopy.py
 eloquentarduino/third_party/__init__.py
+eloquentarduino/third_party/snoopy/ImuClassifier.py
 eloquentarduino/third_party/snoopy/SmoothVoting.py
 eloquentarduino/third_party/snoopy/SnoopyGridSearch.py
 eloquentarduino/third_party/snoopy/SnoopyStream.py
