@@ -1,0 +1,64 @@
+#ifndef IMU_CLASSIFIER_H
+#define IMU_CLASSIFIER_H 1
+#define ML_H 1
+#include "imu_AHRS.h"
+#include "{{ pipeline_filename }}.h"
+
+// mlPredictionByte is a global variable that you can access from other files to get the result of prediction
+extern uint8_t {{ extern_variable }};
+extern uint8_t {{ extern_variable }}Robust;
+
+// Pipeline.h file will create a global object you can use to make predictions
+// so you don't have to instantiate the pipeline by yourself
+
+
+class {{ class_name }} {
+  public:
+    uint8_t y = 0;
+
+
+    /**
+     * Add sample to queue for ML prediction.
+     */
+    void update() {
+        float features[] = { {{ features }} };
+
+        // if pipeline produces a prediction, get it
+        if ({{ pipeline_variable }}.transform(features)) {
+            // let's add 1 so 0 indicates "no classification"
+            y = 1 + {{ pipeline_variable }}.predictedClass();
+            {{ extern_variable }}Robust = y - 1;
+        }
+        {% if not persist_prediction %}
+        else {
+            y = 0;
+        }
+        {% endif %}
+
+        {{ extern_variable }} = y;
+
+        {% if debug_enabled %}
+            // debug predictions
+            Serial.print("{{ extern_variable }}Robust = ");
+            Serial.print({{ extern_variable }}Robust);
+            Serial.print(".  {{ extern_variable }} = ");
+            Serial.print({{ extern_variable }});
+            Serial.print(". LabelRobust = ");
+            Serial.print({{ pipeline_variable }}.idxToLabel(mlPredictionByteRobust));
+            Serial.print(". Label = ");
+            Serial.println({{ pipeline_variable }}.idxToLabel(mlPredictionByte));
+        {% else %}
+            // debug predictions
+            //Serial.print("{{ extern_variable }}Robust = ");
+            //Serial.print({{ extern_variable }}Robust);
+            //Serial.print(".  {{ extern_variable }} = ");
+            //Serial.print({{ extern_variable }});
+            //Serial.print(". LabelRobust = ");
+            //Serial.print({{ pipeline_variable }}.idxToLabel(mlPredictionByteRobust));
+            //Serial.print(". Label = ");
+            //Serial.println({{ pipeline_variable }}.idxToLabel(mlPredictionByte));
+        {% endif %}
+    }
+};
+
+#endif

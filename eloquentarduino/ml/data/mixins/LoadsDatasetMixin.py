@@ -111,6 +111,26 @@ class LoadsDatasetMixin:
         return cls(name=dataset_name, X=X, y=y, classmap=classmap, columns=columns)
 
     @classmethod
+    def read_pandas(cls, df, label_column=None, name='Dataset'):
+        """
+        Convert pandas.DataFrame to Dataset instance
+        :param df: pandas.DataFrame
+        :param label_column: str or None
+        :param name: str
+        :return: Dataset
+        @added 0.1.19
+        """
+        if label_column:
+            y = df[label_column].to_numpy()
+        else:
+            y = np.zeros(len(df), dtype=int)
+
+        data_columns = [column for column in df.columns if column != label_column]
+        X = df[data_columns].to_numpy()
+
+        return cls(name=name, X=X, y=y, columns=data_columns)
+
+    @classmethod
     def Iris(cls):
         """
         Create the Iris dataset

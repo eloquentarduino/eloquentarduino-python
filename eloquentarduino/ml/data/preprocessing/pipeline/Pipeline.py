@@ -255,7 +255,9 @@ class Pipeline:
             'input_dim': self.input_dim,
             'output_dim': max([self.output_dim, self.working_dim]),
             'working_dim': max([1, self.working_dim]),
-            'includes': self.includes
+            'includes': self.includes,
+            # @added 0.1.19
+            'classmap': self.source_dataset.port_classmap()
         }, pretty=True)
 
     def serialize(self, filename):

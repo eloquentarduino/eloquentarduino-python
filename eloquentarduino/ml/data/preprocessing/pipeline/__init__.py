@@ -14,6 +14,7 @@ from eloquentarduino.ml.data.preprocessing.pipeline.PolynomialFeatures import Po
 from eloquentarduino.ml.data.preprocessing.pipeline.RateLimit import RateLimit
 from eloquentarduino.ml.data.preprocessing.pipeline.RFE import RFE
 from eloquentarduino.ml.data.preprocessing.pipeline.SelectKBest import SelectKBest
+from eloquentarduino.ml.data.preprocessing.pipeline.SortByClass import SortByClass
 from eloquentarduino.ml.data.preprocessing.pipeline.StandardScaler import StandardScaler
 from eloquentarduino.ml.data.preprocessing.pipeline.StatMoments import StatMoments
 from eloquentarduino.ml.data.preprocessing.pipeline.TSFRESH import TSFRESH

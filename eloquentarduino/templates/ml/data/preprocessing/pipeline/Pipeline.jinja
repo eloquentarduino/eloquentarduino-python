@@ -31,6 +31,7 @@
              * Constructor
              */
             {{ classname }}() :
+                isOk(true),
                 {% for i, step in enumerate(steps) %}
                     {% if i > 0 %},{% endif %} step{{ i }}(buffer)
                 {% endfor %}
@@ -45,7 +46,7 @@
                 memcpy(X, x, sizeof(float) * {{ input_dim }});
 
                 time_t start = micros();
-                bool done =
+                this->isOk =
                 {% for i, step in enumerate(steps) %}
                     // {{ step.name }}
                     {% if i > 0 %} && {% endif %} step{{ i }}.transform(X)
@@ -53,10 +54,49 @@
 
                 latency = micros() - start;
 
-                return done;
+                return this->isOk;
             }
 
+            /**
+             * If pipeline ends with a classifier, this method is a syntactic sugar
+             * over transform
+             */
+            int predictClass(float *x) {
+                this->transform(x);
+
+                return this->predictedClass();
+            }
+
+            /**
+             * If pipeline ends with a classifier, this method is a syntactic sugar
+             * to get last prediction
+             */
+            int predictedClass() {
+                return isOk ? this->X[0] : -1;
+            }
+
+            /**
+             * If pipeline ends with a classifier, this method is a syntactic sugar
+             * over predictClass and idxToLabel
+             */
+            const char* predictLabel(float *x) {
+                this->transform(x);
+
+                return this->predictedLabel();
+            }
+
+            /**
+             * If pipeline ends with a classifier, this method is a syntactic sugar
+             * to get the last predicted class label
+             */
+            const char* predictedLabel() {
+                return this->idxToLabel(this->predictedClass());
+            }
+
+            {{ classmap }}
+
         protected:
+            bool isOk;
             // shared temporary memory for the steps
             float buffer[{{ working_dim }}] = {0};
             {% for i, step in enumerate(steps) %}
