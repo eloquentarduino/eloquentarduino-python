@@ -62,11 +62,30 @@ class PlotsItselfMixin:
         run_values = y[loc_run_start]
         palette = [c for c in (palette or mcolors.TABLEAU_COLORS.values())]
 
+        if self.outlier_class:
+            palette[self.outlier_class % len(palette)] = '#2c3e50'
+
         if self.y.max() >= len(palette):
             print('[WARN] too many classes for the current palette')
 
+        vspan_handles = {}
+
         for v, s, l in zip(run_values, run_starts, run_lengths):
-            plt.axvspan(s, s + l, color=palette[v % len(palette)], alpha=bg_alpha)
+            if v in vspan_handles:
+                vspan_label = '_ignore'
+            else:
+                vspan_handles.setdefault(v, True)
+                vspan_label = self.classmap.get(v % len(palette), 'Class #%d' % (v % len(palette)))
+
+            plt.axvspan(
+                s,
+                s + l,
+                color=palette[v % len(palette)],
+                alpha=(bg_alpha * 1.25 if palette[v % len(palette)] == '#2c3e50' else bg_alpha),
+                label=vspan_label
+            )
+
+        plt.legend()
 
         # plot y_test markers
         if y_pred is not None:

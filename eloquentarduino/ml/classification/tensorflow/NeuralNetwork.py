@@ -60,7 +60,6 @@ class NeuralNetwork(Classifier):
 
     @property
     def num_classes(self):
-        print('nn num_classes', self.y.shape)
         return self.y.shape[1]
 
     @property
@@ -204,16 +203,15 @@ class NeuralNetwork(Classifier):
         for i, layer_definition in enumerate(self.layer_definitions):
             kwargs = layer_definition.kwargs
 
-            # @todo is this correct?
-            # elif i == 0 and 'input_shape' not in kwargs:
             if i == 0:
-                kwargs['input_shape'] = X.shape[1:]
+                kwargs.setdefault('input_shape', X.shape[1:])
 
-            if kwargs.get('units', 0) == 'num_classes':
+            if kwargs.get('units', '') == 'num_classes':
                 kwargs['units'] = y.shape[1]
 
             self.sequential.add(layer_definition.instantiate())
 
+        # split into train/validations
         validation_data = None
 
         if self.fit_options.get('valid_size', 0) > 0:
@@ -221,6 +219,7 @@ class NeuralNetwork(Classifier):
             validation_data = (X_valid, y_valid)
             del self.fit_options['valid_size']
 
+        # compile and fit
         self.sequential.compile(**self.compile_options)
         self.history = self.sequential.fit(X, y, validation_data=validation_data, **self.fit_options)
         self.X = X

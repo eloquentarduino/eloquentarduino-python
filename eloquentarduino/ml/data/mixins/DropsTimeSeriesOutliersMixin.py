@@ -6,18 +6,16 @@ class DropsTimeSeriesOutliersMixin:
     """Implement time-series anomaly detection algorithms
 
     """
-    def drop_outliers_by_dtw(self, window_size, max_distance_q=0.98, min_columns=1, return_indices=False):
+    def mark_outliers_by_dtw(self, window_size, max_distance_q=0.98, min_columns=1, outlier_class=None, outlier_class_name='Outliers'):
         """
-        Drop chunks of data with a unusually high DTW distance
+        Mark chunks of data with a unusually high DTW distance
         :param window_size: int
         :param max_distance_q: float in range [0, 1]
         :param min_columns: int
-        :param return_indices: bool
 
         Returns
         -------
-            If return_indices is True, the indices marked as outliers
-            Else, a new Dataset without outliers
+            A new Dataset without outliers
         """
         from eloquentarduino.ml.data.preprocessing.pipeline.Window import Window
 
@@ -51,10 +49,38 @@ class DropsTimeSeriesOutliersMixin:
 
             offset += len(Xi)
 
-        if return_indices:
-            return outliers
+        # update labels and classmap
+        if outlier_class is None:
+            outlier_class = self.next_class
 
-        return self.mask(~outliers)
+        new_y = np.where(outliers, outlier_class, self.y)
+        new_classmap = {**self.classmap, **{outlier_class: outlier_class_name}}
+        new_dataset = self.replace(y=new_y, classmap=new_classmap)
+        new_dataset.outlier_class = outlier_class
+
+        return new_dataset
+
+    def drop_outliers_by_dtw(self, window_size, max_distance_q=0.98, min_columns=1, **kwargs):
+        """
+        Drop chunks of data with a unusually high DTW distance
+        :param window_size: int
+        :param max_distance_q: float in range [0, 1]
+        :param min_columns: int
+
+        Returns
+        -------
+            If return_indices is True, the indices marked as outliers
+            Else, a new Dataset without outliers
+        """
+        outlier_class = self.next_class
+
+        return (self
+                .mark_outliers_by_dtw(
+                    window_size=window_size,
+                    max_distance_q=max_distance_q,
+                    min_columns=min_columns,
+                    outlier_class=outlier_class)
+                .drop_class(outlier_class))
 
     # def drop_singular_spectrum(self, window_size, columns=None, **kwargs):
     #     """

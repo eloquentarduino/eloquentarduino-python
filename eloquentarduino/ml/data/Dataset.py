@@ -50,6 +50,7 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
 
         self.columns = columns
         self.classmap = classmap or {-1: 'UNLABELLED'}
+        self.outlier_class = None
 
     def __getitem__(self, item):
         """
@@ -114,6 +115,17 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
         """
         # account for one-hot encoding
         return len(self.labels) if len(self.y.shape) == 1 else self.y.shape[1]
+
+    @property
+    def next_class(self):
+        """
+        Get next class idx
+        :return: int
+        """
+        next_class_by_classmap = max(self.classmap.keys()) + 1
+        next_class_by_labels = np.max(self.y) + 1
+
+        return max(next_class_by_classmap, next_class_by_labels)
 
     @property
     def shape(self):
@@ -211,8 +223,6 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
         """
         class_idx = self._get_label_id(class_idx)
         mask = (self.y != class_idx)
-        print('drop_class', class_idx)
-        print('dropping...', (~mask).sum())
 
         return self.mask(mask)
 

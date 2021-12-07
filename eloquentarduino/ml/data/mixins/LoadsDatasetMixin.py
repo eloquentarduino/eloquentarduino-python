@@ -137,7 +137,14 @@ class LoadsDatasetMixin:
         """
         return cls('Iris', *load_iris(return_X_y=True))
 
-    @staticmethod
+    @classmethod
+    def MNIST(cls):
+        """
+        Create the Iris dataset
+        """
+        return cls('MNIST', *load_digits(return_X_y=True))
+
+    @classmethod
     def MNIST_Tensorflow(cls):
         """
         Create the MNIST dataset formatted for Tensorflow

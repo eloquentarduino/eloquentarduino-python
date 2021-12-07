@@ -1,6 +1,7 @@
 from eloquentarduino.ml.classification.sklearn.DecisionTreeClassifier import DecisionTreeClassifier
 from eloquentarduino.ml.classification.sklearn.GaussianNB import GaussianNB
 from eloquentarduino.ml.classification.sklearn.LogisticRegression import LogisticRegression
+from eloquentarduino.ml.classification.sklearn.PassiveAggressiveClassifier import PassiveAggressiveClassifier
 from eloquentarduino.ml.classification.sklearn.RandomForestClassifier import RandomForestClassifier
 from eloquentarduino.ml.classification.sklearn.SVC import SVC
 from eloquentarduino.ml.classification.sklearn.XGBClassifier import XGBClassifier
