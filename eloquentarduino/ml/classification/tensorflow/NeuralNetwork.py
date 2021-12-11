@@ -12,6 +12,7 @@ from eloquentarduino.utils import jinja
 from eloquentarduino.ml.classification.abstract.Classifier import Classifier
 from eloquentarduino.ml.classification.tensorflow.Layer import Layer, layers
 from eloquentarduino.ml.classification.device import ClassifierResources
+from eloquentarduino.ml.classification.tensorflow.port import AIfESPort
 
 
 class NeuralNetwork(Classifier):
@@ -299,13 +300,19 @@ class NeuralNetwork(Classifier):
         plt.legend()
         plt.show()
 
-    def port(self, arena_size='1024 * 16', model_name='model', classname='NeuralNetwork', classmap=None):
+    def port(self, arena_size='1024 * 16', model_name='model', classname='NeuralNetwork', classmap=None, framework='tensorflow'):
         """
         Port Tf model to plain C++
         :param arena_size: int|str size of tensor arena (read Tf docs)
         :param model_name: str name of the exported model variable
         :param classname: str name of the exported class
+        :param framework: str either TensorFlow or AIfES
         """
+        assert framework.lower() in ['tensorflow', 'aifes'], 'framework MUST be either tensorflow or aifes: %s given' % str(framework)
+
+        if framework.lower() == 'aifes':
+            return str(AIfESPort(network=self, classname=classname, classmap=classmap))
+
         return jinja('ml/classification/tensorflow/NeuralNetwork.jinja', {
             'classname': classname,
             'model_name': model_name,

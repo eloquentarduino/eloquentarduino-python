@@ -28,10 +28,13 @@ eloquentarduino/ml/classification/abstract/GridSearchResult.py
 eloquentarduino/ml/classification/abstract/__init__.py
 eloquentarduino/ml/classification/device/ClassifierResources.py
 eloquentarduino/ml/classification/device/__init__.py
+eloquentarduino/ml/classification/sefr/SEFR.py
+eloquentarduino/ml/classification/sefr/__init__.py
 eloquentarduino/ml/classification/sklearn/DecisionTreeClassifier.py
 eloquentarduino/ml/classification/sklearn/GaussianNB.py
 eloquentarduino/ml/classification/sklearn/GridSearch.py
 eloquentarduino/ml/classification/sklearn/LogisticRegression.py
+eloquentarduino/ml/classification/sklearn/PassiveAggressiveClassifier.py
 eloquentarduino/ml/classification/sklearn/RandomForestClassifier.py
 eloquentarduino/ml/classification/sklearn/SVC.py
 eloquentarduino/ml/classification/sklearn/SklearnClassifier.py
@@ -46,6 +49,7 @@ eloquentarduino/ml/classification/tensorflow/GridSearch.py
 eloquentarduino/ml/classification/tensorflow/Layer.py
 eloquentarduino/ml/classification/tensorflow/NeuralNetwork.py
 eloquentarduino/ml/classification/tensorflow/__init__.py
+eloquentarduino/ml/classification/tensorflow/pickle_patch.py
 eloquentarduino/ml/classification/tensorflow/gridsearch/GridSearchResult.py
 eloquentarduino/ml/classification/tensorflow/gridsearch/__init__.py
 eloquentarduino/ml/data/CheckpointFile.py
@@ -65,8 +69,10 @@ eloquentarduino/ml/data/preprocessing/pipeline/Diff.py
 eloquentarduino/ml/data/preprocessing/pipeline/DropFeatures.py
 eloquentarduino/ml/data/preprocessing/pipeline/EWMA.py
 eloquentarduino/ml/data/preprocessing/pipeline/FFT.py
+eloquentarduino/ml/data/preprocessing/pipeline/LDA.py
 eloquentarduino/ml/data/preprocessing/pipeline/MinMaxScaler.py
 eloquentarduino/ml/data/preprocessing/pipeline/Norm.py
+eloquentarduino/ml/data/preprocessing/pipeline/PCA.py
 eloquentarduino/ml/data/preprocessing/pipeline/Pipeline.py
 eloquentarduino/ml/data/preprocessing/pipeline/PolynomialFeatures.py
 eloquentarduino/ml/data/preprocessing/pipeline/RFE.py

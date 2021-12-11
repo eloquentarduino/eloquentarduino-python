@@ -1,0 +1,75 @@
+/**
+ * @require AIfES
+ */
+#include <aifes.h>
+
+
+namespace Eloquent {
+    namespace ML {
+        namespace Port {
+            class {{ classname }} {
+                public:
+                    static const uint16_t NUM_INPUTS = {{ num_inputs }};
+                    static const uint16_t NUM_OUTPUTS = {{ num_outputs }};
+
+                    float proba[{{ num_outputs }}] = {0};
+
+                    /**
+                     * Init model
+                     */
+                     bool begin() {
+                        inited = true;
+
+
+                     }
+
+                     /**
+                      * Predict class probabilities
+                      */
+                     void predictProba(float *x) {
+                        if (!inited) {
+                            begin();
+                        }
+
+                        // todo
+                     }
+
+                    /**
+                     * Predict most probable class
+                     */
+                     uint8_t predict(float *x) {
+                        predictProba(x);
+
+                        // todo
+                     }
+
+                     {% if classmap is not none %}
+                        /**
+                         * Get most probable class name
+                         */
+                         const char* predictLabel(float *x) {
+                            return idxToLabel(predictClass(x));
+                         }
+
+                         /**
+                          * Convert class idx to readable name
+                          */
+                         const char* idxToLabel(uint8_t classIdx) {
+                             switch (classIdx) {
+                                 {% for idx, name in classmap.items() %}
+                                     case {{ idx }}:
+                                         return "{{ name }}";
+                                 {% endfor %}
+                                 default:
+                                     return "Houston we have a problem";
+                             }
+                         }
+
+                     {% endif %}
+
+                protected:
+                    bool inited = false;
+            };
+        }
+    }
+}
