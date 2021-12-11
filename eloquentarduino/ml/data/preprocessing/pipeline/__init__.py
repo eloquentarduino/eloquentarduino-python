@@ -8,8 +8,10 @@ from eloquentarduino.ml.data.preprocessing.pipeline.DropFeatures import DropFeat
 from eloquentarduino.ml.data.preprocessing.pipeline.EWMA import EWMA
 from eloquentarduino.ml.data.preprocessing.pipeline.FFT import FFT
 from eloquentarduino.ml.data.preprocessing.pipeline.kFFT import kFFT
+from eloquentarduino.ml.data.preprocessing.pipeline.LDA import LDA
 from eloquentarduino.ml.data.preprocessing.pipeline.MinMaxScaler import MinMaxScaler
 from eloquentarduino.ml.data.preprocessing.pipeline.Norm import Norm
+from eloquentarduino.ml.data.preprocessing.pipeline.PCA import PCA
 from eloquentarduino.ml.data.preprocessing.pipeline.PolynomialFeatures import PolynomialFeatures
 from eloquentarduino.ml.data.preprocessing.pipeline.RateLimit import RateLimit
 from eloquentarduino.ml.data.preprocessing.pipeline.RFE import RFE

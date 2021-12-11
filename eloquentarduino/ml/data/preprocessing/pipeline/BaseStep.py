@@ -43,7 +43,7 @@ class BaseStep:
 
     def fit(self, X, y):
         """
-    Fit step to input
+        Fit step to input
         """
         raise NotImplementedError('%s::fit' % type(self))
 

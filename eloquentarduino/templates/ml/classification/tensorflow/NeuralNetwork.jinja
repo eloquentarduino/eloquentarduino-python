@@ -1,4 +1,8 @@
+/**
+ * @require EloquentTinyML>=2.4
+ */
 #include <EloquentTinyML.h>
+#include <eloquent_tinyml/tensorflow.h>
 
 
 {{ model_data }}
@@ -14,7 +18,7 @@ namespace Eloquent {
                     static const uint16_t NUM_OUTPUTS = {{ num_outputs }};
 
                     float proba[{{ num_outputs }}] = {0};
-                    Eloquent::TinyML::TfLite<{{ num_inputs }}, {{ num_outputs }}, {{ arena_size }}> nn;
+                    Eloquent::TinyML::TensorFlow::TensorFlow<{{ num_inputs }}, {{ num_outputs }}, {{ arena_size }}> nn;
 
                     /**
                      * Init model

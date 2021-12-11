@@ -67,7 +67,7 @@ class Pipeline:
             if item.start is None:
                 start = 0
             elif isinstance(item.start, int):
-                start = item.start
+                start = (item.start + len(self.steps)) % len(self.steps)
             elif isinstance(item.start, str):
                 start = self.get_step_position_by_name(item.start)
             else:
@@ -77,9 +77,10 @@ class Pipeline:
             if item.stop is None:
                 stop = len(self.steps)
             elif isinstance(item.stop, int):
-                stop = item.stop
+                stop = (item.stop + len(self.steps) - 1) % len(self.steps)
             elif isinstance(item.stop, str):
                 stop = self.get_step_position_by_name(item.stop)
+                stop = stop or len(self.steps)
             else:
                 raise AssertionError('unknown slice start type: %s' % str(item.stop))
 
@@ -309,6 +310,23 @@ class Pipeline:
             y_pred, y_true = self.transform(dataset.X, dataset.y)
 
         dataset.plot(y_pred=y_pred.flatten(), **kwargs)
+
+    def plot_boxplot(self, dataset=None, **kwargs):
+        """
+        Plot boxplot of extracted features
+        :param dataset: Dataset or None
+        """
+        if dataset is None:
+            dataset = self.source_dataset
+
+        if self["Classify"] is not None:
+            pipeline = self[:"Classify"][:-1]
+        else:
+            pipeline = self[:]
+
+        X, y = pipeline.transform(dataset.X, dataset.y)
+
+        return dataset.replace(X=X, y=y).plot_boxplot(**kwargs)
 
     def _assert_unique_steps(self):
         """

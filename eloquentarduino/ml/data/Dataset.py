@@ -223,8 +223,9 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
         """
         class_idx = self._get_label_id(class_idx)
         mask = (self.y != class_idx)
+        new_classmap = {k: v for k, v in self.classmap.items() if k != class_idx}
 
-        return self.mask(mask)
+        return self.mask(mask).replace(classmap=new_classmap)
 
     def drop_out_of_classmap(self):
         """
@@ -331,6 +332,9 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
 
         if columns is None:
             columns = self.columns
+
+        if columns is not None and len(columns) != X.shape[1]:
+            columns = ['f%d' % i for i in range(X.shape[1])]
 
         if name is None:
             name = self.name

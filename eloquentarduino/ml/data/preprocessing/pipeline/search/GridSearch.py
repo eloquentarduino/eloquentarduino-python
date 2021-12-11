@@ -17,6 +17,15 @@ def _evaluate_pipeline(pipeline, test, metric):
     try:
         y_pred, y_true = pipeline.fit().transform(test.X, test.y)
         y_pred = y_pred.flatten()
+
+        # if user dropped some classes from the test dataset
+        # y_pred will not be aligned with y_true
+        # (y_pred will always be a dense array starting from 0)
+        # @added 0.1.20
+        # @needs more testing
+        class_mapping = {i: class_idx for i, class_idx in enumerate(test.classmap)}
+        # @from https://stackoverflow.com/questions/16992713/translate-every-element-in-numpy-array-according-to-key
+        y_pred = np.vectorize(class_mapping.get)(y_pred)
     except ValueError as ex:
         print("Pipeline error")
         print("Pipeline", pipeline)

@@ -1,7 +1,9 @@
+import re
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from copy import copy
+from cached_property import cached_property
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
 from tinymlgen import port
@@ -70,6 +72,17 @@ class NeuralNetwork(Classifier):
         accuracy = self.history.history.get('val_accuracy', self.history.history['accuracy'])
 
         return accuracy[-1]
+
+    @cached_property
+    def model_size(self):
+        """
+        Get C++ model size
+        :return: int
+        """
+        cpp = self.port()
+        match = re.search(r'const int model_len = (\d+);', cpp)
+
+        return int(match.group(1)) if match is not None else 0
 
     def clone(self):
         """
@@ -204,7 +217,7 @@ class NeuralNetwork(Classifier):
             kwargs = layer_definition.kwargs
 
             if i == 0:
-                kwargs.setdefault('input_shape', X.shape[1:])
+                kwargs['input_shape'] = X.shape[1:]
 
             if kwargs.get('units', '') == 'num_classes':
                 kwargs['units'] = y.shape[1]

@@ -203,6 +203,27 @@ class PlotsItselfMixin:
 
         sns.pairplot(df.astype({'y': 'int'}), hue='y', palette=palette, **kwargs)
 
+    def plot_boxplot(self, features_per_row=10):
+        """
+        Draw box plot of features vs class
+        :param features_per_row: int in the presence of lots of features, split plots
+        """
+        df = self.df
+
+        for k in range(0, len(df.columns), features_per_row):
+            columns = df.columns[k:k + features_per_row]
+            rows = [{
+                'feature_name': column,
+                'value': value,
+                'y': str(self.classmap.get(self.y[i], self.y[i]))
+            } for column, values in df[columns].iteritems() if column != 'y' for i, value in enumerate(values)]
+
+            df_k = pd.DataFrame(rows)
+
+            if len(df_k.columns) > 0:
+                plt.figure()
+                sns.boxplot(data=df_k, x="feature_name", y="value", hue="y", orient="v")
+
     def dim_reduction(self, pca=0, tsne=0, umap=0, isomap=0, lle=0, lda=False, **kwargs):
         """
         Apply dimensionality reduction
@@ -262,8 +283,8 @@ class PlotsItselfMixin:
         """
         max_length = max_length or 0
 
-        if max_length > 0 and len(array) > max_length:
-            idx = (np.arange(max_length, dtype=float) * len(array) / max_length)
+        if 0 < max_length < len(array):
+            idx = np.arange(max_length, dtype=float) * (len(array) / max_length)
             idx = np.unique(idx.astype(int))
 
             return idx

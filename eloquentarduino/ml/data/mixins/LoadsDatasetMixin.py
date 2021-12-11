@@ -135,7 +135,7 @@ class LoadsDatasetMixin:
         """
         Create the Iris dataset
         """
-        return cls('Iris', *load_iris(return_X_y=True))
+        return cls('Iris', *load_iris(return_X_y=True), classmap={0: 'setosa', 1: 'versicolor', 2: 'virginica'})
 
     @classmethod
     def MNIST(cls):
