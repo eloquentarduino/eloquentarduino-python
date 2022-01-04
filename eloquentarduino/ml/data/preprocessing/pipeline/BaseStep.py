@@ -11,6 +11,7 @@ class BaseStep:
         self.inplace = False
         self.working_dim = 0
         self.includes = []
+        self.port_options = {}
 
     def __str__(self):
         """
@@ -33,6 +34,12 @@ class BaseStep:
         Get configuration options
         """
         return {}
+
+    def set_port_options(self, **kwargs):
+        """
+        Set options to pass to the port() function
+        """
+        self.port_options.update(kwargs)
 
     def set_X(self, X):
         """
@@ -68,7 +75,7 @@ class BaseStep:
         """
         self.includes.append(library)
 
-    def port(self, ns):
+    def port(self, ns=None):
         """
         Port to plain C++
         :param ns: str namespace for the pipeline

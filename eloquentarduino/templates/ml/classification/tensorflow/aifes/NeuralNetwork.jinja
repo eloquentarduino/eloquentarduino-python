@@ -1,6 +1,3 @@
-/**
- * @require AIfES
- */
 #include <aifes.h>
 
 
@@ -11,6 +8,9 @@ namespace Eloquent {
                 public:
                     static const uint16_t NUM_INPUTS = {{ num_inputs }};
                     static const uint16_t NUM_OUTPUTS = {{ num_outputs }};
+                    static const uint8_t ERROR_PARAMETER_MEMORY_ALLOCATION_FAILED = 1;
+                    static const uint8_t ERROR_TRAINING_MEMORY_ALLOCATION_FAILED = 2;
+                    static const uint8_t ERROR_INFERENCE_MEMORY_ALLOCATION_FAILED = 3;
 
                     float proba[{{ num_outputs }}] = {0};
 
@@ -18,29 +18,176 @@ namespace Eloquent {
                      * Init model
                      */
                      bool begin() {
-                        inited = true;
+                        input_layer.input_dim = 2;
+                        input_layer.input_shape = input_layer_shape;
 
+                        {% for i, (layer, activation) in enumerate(zip(layers, activations)) %}
+                             dense_{{ i }}.neurons = {{ layer['units'] }};
+                        {% endfor %}
 
+                          x = model.input_layer = ailayer_input_f32_default(&input_layer);
+
+                          {% for i, (layer, activation) in enumerate(zip(layers, activations)) %}
+                            x = ailayer_dense_f32_default(&dense_{{ i }}, x);
+                            x = ailayer_{{ activation['type'] }}_f32_default(&activation_{{ i }}, x);
+                          {% endfor %}
+
+                          model.output_layer = x;
+                          aialgo_compile_model(&model);
+
+                          {% if trainable %}
+                            model.loss = ailoss_crossentropy_f32_default(&crossentropy_loss, model.output_layer);
+
+                            concreteOptimizer.learning_rate = 0.1f;
+                            concreteOptimizer.beta1 = 0.9f;
+                            concreteOptimizer.beta2 = 0.999f;
+                            concreteOptimizer.eps = 1e-7;
+                            abstractOptimizer = aiopti_adam_f32_default(&concreteOptimizer);
+
+                            parameterMemorySize = aialgo_sizeof_parameter_memory(&model);
+                            parameterMemoryArea = malloc(parameterMemorySize);
+
+                            if (parameterMemoryArea == NULL) {
+                              errorCode = ERROR_PARAMETER_MEMORY_ALLOCATION_FAILED;
+                              return isOk();
+                            }
+
+                            aialgo_distribute_parameter_memory(&model, parameterMemoryArea, parameterMemorySize);
+
+                            trainingMemorySize = aialgo_sizeof_training_memory(&model, abstractOptimizer);
+                            trainingMemoryArea = malloc(trainingMemorySize);
+
+                            if (trainingMemoryArea == NULL) {
+                                errorCode = ERROR_TRAINING_MEMORY_ALLOCATION_FAILED;
+                                return isOk();
+                            }
+
+                            aialgo_schedule_training_memory(&model, abstractOptimizer, trainingMemoryArea, trainingMemorySize);
+                            aialgo_init_model_for_training(&model, abstractOptimizer);
+                          {% endif %}
+
+                            inferenceMemorySize = aialgo_sizeof_inference_memory(&model);
+                            inferenceMemoryArea = malloc(inferenceMemorySize);
+
+                            if (inferenceMemoryArea == NULL) {
+                                errorCode = ERROR_INFERENCE_MEMORY_ALLOCATION_FAILED;
+                                return isOk();
+                            }
+
+                            // allocate existing weights
+                            {% for i, (layer, activation) in enumerate(zip(layers, activations)) %}
+                                 dense_{{ i }}.weights.data = weights_{{ i }};
+                                 dense_{{ i }}.bias.data = bias_{{ i }};
+                            {% endfor %}
+
+                            aialgo_schedule_inference_memory(&model, inferenceMemoryArea, inferenceMemorySize);
+
+                          inited = true;
+
+                          return isOk();
+                     }
+
+                     /**
+                      * Test if an error occurred
+                      */
+                     bool isOk() {
+                        return errorCode == 0;
+                     }
+
+                     /**
+                      * Get descriptive error message
+                      */
+                     const char* getErrorMessage() {
+                        switch (errorCode) {
+                            case ERROR_INFERENCE_MEMORY_ALLOCATION_FAILED:
+                                return "Cannot allocate inference memory";
+                            case ERROR_PARAMETER_MEMORY_ALLOCATION_FAILED:
+                                return "Cannot allocate parameter memory";
+                            case ERROR_TRAINING_MEMORY_ALLOCATION_FAILED:
+                                return "Cannot allocate training memory";
+                            default:
+                                return "All is fine";
+                        }
+                     }
+
+                     /**
+                      * @deprecated
+                      */
+                     uint8_t predict(float *x) {
+                        return predictClass(x);
                      }
 
                      /**
                       * Predict class probabilities
                       */
-                     void predictProba(float *x) {
+                     bool predictProba(float *x) {
+                        // reset proba
+                        for (uint8_t i = 0; i < {{ num_outputs }}; i++) {
+                            proba[i] = 0;
+                        }
+
                         if (!inited) {
                             begin();
                         }
 
-                        // todo
+                        if (!isOk()) {
+                            return false;
+                        }
+
+                        aitensor_t input_tensor;
+                        input_tensor.dtype = aif32;
+                        input_tensor.dim = 2;
+                        input_tensor.shape = input_shape;
+                        input_tensor.data = x;
+
+                        aitensor_t *output_tensor;
+                        output_tensor = aialgo_forward_model(&model, &input_tensor);
+
+                        for (uint8_t i = 0; i < {{ num_outputs }}; i++) {
+                            proba[i] = ((float *) output_tensor->data)[i];
+                        }
+
+                        return true;
                      }
 
                     /**
                      * Predict most probable class
                      */
-                     uint8_t predict(float *x) {
-                        predictProba(x);
+                     uint8_t predictClass(float *x) {
+                        if (!predictProba(x)) {
+                            return 255;
+                        }
 
-                        // todo
+                        // get class with highest proba
+                        uint8_t predictedClass = 0;
+                        float maxProba = 0;
+
+                        for (uint8_t i = 0; i < {{ num_outputs }}; i++) {
+                            float p = proba[i];
+
+                            // early exit
+                            if (p > 0.5) {
+                                return i;
+                            }
+
+                            if (p > maxProba) {
+                                predictedClass = i;
+                                maxProba = p;
+                            }
+                        }
+
+                        return predictedClass;
+                     }
+
+                     /**
+                      * Get probability of given class
+                      */
+                     float getProbaAt(uint8_t index) {
+                        if (index >= {{ num_outputs }}) {
+                            return 0;
+                        }
+
+                        return proba[index];
                      }
 
                      {% if classmap is not none %}
@@ -67,8 +214,86 @@ namespace Eloquent {
 
                      {% endif %}
 
+                     {% if trainable %}
+                        template<uint16_t numSamples>
+                        void fit(float X[numSamples][{{ num_inputs }}], uint8_t *labels, uint16_t numEpochs = 10, uint16_t batchSize = 0) {
+                          float labelsOneHotEncoded[numSamples][{{ num_outputs }}] = {0};
+
+                          for (uint16_t i = 0; i < numSamples; i++) {
+                            labelsOneHotEncoded[i][labels[i]] = 1;
+                          }
+
+                          uint16_t inputShape[] = {numSamples, {{ num_inputs }}};
+                          aitensor_t inputTensor;
+
+                          inputTensor.dtype = aif32;
+                          inputTensor.dim = 2;
+                          inputTensor.shape = inputShape;
+                          inputTensor.data = X;
+
+                          uint16_t targetShape[] = {1, {{ num_outputs }}};
+                          aitensor_t targetTensor;
+
+                          targetTensor.dtype = aif32;
+                          targetTensor.dim = 2;
+                          targetTensor.shape = targetShape;
+                          targetTensor.data = labelsOneHotEncoded;
+
+                          for (uint16_t epoch = 0; epoch < numEpochs; epoch++) {
+                            aialgo_train_model(&model, &inputTensor, &targetTensor, abstractOptimizer, batchSize ? batchSize : numSamples);
+
+                            //if (callback != NULL) {
+                            //  float loss;
+
+                            //  aialgo_calc_loss_model_f32(&model, &inputTensor, &targetTensor, &loss);
+                            //  callback(epoch, loss);
+                            //}
+                          }
+                        }
+
+                        /**
+                         * Fit a single sample
+                         */
+                        void fitOne(float *x, uint8_t label) {
+                            float X[1][{{ num_inputs }}] = {0};
+                            uint8_t labels[1] = {label};
+
+                            memcpy(X[0], x, sizeof(float) * {{ num_inputs }});
+                            fit<1>(X, labels);
+                        }
+                     {% endif %}
+
                 protected:
                     bool inited = false;
+
+                    aimodel_t model;
+                    ailayer_t *x;
+                    ailayer_input_t input_layer;
+                    {% for i, (layer, activation) in enumerate(zip(layers, activations)) %}
+                         ailayer_dense_t dense_{{ i }};
+                         ailayer_{{ activation['type'] }}_t activation_{{ i }};
+                         float weights_{{ i }}[{{ layer['weights'] | length }}] = {{ layer['weights'] | to_array }};
+                         float bias_{{ i }}[{{ layer['bias'] | length }}] = {{ layer['bias'] | to_array }};
+                    {% endfor %}
+
+                    {% if trainable %}
+                        ailoss_crossentropy_t crossentropy_loss;
+                        aiopti_t *abstractOptimizer;
+                        aiopti_adam_f32_t concreteOptimizer;
+                    {% endif %}
+
+                    uint16_t input_layer_shape[2] = {1, {{ num_inputs }} };
+                    uint16_t input_shape[2] = {1, {{ num_inputs }} };
+
+                    void *inferenceMemoryArea;
+                    void *parameterMemoryArea;
+                    void *trainingMemoryArea;
+
+                    uint32_t inferenceMemorySize;
+                    uint32_t parameterMemorySize;
+                    uint32_t trainingMemorySize;
+
+                    uint8_t errorCode = 0;
             };
         }
     }

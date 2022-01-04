@@ -40,6 +40,15 @@
             }
 
             /**
+             * Reset state of each step
+             */
+            void reset() {
+                {% for i, step in enumerate(steps) %}
+                    step{{ i }}.clear();
+                {% endfor %}
+            }
+
+            /**
              * Transform input vector
              */
             bool transform(float *x) {

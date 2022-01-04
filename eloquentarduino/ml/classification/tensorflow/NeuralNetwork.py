@@ -300,7 +300,7 @@ class NeuralNetwork(Classifier):
         plt.legend()
         plt.show()
 
-    def port(self, arena_size='1024 * 16', model_name='model', classname='NeuralNetwork', classmap=None, framework='tensorflow'):
+    def port(self, arena_size='1024 * 16', model_name='model', classname='NeuralNetwork', classmap=None, framework='tensorflow', **kwargs):
         """
         Port Tf model to plain C++
         :param arena_size: int|str size of tensor arena (read Tf docs)
@@ -311,7 +311,7 @@ class NeuralNetwork(Classifier):
         assert framework.lower() in ['tensorflow', 'aifes'], 'framework MUST be either tensorflow or aifes: %s given' % str(framework)
 
         if framework.lower() == 'aifes':
-            return str(AIfESPort(network=self, classname=classname, classmap=classmap))
+            return str(AIfESPort(network=self, classname=classname, classmap=classmap, **kwargs))
 
         return jinja('ml/classification/tensorflow/NeuralNetwork.jinja', {
             'classname': classname,

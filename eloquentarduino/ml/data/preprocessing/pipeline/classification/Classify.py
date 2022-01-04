@@ -43,7 +43,7 @@ class Classify(BaseStep):
 
         """
         return {
-            'clf_code': self.clf.port(classname='Classifier')
+            'clf_code': self.clf.port(classname='Classifier', **self.port_options)
         }
 
     def postprocess_port(self, ported):

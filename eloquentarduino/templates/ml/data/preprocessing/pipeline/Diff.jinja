@@ -15,6 +15,15 @@
         return true;
     }
 
+    /**
+     * Reset step state
+     */
+    void reset() {
+        for (uint16_t i = 0; i < {{ input_dim }}; i++) {
+            old[i] = 0;
+        }
+    }
+
 {% endblock %}
 
 {% block protected %}

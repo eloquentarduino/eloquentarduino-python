@@ -7,4 +7,11 @@
      */
     virtual bool transform(float *source) = 0;
 
+    /**
+     * Reset step state
+     */
+    virtual void reset() {
+        // step-specific code
+    }
+
 {% endblock %}

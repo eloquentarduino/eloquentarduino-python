@@ -66,6 +66,7 @@ def jinja_env(loader):
     env.globals['np'] = np
     env.globals['enumerate'] = enumerate
     env.globals['isinstance'] = isinstance
+    env.globals['zip'] = zip
     env.globals['train_test_split'] = train_test_split
 
     return env

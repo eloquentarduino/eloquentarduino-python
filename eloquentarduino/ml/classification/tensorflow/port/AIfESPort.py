@@ -1,17 +1,20 @@
 from eloquentarduino.utils import jinja
+from tensorflow.keras.layers import Dense
 
 
 class AIfESPort:
     """
     Port TensorFlow Neural Network to AIfES framework
     """
-    def __init__(self, network, classname='NeuralNetwork', classmap=None):
+    def __init__(self, network, trainable=False, classname='NeuralNetwork', classmap=None, **kwargs):
         """
         :param network: NeuralNetwork
+        :param trainable: bool If True, the ported network can be trained online (default to False)
         :param classname: str
         :param classmap: dict
         """
         self.network = network
+        self.trainable = trainable
         self.classname = classname
         self.classmap = classmap
 
@@ -19,9 +22,38 @@ class AIfESPort:
         """
         Port
         """
+        for i, layer in enumerate(self.network.sequential.layers):
+            assert isinstance(layer, Dense), 'All layers MUST be Dense. Layer %d is not (it\'s %s)' % (i, str(type(layer)))
+
+        layers = [{
+            'units': d.units,
+            'weights': d.get_weights()[0].flatten(),
+            'bias': d.get_weights()[1],
+        } for d in self.network.sequential.layers]
+
+        activations = [{
+            'type': self.get_activation_type(d, i)
+        } for i, d in enumerate(self.network.sequential.layers)]
+
         return jinja('ml/classification/tensorflow/aifes/NeuralNetwork.jinja', {
             'classname': self.classname,
             'num_inputs': self.network.num_inputs,
             'num_outputs': self.network.num_classes,
-            'classmap': self.classmap
+            'classmap': self.classmap,
+            'layers': layers,
+            'activations': activations,
+            'trainable': self.trainable
         })
+
+    def get_activation_type(self, dense, index=None):
+        """
+        Get activation type for given dense layer
+        :param dense: Layer
+        :return: str
+        """
+        # @todo is there a more reliable way to perform this?
+        activation = str(dense.activation).split(' ')[1]
+
+        assert activation in ['relu', 'sigmoid', 'softmax'], 'unknown activation "%s" at index %s' % (activation, str(index))
+
+        return activation

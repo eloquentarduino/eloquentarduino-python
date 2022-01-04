@@ -26,6 +26,15 @@
         return true;
     }
 
+    /**
+     * Reset step state
+     */
+    void reset() {
+        mean = 0;
+        var = 0;
+        last = 0;
+    }
+
 {% endblock %}
 
 {% block protected %}
