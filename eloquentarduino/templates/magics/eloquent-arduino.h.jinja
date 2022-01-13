@@ -49,7 +49,25 @@ namespace eloquent {
          */
         bool assertArrayMatch(float *test, float *actual, uint16_t length) {
             for (uint16_t i = 0; i < length; i++) {
-                if (abs(test[i] - actual[i]) > 0.001) {
+                // if dealing with small numbers, test against a small threshold
+                if (abs(test[i]) < 1 && abs(test[i] - actual[i]) > 0.001) {
+                    Serial.print("\tMismatch at index ");
+                    Serial.print(i);
+                    Serial.print(": got ");
+                    Serial.print(actual[i]);
+                    Serial.print(" instead of ");
+                    Serial.println(test[i]);
+                    return false;
+                }
+
+                // if dealing with large numbers, test relative error
+                if (abs(test[i]) > 100 && abs(actual[i]) > 100 && abs((test[i] - actual[i]) / test[i]) > 0.003) {
+                    Serial.print("\tMismatch at index ");
+                    Serial.print(i);
+                    Serial.print(": got ");
+                    Serial.print(actual[i]);
+                    Serial.print(" instead of ");
+                    Serial.println(test[i]);
                     return false;
                 }
             }

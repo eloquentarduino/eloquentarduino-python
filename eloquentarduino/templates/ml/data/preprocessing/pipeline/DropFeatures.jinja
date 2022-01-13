@@ -1,0 +1,22 @@
+{% extends './templates/Step.jinja' %}
+
+{% block public %}
+
+    /**
+     * @inplace
+     */
+    bool transform(float *source) {
+        for (uint16_t i = 0; i < {{ keep | length }}; i++) {
+            source[i] = source[keep[i]];
+        }
+
+        return true;
+    }
+
+{% endblock %}
+
+{% block protected %}
+
+    float keep[{{ keep | shape }}] = {{ keep | to_array }};
+
+{% endblock %}

@@ -6,6 +6,14 @@ from glob import glob
 from sklearn.datasets import *
 
 
+def is_float(x):
+    try:
+        float(x)
+        return True
+    except ValueError:
+        return False
+
+
 class LoadsDatasetMixin:
     """
     Mixin to load datasets from files and folders using pandas' API
@@ -37,11 +45,20 @@ class LoadsDatasetMixin:
             data_columns = data_columns or columns
 
         if data_columns is None:
-            # if X_columns is None, use all columns but y_column
-            data_columns = df.columns
+            # if data_columns is None, use all columns
+            if len(list(df.columns)) > 0 and not all([is_float(c) for c in df.columns]):
+                data_columns = [c for c in df.columns]
+            else:
+                data_columns = ['f%d' % i for i in range(df.shape[1])]
+                df = df.rename(columns={df.columns[i]: data_columns[i] for i in range(len(data_columns))})
         elif isinstance(data_columns, str):
-            # if X_columns is a string, split on ","
+            # if data_columns is a string, split on ","
             data_columns = [column.strip() for column in data_columns.split(',')]
+
+        # format label_column as column name
+        if isinstance(label_column, int):
+            label_column = (len(data_columns) + label_column) % len(data_columns)
+            label_column = data_columns[label_column]
 
         # remove label column from data columns
         data_columns = [column for column in data_columns if column != label_column]
@@ -51,7 +68,7 @@ class LoadsDatasetMixin:
             start, end = slice
             X = X[start:end]
 
-        if label_column is not None:
+        if isinstance(label_column, str):
             y = df[label_column].to_numpy().flatten()
         else:
             # if no y column is provided, fill with empty

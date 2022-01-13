@@ -13,7 +13,7 @@ class DropFeatures(BaseStep):
         assert isinstance(drop, list) and len(drop) > 0, 'drop MUST be a non-empty list'
 
         super().__init__(name)
-        self.drop = drop
+        self.drop = sorted(drop)
         self.keep = None
 
     def fit(self, X, y):

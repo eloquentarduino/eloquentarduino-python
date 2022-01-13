@@ -11,7 +11,7 @@ class TSFRESH(BaseStep):
     Extract many time-series features
     """
 
-    def __init__(self, num_features, k=0, name='TSFRESH'):
+    def __init__(self, num_features, k=0, eps=1e-3, name='TSFRESH'):
         """
         :param num_features: int
         """
@@ -20,6 +20,7 @@ class TSFRESH(BaseStep):
         super().__init__(name)
         self.num_features = num_features
         self.k = k
+        self.eps = eps
         self.constants = {}
         self.kbest = None
 
@@ -153,7 +154,7 @@ class TSFRESH(BaseStep):
         assert (self.input_dim % self.num_features) == 0, 'num_features MUST be a divisor of X.shape[1]'
 
         FRESH = None
-        eps = 1e-5
+        eps = self.eps
 
         for k in range(self.num_features):
             ts = X[:, k::self.num_features]
@@ -184,8 +185,8 @@ class TSFRESH(BaseStep):
             ts_zero_mean = ts - mean
             std = ts.std(axis=1).reshape((-1, 1))
             var = ((ts - mean) ** 2).mean(axis=1).reshape((-1, 1))
-            count_above_mean = (ts_zero_mean > 1e-5).sum(axis=1)
-            count_below_mean = (ts_zero_mean < -1e-5).sum(axis=1)
+            count_above_mean = (ts_zero_mean > eps).sum(axis=1)
+            count_below_mean = (ts_zero_mean < -eps).sum(axis=1)
             first_position_of_max = np.argmax(ts, axis=1)
             first_position_of_min = np.argmin(ts, axis=1)
             has_duplicate_max = (ts > (maximum - np.abs(maximum) * 0.02)).sum(axis=1)
@@ -316,7 +317,7 @@ class TSFRESH(BaseStep):
             'is_second_order': self._intersects(*second_order_features),
             'opt': set(optimizations),
             'num_samples': self.input_dim // self.num_features,
-            'eps': '1e-5'
+            'eps': self.eps
         }
 
     def postprocess_port(self, ported):

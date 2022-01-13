@@ -91,13 +91,13 @@
                     // start of features
                     var += var_i;
                     autocorrelation1 += _xi_mean * _xi_mean_prev;
-                    count_above_mean += _xi_mean >  1e-5 ? 1 : 0;
-                    count_below_mean += _xi_mean < -1e-5 ? 1 : 0;
-                    first_position_of_max = (i < first_position_of_max && abs(_xi - maximum) < 1e-5) ? i : first_position_of_max;
-                    first_position_of_min = (i < first_position_of_min && abs(_xi - minimum) < 1e-5) ? i : first_position_of_min;
+                    count_above_mean += _xi_mean >  {{ eps }} ? 1 : 0;
+                    count_below_mean += _xi_mean < -{{ eps }} ? 1 : 0;
+                    first_position_of_max = (i < first_position_of_max && abs(_xi - maximum) < {{ eps }}) ? i : first_position_of_max;
+                    first_position_of_min = (i < first_position_of_min && abs(_xi - minimum) < {{ eps }}) ? i : first_position_of_min;
 
-                    if (var_i > 1e-3) { skew += var_i * _xi_mean; }
-                    if (var_i > 1e-3) { kurtosis += var_i * var_i; }
+                    if (var_i > {{ eps }}) { skew += var_i * _xi_mean; }
+                    if (var_i > {{ eps }}) { kurtosis += var_i * var_i; }
                     if (_xi > has_duplicate_max_thresh) { has_duplicate_max += 1; }
                     if (_xi < has_duplicate_min_thresh) { has_duplicate_min += 1; }
 

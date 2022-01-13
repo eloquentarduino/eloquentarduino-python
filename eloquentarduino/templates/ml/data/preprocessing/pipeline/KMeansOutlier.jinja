@@ -43,9 +43,11 @@
      */
     float euclidean(float *a, float *b) {
         float dist = 0;
+        float diff = 0;
 
         for (uint16_t i = 0; i < {{ centroids[0] | length }}; i++) {
-            dist += (a[i] - b[i]) * (a[i] - b[i]);
+            diff = a[i] - b[i];
+            dist += diff * diff;
         }
 
         return dist;
