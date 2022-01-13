@@ -93,7 +93,7 @@ class SerialMonitor:
 
         return 0
 
-    def capture_samples(self, dest, samples, append=True, dump=True, interval=0, **kwargs):
+    def capture_samples(self, dest, samples, append=True, dump=True, interval=0, verbose=False, **kwargs):
         """
         Capture the given number of samples and save them to a file in the current project
         :param dest: destination file name
@@ -101,6 +101,7 @@ class SerialMonitor:
         :param append: wether to append samples to file or overwrite existing data
         :param dump: wether to dump output to the console
         :param interval: time to wait between samples
+        :param verbose: bool if True, show a prompt for each sample
         :param kwargs: arguments for the serial port
         :return:
         """
@@ -110,17 +111,27 @@ class SerialMonitor:
 
         with Serial(self.project.board.port, self.project.board.baud_rate, **kwargs) as serial:
             self.project.logger.debug('Serial port %s opened', self.project.board.port)
+
             with self.project.files.open('data', dest, mode=('a' if append else 'w')) as file:
                 for i in range(samples):
                     self.project.logger.debug('%d/%d Requesting sample... ', i + 1, samples)
+
+                    if verbose:
+                        print('\t%d/%d Requesting sample... ' % (i + 1, samples), end='')
+
                     serial.write(b'capture')
                     reply = serial.readline().decode('utf-8').strip()
+
                     if reply:
                         file.write(reply)
                         file.write('\n')
                         self.project.logger.debug('OK')
+
+                        if verbose:
+                            print('OK')
                     else:
                         self.project.logger.warning('Empty reply')
+
                     # sleep between samples
                     if interval > 0:
                         sleep(interval)
@@ -128,7 +139,9 @@ class SerialMonitor:
             return self.project.files.cat('data', dest)
 
     def capture_streaming(self, dest, samples, delimiter=',', append=True, dump=True, timeout=60, serial_timeout=5, **kwargs):
-        """Capture the given number of values and save them to a file in the current project"""
+        """
+        Capture the given number of values and save them to a file in the current project
+        """
         self.project.assert_name()
         assert isinstance(dest, str) and len(dest) > 0, 'dest CANNOT be empty'
         assert samples > 0, 'samples MUST be grater than 0'
@@ -153,7 +166,9 @@ class SerialMonitor:
                                     float(buffer)
                                     file.write(buffer)
                                     self.project.logger.progress('.')
-                                    samples -= 1
+
+                                    if char == '\n':
+                                        samples -= 1
 
                                     if samples == 0:
                                         break
@@ -162,10 +177,13 @@ class SerialMonitor:
                                         file.write(char)
                                 except ValueError:
                                     self.project.logger.error('ValueError %s', buffer)
+
                                 buffer = ''
+
                         # append character to buffer
                         else:
                             buffer += char
+
                     # abort on timeout
                     if time() - start_time > timeout:
                         raise RuntimeError('Timeout')

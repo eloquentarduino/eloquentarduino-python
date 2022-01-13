@@ -35,6 +35,7 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
         :param test_validity: bool
         """
         self.name = name
+        self.test_validity = test_validity
 
         if test_validity:
             try:
@@ -346,7 +347,7 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
             X = X.copy()
             y = y.copy()
 
-        return Dataset(name=name, X=X, y=y, columns=columns, classmap=classmap)
+        return Dataset(name=name, X=X, y=y, columns=columns, classmap=classmap, test_validity=self.test_validity)
 
     def clone(self, shallow=True):
         """

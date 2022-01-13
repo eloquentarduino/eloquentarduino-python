@@ -215,8 +215,8 @@ namespace Eloquent {
                      {% endif %}
 
                      {% if trainable %}
-                        template<uint16_t numSamples>
-                        void fit(float X[numSamples][{{ num_inputs }}], uint8_t *labels, uint16_t numEpochs = 10, uint16_t batchSize = 0) {
+                        template<uint16_t numSamples, typename Callback>
+                        void fit(float X[numSamples][{{ num_inputs }}], uint8_t *labels, uint16_t numEpochs = 10, uint16_t batchSize = 0, Callback callback = ([]() => {})) {
                           float labelsOneHotEncoded[numSamples][{{ num_outputs }}] = {0};
 
                           for (uint16_t i = 0; i < numSamples; i++) {

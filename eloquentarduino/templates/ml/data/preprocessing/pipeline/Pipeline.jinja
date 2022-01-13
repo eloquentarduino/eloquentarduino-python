@@ -24,6 +24,8 @@
 
     class {{ classname }} {
         public:
+            static const uint16_t NUM_INPUTS = {{ input_dim }};
+            static const uint16_t NUM_OUTPUTS = {{ output_dim }};
             float X[{{ output_dim }}] = {0};
             time_t latency = 0;
 
@@ -44,7 +46,7 @@
              */
             void reset() {
                 {% for i, step in enumerate(steps) %}
-                    step{{ i }}.clear();
+                    step{{ i }}.reset();
                 {% endfor %}
             }
 
@@ -52,14 +54,18 @@
              * Transform input vector
              */
             bool transform(float *x) {
-                memcpy(X, x, sizeof(float) * {{ input_dim }});
+                memcpy(working, x, sizeof(float) * {{ input_dim }});
 
                 time_t start = micros();
                 this->isOk =
                 {% for i, step in enumerate(steps) %}
                     // {{ step.name }}
-                    {% if i > 0 %} && {% endif %} step{{ i }}.transform(X)
+                    {% if i > 0 %} && {% endif %} step{{ i }}.transform(working)
                 {% endfor %};
+
+                if (this->isOk) {
+                    memcpy(X, working, sizeof(float) * {{ output_dim }});
+                }
 
                 latency = micros() - start;
 
@@ -107,7 +113,8 @@
         protected:
             bool isOk;
             // shared temporary memory for the steps
-            float buffer[{{ working_dim }}] = {0};
+            float buffer[{{ buffer_dim }}] = {0};
+            float working[{{ working_dim }}] = {0};
             {% for i, step in enumerate(steps) %}
                 {{ step.name }} step{{ i }};
             {% endfor %}

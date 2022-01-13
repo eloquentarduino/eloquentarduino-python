@@ -25,6 +25,31 @@ class PlotsItselfMixin:
         """
         cls.is_plot_disabled = disabled
 
+    def scatter(self, columns=None, max_samples=0):
+        """
+        Draw scatter plot
+        :param columns: list
+        :param max_samples: int
+        """
+        X = self.X
+        y = self.y
+
+        if self.num_features > 2 and columns is None:
+            X = self.dim_reduction(pca=2).X
+        elif isinstance(columns, list) and len(columns) == 2:
+            columns_idx = [self.columns.index(c) if isinstance(c, str) else c for c in columns]
+            X = self.X[:, columns_idx]
+
+        if max_samples > 0 and len(X) > max_samples:
+            X, _X, y, _y = train_test_split(X, y, train_size=max_samples)
+
+        ax = plt.figure().add_subplot()
+        scatter = ax.scatter(*X.T.tolist(), c=y)
+        ax.legend(*scatter.legend_elements(), title="Classes")
+        ax.set_xlabel("PCA component #1")
+        ax.set_ylabel("PCA component #2")
+        plt.show()
+
     def plot(self, title='', columns=None, n_ticks=15, grid=True, fontsize=6, bg_alpha=0.2, once_every=1, max_samples=None, palette=None, y_pred=None, force=False, linewidth=1, **kwargs):
         """
         Plot dataframe

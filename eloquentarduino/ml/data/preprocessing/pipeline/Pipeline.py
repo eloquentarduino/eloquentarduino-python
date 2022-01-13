@@ -97,7 +97,7 @@ class Pipeline:
         """
         assert self.y is None or len(self.y.shape) == 1 or self.y.shape[1] == 1, 'y MUST be None or 1d'
 
-        return Dataset(name=self.name, X=self.X, y=np.flatten(self.y), test_validity=False)
+        return Dataset(name=self.name, X=self.X, y=np.asarray(self.y).flatten(), test_validity=False)
 
     @property
     def input_dim(self):
@@ -217,6 +217,9 @@ class Pipeline:
         for step in self.steps:
             X, y = step.transform(X, y)
 
+        self.X = X
+        self.y = y
+
         if return_X_y:
             return X, y
 
@@ -254,8 +257,9 @@ class Pipeline:
             'instance_name': instance_name,
             'steps': self.steps,
             'input_dim': self.input_dim,
-            'output_dim': max([self.output_dim, self.working_dim]),
-            'working_dim': max([1, self.working_dim]),
+            'working_dim': max([self.output_dim, self.working_dim]),
+            'buffer_dim': max([1, self.working_dim]),
+            'output_dim': self.output_dim,
             'includes': self.includes,
             # @added 0.1.19
             'classmap': self.source_dataset.port_classmap()

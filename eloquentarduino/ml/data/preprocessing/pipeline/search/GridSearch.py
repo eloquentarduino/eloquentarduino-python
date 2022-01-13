@@ -1,5 +1,6 @@
 import warnings
 from copy import copy
+from pprint import pprint
 
 import numpy as np
 from sklearn.metrics import accuracy_score
@@ -107,6 +108,15 @@ class GridSearch:
             paths = paths.possibilities
 
         return self.one_of([None] + paths)
+
+    def print_all(self):
+        """
+        Print search combinations
+        """
+        for i, combo in enumerate(self.possibilities):
+            print("Pipeline #%d" % (i + 1))
+            pprint(combo)
+            print("---------------\n")
 
     @np.errstate(all="ignore")
     def search(self, train, test, metric=accuracy_score):
