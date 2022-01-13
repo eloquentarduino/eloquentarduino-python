@@ -52,6 +52,8 @@ eloquentarduino/ml/classification/tensorflow/__init__.py
 eloquentarduino/ml/classification/tensorflow/pickle_patch.py
 eloquentarduino/ml/classification/tensorflow/gridsearch/GridSearchResult.py
 eloquentarduino/ml/classification/tensorflow/gridsearch/__init__.py
+eloquentarduino/ml/classification/tensorflow/port/AIfESPort.py
+eloquentarduino/ml/classification/tensorflow/port/__init__.py
 eloquentarduino/ml/data/CheckpointFile.py
 eloquentarduino/ml/data/Dataset.py
 eloquentarduino/ml/data/__init__.py
@@ -145,12 +147,14 @@ eloquentarduino/templates/metrics/Resources.jinja
 eloquentarduino/templates/metrics/Runtime.bck.jinja
 eloquentarduino/templates/metrics/Runtime.jinja
 eloquentarduino/templates/ml/classification/tensorflow/NeuralNetwork.jinja
+eloquentarduino/templates/ml/classification/tensorflow/aifes/NeuralNetwork.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/AbstractStep.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/BoxCox.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/Cascading.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/Classify.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/DFT.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/Diff.jinja
+eloquentarduino/templates/ml/data/preprocessing/pipeline/DropFeatures.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/EWMA.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/EllipticEnvelope.jinja
 eloquentarduino/templates/ml/data/preprocessing/pipeline/FFT.jinja
