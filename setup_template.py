@@ -51,7 +51,8 @@ setup(
     'cached-property',
     'umap-learn',
     'xgboost',
-    'deprecation'
+    'deprecation',
+    'requests'
   ],
   package_data={
     'eloquentarduino': data

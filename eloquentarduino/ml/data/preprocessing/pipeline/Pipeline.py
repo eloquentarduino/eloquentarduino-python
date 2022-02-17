@@ -271,7 +271,7 @@ class Pipeline:
         :param filename: str
         """
         with open(filename, 'wb') as file:
-            pickle.dump(self, file)
+            pickle.dump(Pipeline(self.name, self.source_dataset, self.steps), file)
 
     @staticmethod
     def deserialize(filename):

@@ -46,8 +46,8 @@ class PlotsItselfMixin:
         ax = plt.figure().add_subplot()
         scatter = ax.scatter(*X.T.tolist(), c=y)
         ax.legend(*scatter.legend_elements(), title="Classes")
-        ax.set_xlabel("PCA component #1")
-        ax.set_ylabel("PCA component #2")
+        ax.set_xlabel("Component #1")
+        ax.set_ylabel("Component #2")
         plt.show()
 
     def plot(self, title='', columns=None, n_ticks=15, grid=True, fontsize=6, bg_alpha=0.2, once_every=1, max_samples=None, palette=None, y_pred=None, force=False, linewidth=1, **kwargs):

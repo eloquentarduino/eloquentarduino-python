@@ -9,6 +9,42 @@ class GridSearchResult(dict):
     Add syntactic sugar to pipeline grid search results
     """
     @cached_property
+    def pipeline(self):
+        """
+        Get pipeline
+        :return: Pipeline
+        """
+        return self['pipeline']
+
+    @cached_property
+    def resources(self):
+        """
+        Get pipeline resources
+        :return: dict
+        """
+        self._resources_loaded = True
+
+        return self.pipeline.resources.resources
+
+    @cached_property
+    def execution_time(self):
+        """
+        Get pipeline execution time
+        :return: int
+        """
+        self._execution_time_loaded = True
+
+        return self.pipeline.resources.execution_time
+
+    @cached_property
+    def support(self):
+        """
+        Get number of samples
+        :return: int
+        """
+        return len(self['y_true'])
+
+    @cached_property
     def score(self):
         """
         Get score
@@ -62,10 +98,33 @@ class GridSearchResult(dict):
 
         return 0 if inRow is None else inRow.missing_rate
 
+    @property
+    def dump(self):
+        """
+        Get dump of scores
+        """
+        metrics = {
+            'score': self.score,
+            'accuracy': self.accuracy_score,
+            'precision': self.precision_score,
+            'recall': self.recall_score,
+            'f1_score': self.f1_score,
+            'missing_rate': self.missing_rate
+        }
+
+        if hasattr(self, '_resources_loaded'):
+            metrics.update(self.resources)
+
+        if hasattr(self, '_execution_time_loaded'):
+            metrics.update(execution_time=self.execution_time)
+
+        return metrics
+
     def print_scores(self):
         """
         Print all scores
         """
+        print('Support  : %d' % self.support)
         print("Score    : %.2f" % self["score"])
         print("Accuracy : %.2f" % self.accuracy_score)
         print("Precision: %.2f" % self.precision_score)

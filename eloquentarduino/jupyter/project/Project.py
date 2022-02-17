@@ -4,12 +4,14 @@ import os.path
 from copy import copy
 from datetime import datetime
 from time import time, sleep
+from cached_property import cached_property
 
 from eloquentarduino.jupyter.project.Board import Board
 from eloquentarduino.jupyter.project.Errors import UploadNotVerifiedError, ArduinoCliCommandError
 from eloquentarduino.jupyter.project.Logger import ProjectLogger
 from eloquentarduino.jupyter.project.SerialMonitor import SerialMonitor
 from eloquentarduino.jupyter.project.SketchFiles import SketchFiles
+from eloquentarduino.jupyter.project.LibraryManager import LibraryManager
 
 
 class Project:
@@ -67,13 +69,41 @@ class Project:
         """
         Get path to .ino file
         """
-        return os.path.join(self.path, self.ino_name)
+        return self.get_relative_filename(self.ino_name)
+
+    @cached_property
+    def libraries(self):
+        """
+        :return: LibraryManager
+        """
+        return LibraryManager(self)
 
     def assert_name(self):
         """
         Assert the user set a project name
         """
         assert self.name, 'You MUST set a project name'
+
+    def unpath(self, filename):
+        """
+        Remove project path from file
+        :param filename: str
+        :return: str
+        """
+        unpathed = filename.replace(self.path, '')
+
+        return unpathed[1:] if unpathed.startswith('/') else unpathed
+
+    def get_relative_filename(self, filename):
+        """
+        Convert filename relative to project directory
+        :param filename: str
+        :return: str
+        """
+        if filename.startswith(self.path):
+            return filename
+
+        return os.path.join(self.path, filename)
 
     def log(self, *args, **kwargs):
         """

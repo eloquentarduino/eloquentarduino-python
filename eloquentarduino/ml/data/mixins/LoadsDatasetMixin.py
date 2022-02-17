@@ -86,6 +86,7 @@ class LoadsDatasetMixin:
             dataset_name='Dataset',
             skiprows=0,
             slice=None,
+            filename_mapper=None,
             **kwargs):
         """
         Read all files in a folder
@@ -107,6 +108,7 @@ class LoadsDatasetMixin:
         ys = []
         columns = None
         classmap = {}
+        inverse_classmap = {}
         filenames = glob(folder, recursive=recursive)
 
         if pattern is not None:
@@ -115,11 +117,19 @@ class LoadsDatasetMixin:
 
         assert len(filenames) > 0, 'no file found'
 
-        for i, filename in enumerate(sorted(filenames)):
+        for filename in sorted(filenames):
             dataset = cls.read_csv(filename, data_columns=data_columns, label_column=None, skiprows=skiprows, slice=slice, **kwargs)
+
+            # map filename to class name and class id
+            base_name = os.path.splitext(os.path.basename(filename))[0]
+            class_name = filename_mapper(base_name) if filename_mapper else base_name
+            next_class_id = max(list(classmap.keys()) + [-1]) + 1
+            class_id = inverse_classmap.get(class_name, next_class_id)
+
             Xs.append(dataset.X)
-            ys.append(np.ones(len(dataset.y)) * i)
-            classmap[i] = os.path.splitext(os.path.basename(filename))[0]
+            ys.append(np.ones(len(dataset.y)) * class_id)
+            classmap[class_id] = class_name
+            inverse_classmap[class_name] = class_id
             columns = dataset.columns
 
         X = np.vstack(Xs)
