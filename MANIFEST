@@ -11,6 +11,7 @@ eloquentarduino/jupyter/project/Board.py
 eloquentarduino/jupyter/project/BoardConfiguration.py
 eloquentarduino/jupyter/project/CompileStatistics.py
 eloquentarduino/jupyter/project/Errors.py
+eloquentarduino/jupyter/project/LibraryManager.py
 eloquentarduino/jupyter/project/Logger.py
 eloquentarduino/jupyter/project/Project.py
 eloquentarduino/jupyter/project/SerialMonitor.py
