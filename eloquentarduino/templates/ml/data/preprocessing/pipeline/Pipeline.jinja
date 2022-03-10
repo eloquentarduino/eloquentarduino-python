@@ -42,6 +42,27 @@
             }
 
             /**
+             * Init state of each step
+             */
+            bool begin() {
+                {% for i, step in enumerate(steps) %}
+                    if (!step{{ i }}.begin()) {
+                        errorMessage = step{{ i }}.getErrorMessage();
+                        return false;
+                    }
+                {% endfor %}
+
+                return true;
+            }
+
+            /**
+             * Get pipeline error message
+             */
+            String getErrorMessage() {
+                return errorMessage;
+            }
+
+            /**
              * Reset state of each step
              */
             void reset() {
@@ -112,6 +133,7 @@
 
         protected:
             bool isOk;
+            String errorMessage;
             // shared temporary memory for the steps
             float buffer[{{ buffer_dim }}] = {0};
             float working[{{ working_dim }}] = {0};

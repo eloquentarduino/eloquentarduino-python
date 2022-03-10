@@ -1,6 +1,7 @@
 import numpy as np
 import pickle
 from copy import copy
+import sklearn.metrics
 from cached_property import cached_property
 from eloquentarduino.ml.data.Dataset import Dataset
 from eloquentarduino.utils import jinja
@@ -225,9 +226,30 @@ class Pipeline:
 
         return X
 
-    def score(self, clf, cv=3, return_average_accuracy=True, return_best_estimator=False):
+    def score(self, test_dataset, score_func='f1_score', **kwargs):
+        """
+        Test pipeline on dataset
+        :param test_dataset: Dataset
+        :param score_func: callable|str
+        """
+        y_pred, y_true = self.transform(test_dataset.X, test_dataset.y)
+        y_true = y_true.flatten()
+        y_pred = y_pred.flatten()
+
+        # align predictions with truth
+        shift = y_true.min() - y_pred.min()
+        y_true -= shift
+
+        # look for score function in the sklearn.metrics package
+        if isinstance(score_func, str):
+            score_func = getattr(sklearn.metrics, score_func)
+
+        return score_func(y_true, y_pred, **kwargs)
+
+    def _score(self, clf, cv=3, return_average_accuracy=True, return_best_estimator=False):
         """
         Score a classifier on this pipeline via cross validation
+        @deprecated v0.1.23
         :param clf:
         :param cv: int cross validation splits
         :param return_average_accuracy: bool

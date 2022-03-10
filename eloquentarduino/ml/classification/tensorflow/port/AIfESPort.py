@@ -6,7 +6,7 @@ class AIfESPort:
     """
     Port TensorFlow Neural Network to AIfES framework
     """
-    def __init__(self, network, trainable=False, classname='NeuralNetwork', classmap=None, **kwargs):
+    def __init__(self, network, trainable=False, weights_decay=0, classname='NeuralNetwork', classmap=None, **kwargs):
         """
         :param network: NeuralNetwork
         :param trainable: bool If True, the ported network can be trained online (default to False)
@@ -15,6 +15,7 @@ class AIfESPort:
         """
         self.network = network
         self.trainable = trainable
+        self.weights_decay = weights_decay
         self.classname = classname
         self.classmap = classmap
 
@@ -28,7 +29,9 @@ class AIfESPort:
         layers = [{
             'units': d.units,
             'weights': d.get_weights()[0].flatten(),
+            'offline_weights': d.get_weights()[0].flatten() * (1 - self.weights_decay),
             'bias': d.get_weights()[1],
+            'offline_bias': d.get_weights()[1] * (1 - self.weights_decay),
         } for d in self.network.sequential.layers]
 
         activations = [{
@@ -42,7 +45,9 @@ class AIfESPort:
             'classmap': self.classmap,
             'layers': layers,
             'activations': activations,
-            'trainable': self.trainable
+            'trainable': self.trainable,
+            'merge_weights': self.weights_decay > 0,
+            'weights_decay': self.weights_decay
         })
 
     def get_activation_type(self, dense, index=None):

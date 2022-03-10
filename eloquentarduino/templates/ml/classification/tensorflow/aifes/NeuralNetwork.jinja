@@ -215,8 +215,8 @@ namespace Eloquent {
                      {% endif %}
 
                      {% if trainable %}
-                        template<uint16_t numSamples, typename Callback>
-                        void fit(float X[numSamples][{{ num_inputs }}], uint8_t *labels, uint16_t numEpochs = 10, uint16_t batchSize = 0, Callback callback = ([]() => {})) {
+                        template<uint16_t numSamples>
+                        void fit(float X[numSamples][{{ num_inputs }}], uint8_t *labels, uint16_t numEpochs = 10, uint16_t batchSize = 0) {
                           float labelsOneHotEncoded[numSamples][{{ num_outputs }}] = {0};
 
                           for (uint16_t i = 0; i < numSamples; i++) {
@@ -249,6 +249,12 @@ namespace Eloquent {
                             //  callback(epoch, loss);
                             //}
                           }
+
+                          {% if merge_weights %}
+                            {% for i, layer in enumerate(layers) %}
+                                mergeWeights(weights_{{ i }}, bias_{{ i }}, weights_{{ i }}_offline, bias_{{ i }}_offline, {{ layer['weights'] | length }}, {{ layer['bias'] | length }});
+                            {% endfor %}
+                          {% endif %}
                         }
 
                         /**
@@ -274,6 +280,11 @@ namespace Eloquent {
                          ailayer_{{ activation['type'] }}_t activation_{{ i }};
                          float weights_{{ i }}[{{ layer['weights'] | length }}] = {{ layer['weights'] | to_array }};
                          float bias_{{ i }}[{{ layer['bias'] | length }}] = {{ layer['bias'] | to_array }};
+
+                        {% if merge_weights %}
+                             float weights_{{ i }}_offline[{{ layer['offline_weights'] | length }}] = {{ layer['offline_weights'] | to_array }};
+                             float bias_{{ i }}_offline[{{ layer['offline_bias'] | length }}] = {{ layer['offline_bias'] | to_array }};
+                        {% endif %}
                     {% endfor %}
 
                     {% if trainable %}
@@ -294,6 +305,20 @@ namespace Eloquent {
                     uint32_t trainingMemorySize;
 
                     uint8_t errorCode = 0;
+
+
+                    /**
+                     * Merge current weights with offline weights
+                     */
+                    void mergeWeights(float *weights, float *bias, float *offlineWeights, float *offlineBias, uint16_t numWeights, uint16_t numBias) {
+                        for (uint16_t i = 0; i < numWeights; i++) {
+                            weights[i] = weights[i] * {{ weights_decay }}f + offlineWeights[i];
+                        }
+
+                        for (uint16_t i = 0; i < numBias; i++) {
+                            bias[i] = bias[i] * {{ weights_decay }}f + offlineBias[i];
+                        }
+                    }
             };
         }
     }

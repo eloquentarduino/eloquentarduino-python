@@ -317,7 +317,7 @@ class TSFRESH(BaseStep):
             'is_second_order': self._intersects(*second_order_features),
             'opt': set(optimizations),
             'num_samples': self.input_dim // self.num_features,
-            'eps': self.eps
+            'eps': getattr(self, 'eps', 1e-3)
         }
 
     def postprocess_port(self, ported):

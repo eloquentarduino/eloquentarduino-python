@@ -8,6 +8,22 @@
     virtual bool transform(float *source) = 0;
 
     /**
+     * Init step state
+     */
+    virtual bool begin() {
+        // step-specific code
+        return true;
+    }
+
+    /**
+     * Get error message
+     */
+    virtual String getErrorMessage() {
+        // step-specific code
+        return "";
+    }
+
+    /**
      * Reset step state
      */
     virtual void reset() {
