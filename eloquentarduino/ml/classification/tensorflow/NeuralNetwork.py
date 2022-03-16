@@ -323,12 +323,12 @@ class NeuralNetwork(Classifier):
             'classmap': classmap
         })
 
-    def on_device(self, project=None):
+    def on_device(self, project=None, **kwargs):
         """
         Get device benchmarker
         :param project: Project
         """
-        return ClassifierResources(self, project=project)
+        return ClassifierResources(self, project=project, port_options=kwargs)
 
     def to_categorical(self, y):
         """
