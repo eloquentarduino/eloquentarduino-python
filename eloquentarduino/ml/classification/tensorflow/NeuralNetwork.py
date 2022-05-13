@@ -300,7 +300,7 @@ class NeuralNetwork(Classifier):
         plt.legend()
         plt.show()
 
-    def port(self, arena_size='1024 * 16', model_name='model', classname='NeuralNetwork', classmap=None, framework='tensorflow', **kwargs):
+    def port(self, arena_size='1024 * 16', model_name='model', classname='NeuralNetwork', instance_name=None, classmap=None, framework='tensorflow', **kwargs):
         """
         Port Tf model to plain C++
         :param arena_size: int|str size of tensor arena (read Tf docs)
@@ -314,7 +314,9 @@ class NeuralNetwork(Classifier):
             return str(AIfESPort(network=self, classname=classname, classmap=classmap, **kwargs))
 
         return jinja('ml/classification/tensorflow/NeuralNetwork.jinja', {
+            'UUID': id(self),
             'classname': classname,
+            'instance_name': instance_name,
             'model_name': model_name,
             'model_data': port(self.sequential, variable_name=model_name, optimize=False),
             'num_inputs': self.num_inputs,
@@ -323,12 +325,12 @@ class NeuralNetwork(Classifier):
             'classmap': classmap
         })
 
-    def on_device(self, project=None, **kwargs):
+    def on_device(self, project=None):
         """
         Get device benchmarker
         :param project: Project
         """
-        return ClassifierResources(self, project=project, port_options=kwargs)
+        return ClassifierResources(self, project=project)
 
     def to_categorical(self, y):
         """

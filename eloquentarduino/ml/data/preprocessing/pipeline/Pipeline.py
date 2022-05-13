@@ -5,7 +5,7 @@ import sklearn.metrics
 from cached_property import cached_property
 from eloquentarduino.ml.data.Dataset import Dataset
 from eloquentarduino.utils import jinja
-from sklearn.model_selection import cross_validate
+from sklearn.model_selection import cross_validate, cross_val_score
 from eloquentarduino.ml.classification.abstract.Classifier import Classifier
 from eloquentarduino.ml.data.preprocessing.pipeline.BaseStep import BaseStep
 from eloquentarduino.ml.data.preprocessing.pipeline.classification.Classify import Classify
@@ -226,25 +226,27 @@ class Pipeline:
 
         return X
 
-    def score(self, test_dataset, score_func='f1_score', **kwargs):
+    def score_classifier(self, clf, test_dataset=None, cv=3, score_func='f1_score', **kwargs):
         """
         Test pipeline on dataset
         :param test_dataset: Dataset
         :param score_func: callable|str
+        @updated 0.1.24
         """
-        y_pred, y_true = self.transform(test_dataset.X, test_dataset.y)
-        y_true = y_true.flatten()
-        y_pred = y_pred.flatten()
+        if test_dataset is None:
+            X = self.X
+            y_true = self.y
+        else:
+            X, y_true = self.transform(test_dataset.X, test_dataset.y)
 
-        # align predictions with truth
-        shift = y_true.min() - y_pred.min()
-        y_true -= shift
+        scores = cross_val_score(clf, X, y_true, cv=cv, **kwargs)
 
-        # look for score function in the sklearn.metrics package
-        if isinstance(score_func, str):
-            score_func = getattr(sklearn.metrics, score_func)
-
-        return score_func(y_true, y_pred, **kwargs)
+        return {
+            'count': len(scores),
+            'min': scores.min(),
+            'max': scores.max(),
+            'mean': scores.mean()
+        }
 
     def _score(self, clf, cv=3, return_average_accuracy=True, return_best_estimator=False):
         """

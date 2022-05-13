@@ -1,4 +1,6 @@
 from copy import copy
+from tqdm import tqdm
+from pprint import pprint
 
 from sklearn.model_selection import train_test_split
 
@@ -48,6 +50,36 @@ class GridSearch(GridSearchBase):
             possibilities.append(nn)
 
         return possibilities
+
+    def print_combinations(self):
+        """
+        Print all combinations
+        """
+        for i, combination in enumerate(self.combinations):
+            print('#%3d' % (i + 1), combination)
+
+    def print_results(self, n=999, only_compliant=True, resources=False, inference_time=False):
+        """
+        Print results
+        :param n: int
+        :param only_compliant: bool
+        :param resources: bool
+        :param inference_time: bool
+        """
+        for i, result in enumerate(self.results[:n]):
+            if only_compliant and not result.passes:
+                continue
+
+            print('#%3d Accuracy: %.2f | %s' % (i + 1, result.accuracy, str(result.clf.describe())))
+
+            if resources:
+                print('Resources: ', end='')
+                pprint(result.resources)
+
+            if inference_time:
+                print('Inference time: %.1f uS' % result.inference_time)
+
+            print('Passes constraints', result.passes)
 
     def set_compile_options(self, **kwargs):
         """
@@ -101,8 +133,9 @@ class GridSearch(GridSearchBase):
                 if not isinstance(branch, list):
                     branch = [branch]
 
-                branch_combinations += [copy(combination) + [copy(layer) for layer in branch] for combination in
-                                        self.combinations]
+                for layer in branch:
+                    for hyper_layer in layer.enumerate():
+                        branch_combinations += [copy(combination) + [copy(hyper_layer)] for combination in self.combinations]
 
             new_combinations += branch_combinations
 
@@ -139,7 +172,7 @@ class GridSearch(GridSearchBase):
         self.compile_options = kwargs
         self.compile_options.update(loss=loss, optimizer=optimizer, metrics=metrics)
 
-    def search(self, epochs=30, validation_size=0.2, test_size=0.2, show_progress=True, verbose=0, project=None, **kwargs):
+    def search(self, epochs=30, validation_size=0.2, test_size=0.2, verbose=0, project=None, **kwargs):
         """
         @deprecated
         Perform search
@@ -163,10 +196,7 @@ class GridSearch(GridSearchBase):
             self.dataset.shuffle()
             X_train, X_test, y_train, y_test = self.dataset.X, None, self.dataset.y, None
 
-        for i, combination in enumerate(self.combinations):
-            if show_progress:
-                print(i if i % 5 == 0 else '.', end='')
-
+        for combination in tqdm(self.combinations):
             nn = NeuralNetwork()
 
             for layer in combination:

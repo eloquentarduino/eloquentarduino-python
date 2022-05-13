@@ -14,7 +14,7 @@ class ClassifierResources:
     # which only depends on the number of samples * number of features
     _baseline_cache = {}
 
-    def __init__(self, clf, project=None, port_options=None):
+    def __init__(self, clf, project=None):
         """
         :param clf:
         """
@@ -22,7 +22,6 @@ class ClassifierResources:
 
         self.clf = clf
         self.project = project or default_project
-        self.port_options = port_options or {}
         self.resources = None
         self.inference_time = None
 
@@ -74,7 +73,7 @@ class ClassifierResources:
             # get resources for the classifier
             with self.project.tmp_project() as tmp:
                 sketch = self.jinja('Resources.jinja', X=X)
-                ported = self.clf.port(classname='Classifier', **self.port_options)
+                ported = self.clf.port(classname='Classifier')
 
                 tmp.files.add('%s.ino' % tmp.name, contents=sketch, exists_ok=True)
                 tmp.files.add('Classifier.h', contents=ported, exists_ok=True)
@@ -108,7 +107,7 @@ class ClassifierResources:
 
             with self.project.tmp_project() as tmp:
                 sketch = self.jinja('InferenceTime.jinja', X=X)
-                ported = self.clf.port(classname='Classifier', **self.port_options)
+                ported = self.clf.port(classname='Classifier')
 
                 tmp.files.add(tmp.ino_name, contents=sketch, exists_ok=True)
                 tmp.files.add('Classifier.h', contents=ported, exists_ok=True)

@@ -1,3 +1,6 @@
+#ifndef UUID{{ UUID }}
+#define UUID{{ UUID }}
+
 /**
  * @require EloquentTinyML>=2.4
  */
@@ -54,7 +57,7 @@ namespace Eloquent {
                          * Get most probable class name
                          */
                          const char* predictLabel(float *x) {
-                            return idxToLabel(predictClass(x));
+                            return idxToLabel(predict(x));
                          }
 
                          /**
@@ -79,3 +82,9 @@ namespace Eloquent {
         }
     }
 }
+
+{% if instance_name %}
+Eloquent::ML::Port::{{ classname }} {{ instance_name }};
+{% endif %}
+
+#endif

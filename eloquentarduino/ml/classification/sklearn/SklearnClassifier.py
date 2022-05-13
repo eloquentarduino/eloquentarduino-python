@@ -57,7 +57,7 @@ class SklearnClassifier(Classifier):
         """
         return {}
 
-    def port(self, classname=None, classmap=None, **kwargs):
+    def port(self, classname='Classifier', classmap=None, instance_name=None, **kwargs):
         """
         Port to plain C++
         :param classname: str name of the ported class
@@ -71,7 +71,9 @@ class SklearnClassifier(Classifier):
                 #define __CLASSIFIER__%(id)d
                 ''' % {'id': id(self)})
 
-        return ported + '\n#endif'
+        instance = 'static Eloquent::ML::Port::%s %s;' % (classname, instance_name) if instance_name is not None else ''
+
+        return '%(ported)s\n\n%(instance)s\n#endif' % locals()
 
     def on_device(self, project=None):
         """

@@ -56,20 +56,34 @@ class Layer:
     def tf_type(self):
         return getattr(tf_layers, self.type)
 
+    @property
+    def fixed_parameters(self):
+        """
+        Get "fixed" parameters
+        """
+        return {k: v for k, v in self.kwargs.items() if not k.startswith('hyper_')}
+
+    @property
+    def hyper_parameters(self):
+        """
+        Get "hyper" parameters
+        """
+        return {k: v for k, v in self.kwargs.items() if not k in self.fixed_parameters}
+
     def enumerate(self):
         """
         List all the combinations for the hyperparameters
         :return: generator of configured layers
         """
-        fixed_parameters = {k: v for k, v in self.kwargs.items() if not k.startswith('hyper_')}
-        hyper_parameters = {k.replace('hyper_', ''): v for k, v in self.kwargs.items() if k.startswith('hyper_')}
+        fixed_parameters = self.fixed_parameters
+        hyper_parameters = self.hyper_parameters
 
         if len(hyper_parameters) == 0:
             yield Layer(self.type, *self.args, **fixed_parameters)
             return
 
         for hyper_values in product(*hyper_parameters.values()):
-            hyper_combination = {k: v for k, v in zip(hyper_parameters.keys(), hyper_values)}
+            hyper_combination = {k.replace('hyper_', ''): v for k, v in zip(hyper_parameters.keys(), hyper_values)}
             hyper_combination.update(fixed_parameters)
 
             yield Layer(self.type, *self.args, **hyper_combination)

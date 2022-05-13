@@ -1,5 +1,7 @@
-from collections import namedtuple, Iterable
+from collections import Iterable
 from itertools import product
+from pprint import pprint
+from tqdm import tqdm
 from sklearn.base import clone
 from sklearn.model_selection import cross_validate
 from eloquentarduino.ml.data import Dataset
@@ -54,7 +56,40 @@ class GridSearch(GridSearchBase):
         for values in product(*hyperparameters.values()):
             yield {key: val for key, val in zip(hyperparameters.keys(), values)}
 
-    def search(self, cv=3, project=None, show_progress=False):
+    @property
+    def compliant_results(self):
+        """
+        Get results that satisfy constraints
+        """
+        compliant = [self.test_result(result, return_result=True) for result in self.results]
+
+        return [result for result in compliant if result is not None]
+
+    def print_combinations(self):
+        """
+        Print all combinations
+        """
+        for i, combination in enumerate(self.combinations):
+            print('#%3d' % (i + 1), combination)
+
+    def print_results(self, n=999, resources=False, inference_time=False):
+        """
+        Print results
+        :param n: int
+        :param resources: bool
+        :param inference_time: bool
+        """
+        for i, result in enumerate(self.compliant_results[:n]):
+            print('#%3d Accuracy: %.2f | %s' % (i + 1, result.accuracy, str(result.hyperparameters)))
+
+            if resources:
+                print('Resources: ', end='')
+                pprint(result.resources)
+
+            if inference_time:
+                print('Inference time: %.1f uS' % result.inference_time)
+
+    def search(self, cv=3, project=None):
         """
         Perform search
         :param cv: int cross validation rounds
@@ -63,10 +98,7 @@ class GridSearch(GridSearchBase):
         """
         self.results = []
 
-        for i, combination in enumerate(self.combinations):
-            if show_progress:
-                print(i if i % 20 == 0 else '.', end='')
-
+        for combination in tqdm(list(self.combinations)):
             clf = clone(self.clf)
             clf.set_params(**combination)
 

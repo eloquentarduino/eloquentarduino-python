@@ -155,24 +155,28 @@ class GridSearch:
 
         return True
 
-    def test_result(self, result, project):
+    def test_result(self, result, project=None, return_result=False):
         """
         Append result if it passes all constraints
         :param result: GridSearchResult
+        :param project:
+        :param return_result: bool
         """
         if not self.passes_classifier_constraints(result):
-            return False, 'failed classifier constraints'
+            return None if return_result else (False, 'failed classifier constraints')
 
         if self.has_resource_constraints():
-            result.resources = result.clf.on_device(project=project).get_resources()
+            if result.resources is None:
+                result.resources = result.clf.on_device(project=project).get_resources()
 
             if not self.passes_resources_constraints(result):
-                return False, 'failed resources constraints'
+                return None if return_result else (False, 'failed resources constraints')
 
         if self.has_runtime_constraints():
-            result.inference_time = result.clf.on_device(project).get_inference_time()
+            if result.inference_time is None:
+                result.inference_time = result.clf.on_device(project).get_inference_time()
 
             if not self.passes_runtime_constraints(result):
-                return False, 'failed runtime constraints'
+                return None if return_result else (False, 'failed runtime constraints')
 
-        return True, None
+        return result if return_result else (True, None)

@@ -307,20 +307,18 @@ namespace Eloquent {
                     uint8_t errorCode = 0;
 
 
-                    {% if merge_weights %}
-                        /**
-                         * Merge current weights with offline weights
-                         */
-                        void mergeWeights(float *weights, float *bias, float *offlineWeights, float *offlineBias, uint16_t numWeights, uint16_t numBias) {
-                            for (uint16_t i = 0; i < numWeights; i++) {
-                                weights[i] = weights[i] * {{ weights_decay }}f + offlineWeights[i];
-                            }
-
-                            for (uint16_t i = 0; i < numBias; i++) {
-                                bias[i] = bias[i] * {{ weights_decay }}f + offlineBias[i];
-                            }
+                    /**
+                     * Merge current weights with offline weights
+                     */
+                    void mergeWeights(float *weights, float *bias, float *offlineWeights, float *offlineBias, uint16_t numWeights, uint16_t numBias) {
+                        for (uint16_t i = 0; i < numWeights; i++) {
+                            weights[i] = weights[i] * {{ weights_decay }}f + offlineWeights[i];
                         }
-                    {% endif %}
+
+                        for (uint16_t i = 0; i < numBias; i++) {
+                            bias[i] = bias[i] * {{ weights_decay }}f + offlineBias[i];
+                        }
+                    }
             };
         }
     }
