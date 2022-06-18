@@ -136,6 +136,8 @@ eloquentarduino/plot/TSNEPlotter.py
 eloquentarduino/plot/__init__.py
 eloquentarduino/plot/dynamic/Bar.py
 eloquentarduino/plot/dynamic/__init__.py
+eloquentarduino/plot/spatial/TimeOfFlightVisualizer.py
+eloquentarduino/plot/spatial/__init__.py
 eloquentarduino/templates/benchmarks/Baseline.jinja
 eloquentarduino/templates/benchmarks/sklearn/Resources.jinja
 eloquentarduino/templates/benchmarks/sklearn/Runtime.jinja
