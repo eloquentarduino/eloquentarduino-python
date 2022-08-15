@@ -52,7 +52,8 @@ setup(
     'umap-learn',
     'xgboost',
     'deprecation',
-    'requests'
+    'requests',
+    'bleak'
   ],
   package_data={
     'eloquentarduino': data

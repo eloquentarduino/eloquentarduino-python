@@ -11,6 +11,7 @@ from sklearn.utils import shuffle
 
 from eloquentarduino.utils.jinja import jinja
 from eloquentarduino.ml.data.mixins.LoadsDatasetMixin import LoadsDatasetMixin
+from eloquentarduino.ml.data.mixins.PersistsDatasetMixin import PersistsDatasetMixin
 from eloquentarduino.ml.data.mixins.PlotsItselfMixin import PlotsItselfMixin
 from eloquentarduino.ml.data.mixins.DropsTimeSeriesOutliersMixin import DropsTimeSeriesOutliersMixin
 
@@ -21,7 +22,7 @@ from eloquentarduino.ml.data.mixins.DropsTimeSeriesOutliersMixin import DropsTim
 """
 
 
-class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin):
+class Dataset(LoadsDatasetMixin, PersistsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin):
     """
     Abstraction of a dataset
     """
@@ -36,6 +37,12 @@ class Dataset(LoadsDatasetMixin, DropsTimeSeriesOutliersMixin, PlotsItselfMixin)
         """
         self.name = name
         self.test_validity = test_validity
+
+        if not isinstance(X, np.ndarray):
+            X = np.asarray(X, dtype=float)
+
+        if not isinstance(y, np.ndarray):
+            y = np.asarray(y, dtype=int)
 
         if test_validity:
             try:

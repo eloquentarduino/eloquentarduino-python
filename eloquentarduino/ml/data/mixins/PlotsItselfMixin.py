@@ -50,7 +50,22 @@ class PlotsItselfMixin:
         ax.set_ylabel("Component #2")
         plt.show()
 
-    def plot(self, title='', columns=None, n_ticks=15, grid=True, fontsize=6, bg_alpha=0.2, once_every=1, max_samples=None, palette=None, y_pred=None, force=False, linewidth=1, **kwargs):
+    def plot(
+            self,
+            title='',
+            columns=None,
+            n_ticks=15,
+            grid=True,
+            fontsize=6,
+            bg_alpha=0.2,
+            once_every=1,
+            max_samples=None,
+            palette=None,
+            y_pred=None,
+            force=False,
+            linewidth=1,
+            color_palette='magma',
+            **kwargs):
         """
         Plot dataframe
         :param title: str title of plot
@@ -74,8 +89,19 @@ class PlotsItselfMixin:
         df = pd.DataFrame(self.df[plot_columns].iloc[idx].to_numpy(), columns=plot_columns)
         length = len(df)
 
+        colors = ['#%02x%02x%02x' % (int(r * 255), int(g * 255), int(b * 255))
+                         for r, g, b in sns.color_palette(color_palette, n_colors=len(plot_columns))]
+        kwargs.setdefault('color', colors)
+
         plt.figure()
-        df.plot(title=title, xticks=range(0, length, length // n_ticks), grid=grid, fontsize=fontsize, rot=70, linewidth=linewidth, **kwargs)
+        df.plot(
+            title=title,
+            xticks=range(0, length, length // n_ticks),
+            grid=grid,
+            fontsize=fontsize,
+            rot=70,
+            linewidth=linewidth,
+            **kwargs)
 
         # highlight labels
         y = self.y[idx]
