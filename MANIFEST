@@ -60,6 +60,7 @@ eloquentarduino/ml/data/Dataset.py
 eloquentarduino/ml/data/__init__.py
 eloquentarduino/ml/data/mixins/DropsTimeSeriesOutliersMixin.py
 eloquentarduino/ml/data/mixins/LoadsDatasetMixin.py
+eloquentarduino/ml/data/mixins/PersistsDatasetMixin.py
 eloquentarduino/ml/data/mixins/PlotsItselfMixin.py
 eloquentarduino/ml/data/mixins/__init__.py
 eloquentarduino/ml/data/mixins/dtwnumba.py
@@ -197,6 +198,13 @@ eloquentarduino/templates/third_party/snoopy/SnoopyStream.jinja
 eloquentarduino/templates/third_party/snoopy/snoopy.jinja
 eloquentarduino/third_party/Snoopy.py
 eloquentarduino/third_party/__init__.py
+eloquentarduino/third_party/data_collection/BLECollector.py
+eloquentarduino/third_party/data_collection/DataCapture.py
+eloquentarduino/third_party/data_collection/__init__.py
+eloquentarduino/third_party/label_studio/LabelStudio.py
+eloquentarduino/third_party/label_studio/LabelStudioBottle.py
+eloquentarduino/third_party/label_studio/LabelStudioRequestHandler.py
+eloquentarduino/third_party/label_studio/__init__.py
 eloquentarduino/third_party/snoopy/ImuClassifier.py
 eloquentarduino/third_party/snoopy/SmoothVoting.py
 eloquentarduino/third_party/snoopy/SnoopyGridSearch.py
