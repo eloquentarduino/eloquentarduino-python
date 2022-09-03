@@ -53,7 +53,8 @@ setup(
     'xgboost',
     'deprecation',
     'requests',
-    'bleak'
+    'bleak',
+    'bottle'
   ],
   package_data={
     'eloquentarduino': data
