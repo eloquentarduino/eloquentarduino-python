@@ -198,9 +198,12 @@ eloquentarduino/templates/third_party/snoopy/SnoopyStream.jinja
 eloquentarduino/templates/third_party/snoopy/snoopy.jinja
 eloquentarduino/third_party/Snoopy.py
 eloquentarduino/third_party/__init__.py
-eloquentarduino/third_party/data_collection/BLECollector.py
 eloquentarduino/third_party/data_collection/DataCapture.py
 eloquentarduino/third_party/data_collection/__init__.py
+eloquentarduino/third_party/data_collection/ble/Characteristic.py
+eloquentarduino/third_party/data_collection/ble/Collector.py
+eloquentarduino/third_party/data_collection/ble/Device.py
+eloquentarduino/third_party/data_collection/ble/__init__.py
 eloquentarduino/third_party/label_studio/LabelStudio.py
 eloquentarduino/third_party/label_studio/LabelStudioBottle.py
 eloquentarduino/third_party/label_studio/LabelStudioRequestHandler.py
