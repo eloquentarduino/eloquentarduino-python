@@ -121,6 +121,9 @@ class Device:
         Test if target matches query
         """
         if '*' in query:
-            return re.search(query.replace('*', '.*'), target) is not None
+            try:
+                return re.search(query.replace('*', '.*'), target) is not None
+            except TypeError:
+                return False
 
         return target.lower() == query.lower()
