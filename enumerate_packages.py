@@ -12,7 +12,7 @@ def package_name(folder):
 
 
 if __name__ == '__main__':
-    packages = [package_name(folder) for folder in glob('eloquentarduino/**', recursive=True)
+    packages = [package_name(folder) for folder in glob('eloquentarduino/**')
                 if isdir(folder) and '__pycache__' not in folder]
 
     print(json.dumps(packages).replace('/', '\\/').replace('"', '\\"'))

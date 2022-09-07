@@ -16,8 +16,8 @@ from os.path import isdir
 #data = [filename.replace('eloquentarduino/', '')
 #        for filename in glob('eloquentarduino/templates/**/*.jinja', recursive=True)]
 
-packages = 
-data = 
+packages = ["eloquentarduino.plot", "eloquentarduino.utils", "eloquentarduino.third_party", "eloquentarduino.ml", "eloquentarduino.templates", "eloquentarduino.jupyter"]
+data = ["templates/metrics/Runtime.bck.jinja", "templates/metrics/Resources.jinja", "templates/metrics/Runtime.jinja", "templates/metrics/Empty.jinja", "templates/metrics/Baseline.jinja", "templates/magics/eloquent-arduino.h.jinja", "templates/benchmarks/Baseline.jinja"]
 
 setup(
   name = 'eloquentarduino',
